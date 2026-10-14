@@ -160,6 +160,40 @@ class ModelCatalogServiceTest {
     }
 
     @Test
+    void platformUpdateClearsStoredApiKeyOnlyWhenExplicitlyRequested() throws Exception {
+        AiPlatformRepository repository = mock(AiPlatformRepository.class);
+        AiPlatformServiceImpl service =
+                inject(new AiPlatformServiceImpl(), "aiPlatformRepository", repository);
+        inject(service, "platformProperties", new PlatformProperties());
+        AiPlatformBO mappedRequest = new AiPlatformBO();
+        mappedRequest.setName("DeepSeek");
+        mappedRequest.setCode("DEEPSEEK");
+        mappedRequest.setAdapterType("OPENAI_COMPATIBLE");
+        AiPlatformBO existing = new AiPlatformBO();
+        existing.setId(1L);
+        existing.setApiKey("stored-secret");
+        when(repository.selectById(ACTOR.tenantId(), 1L)).thenReturn(existing);
+        when(repository.update(eq(ACTOR.tenantId()), any(AiPlatformBO.class)))
+                .thenAnswer(invocation -> invocation.getArgument(1));
+        try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
+            mapper.when(() -> MapstructUtils.convert(
+                    any(AiPlatformRequest.class), eq(AiPlatformBO.class)))
+                    .thenReturn(mappedRequest);
+            mapper.when(() -> MapstructUtils.convert(
+                    any(AiPlatformBO.class), eq(AiPlatformResponse.class)))
+                    .thenReturn(new AiPlatformResponse());
+            AiPlatformRequest request = new AiPlatformRequest();
+            request.setName("DeepSeek");
+            request.setCode("DEEPSEEK");
+            request.setClearApiKey(true);
+            service.updateResponse(ACTOR, 1L, request);
+        }
+        ArgumentCaptor<AiPlatformBO> updated = ArgumentCaptor.forClass(AiPlatformBO.class);
+        verify(repository).update(eq(ACTOR.tenantId()), updated.capture());
+        assertEquals("", updated.getValue().getApiKey());
+    }
+
+    @Test
     void modelServiceFillsPlatformAndClearsDefaultOnCreateAndUpdate() throws Exception {
         AiModelRepository repository = mock(AiModelRepository.class);
         AiPlatformRepository platforms = mock(AiPlatformRepository.class);

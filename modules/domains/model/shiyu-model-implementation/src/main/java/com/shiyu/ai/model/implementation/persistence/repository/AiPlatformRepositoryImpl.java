@@ -24,6 +24,17 @@ import java.util.stream.Collectors;
 public class AiPlatformRepositoryImpl
         implements com.shiyu.ai.model.implementation.domain.port.repository.AiPlatformRepository {
 
+    private final PlatformCredentialCipher credentialCipher;
+
+    /**
+     * 创建平台仓储。
+     *
+     * @param credentialCipher 保护数据库中的平台凭证。
+     */
+    public AiPlatformRepositoryImpl(PlatformCredentialCipher credentialCipher) {
+        this.credentialCipher = credentialCipher;
+    }
+
     /**
      * aiPlatformMapper 属性，保存当前对象中的业务数据或协作依赖。
      */
@@ -34,7 +45,7 @@ public class AiPlatformRepositoryImpl
         QueryWrapper countWrapper = new QueryWrapper();
         countWrapper
                 .eq(AiPlatformDO::getTenantId, tenantId.value())
-                .eq(AiPlatformDO::getDelFlag, "0");
+                .eq(AiPlatformDO::getDelFlag, 0);
         if (name != null) countWrapper.like(AiPlatformDO::getName, name);
         if (code != null) countWrapper.like(AiPlatformDO::getCode, code);
         long count = aiPlatformMapper.selectCountByQuery(countWrapper);
@@ -42,7 +53,7 @@ public class AiPlatformRepositoryImpl
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper
                 .eq(AiPlatformDO::getTenantId, tenantId.value())
-                .eq(AiPlatformDO::getDelFlag, "0");
+                .eq(AiPlatformDO::getDelFlag, 0);
         if (name != null) queryWrapper.like(AiPlatformDO::getName, name);
         if (code != null) queryWrapper.like(AiPlatformDO::getCode, code);
         queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
@@ -53,19 +64,19 @@ public class AiPlatformRepositoryImpl
         }
 
         List<AiPlatformDO> list = aiPlatformMapper.selectListByQuery(queryWrapper);
-        return Pair.of(count, MapstructUtils.convert(list, AiPlatformBO.class));
+        return Pair.of(count, list.stream().map(item -> hydrate(tenantId, item)).toList());
     }
 
     public List<AiPlatformBO> selectAllEnabled(TenantId tenantId) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper
                 .eq(AiPlatformDO::getTenantId, tenantId.value())
-                .eq(AiPlatformDO::getDelFlag, "0");
+                .eq(AiPlatformDO::getDelFlag, 0);
         queryWrapper.eq(AiPlatformDO::getStatus, 1);
         queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
 
         List<AiPlatformDO> list = aiPlatformMapper.selectListByQuery(queryWrapper);
-        return MapstructUtils.convert(list, AiPlatformBO.class);
+        return list.stream().map(item -> hydrate(tenantId, item)).toList();
     }
 
     public AiPlatformBO selectById(TenantId tenantId, Long id) {
@@ -74,7 +85,7 @@ public class AiPlatformRepositoryImpl
                         new QueryWrapper()
                                 .eq(AiPlatformDO::getTenantId, tenantId.value())
                                 .eq(AiPlatformDO::getId, id));
-        return MapstructUtils.convert(platformDO, AiPlatformBO.class);
+        return hydrate(tenantId, platformDO);
     }
 
     public AiPlatformBO selectByCode(TenantId tenantId, String code) {
@@ -82,9 +93,9 @@ public class AiPlatformRepositoryImpl
         queryWrapper
                 .eq(AiPlatformDO::getTenantId, tenantId.value())
                 .eq(AiPlatformDO::getCode, code);
-        queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        queryWrapper.eq(AiPlatformDO::getDelFlag, 0);
         AiPlatformDO platformDO = aiPlatformMapper.selectOneByQuery(queryWrapper);
-        return MapstructUtils.convert(platformDO, AiPlatformBO.class);
+        return hydrate(tenantId, platformDO);
     }
 
     public AiPlatformBO selectDefault(TenantId tenantId) {
@@ -92,15 +103,16 @@ public class AiPlatformRepositoryImpl
         queryWrapper
                 .eq(AiPlatformDO::getTenantId, tenantId.value())
                 .eq(AiPlatformDO::getIsDefault, "Y");
-        queryWrapper.eq(AiPlatformDO::getDelFlag, "0");
+        queryWrapper.eq(AiPlatformDO::getDelFlag, 0);
         queryWrapper.eq(AiPlatformDO::getStatus, 1);
         AiPlatformDO platformDO = aiPlatformMapper.selectOneByQuery(queryWrapper);
-        return MapstructUtils.convert(platformDO, AiPlatformBO.class);
+        return hydrate(tenantId, platformDO);
     }
 
     public AiPlatformBO create(TenantId tenantId, AiPlatformBO bo) {
         AiPlatformDO platformDO = MapstructUtils.convert(bo, AiPlatformDO.class);
         platformDO.setTenantId(tenantId.value());
+        platformDO.setApiKey(credentialCipher.protect(tenantId.value(), bo.getApiKey()));
         aiPlatformMapper.insertSelective(platformDO);
         bo.setId(platformDO.getId());
         return bo;
@@ -109,6 +121,7 @@ public class AiPlatformRepositoryImpl
     public AiPlatformBO update(TenantId tenantId, AiPlatformBO bo) {
         AiPlatformDO platformDO = MapstructUtils.convert(bo, AiPlatformDO.class);
         platformDO.setTenantId(tenantId.value());
+        platformDO.setApiKey(credentialCipher.protect(tenantId.value(), bo.getApiKey()));
         aiPlatformMapper.updateByQuery(
                 platformDO,
                 new QueryWrapper()
@@ -128,7 +141,7 @@ public class AiPlatformRepositoryImpl
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper
                 .eq(AiPlatformDO::getTenantId, tenantId.value())
-                .eq(AiPlatformDO::getDelFlag, "0");
+                .eq(AiPlatformDO::getDelFlag, 0);
         queryWrapper.eq(AiPlatformDO::getStatus, 1);
         queryWrapper.orderBy(AiPlatformDO::getIsDefault, true);
         queryWrapper.orderBy(AiPlatformDO::getId, true);
@@ -158,5 +171,16 @@ public class AiPlatformRepositoryImpl
             platform.setIsDefault("N");
             aiPlatformMapper.update(platform);
         }
+    }
+
+    private AiPlatformBO hydrate(TenantId tenantId, AiPlatformDO platformDO) {
+        if (platformDO == null) return null;
+        AiPlatformBO platform = MapstructUtils.convert(platformDO, AiPlatformBO.class);
+        if (platform != null && platformDO.getApiKey() != null
+                && !platformDO.getApiKey().isEmpty()) {
+            platform.setApiKey(credentialCipher.unprotect(
+                    tenantId.value(), platformDO.getApiKey()));
+        }
+        return platform;
     }
 }

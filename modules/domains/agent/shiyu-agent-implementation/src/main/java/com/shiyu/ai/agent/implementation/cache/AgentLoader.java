@@ -89,9 +89,9 @@ public class AgentLoader {
         AgentVersionBO versionBO =
                 agentAdminRepository.selectVersionByAgentIdAndNumber(
                         actor.tenantId(), agentId, versionNumber);
-        if (versionBO == null) {
+        if (versionBO == null || !Integer.valueOf(1).equals(versionBO.getStatus())) {
             log.warn(
-                    "Agent 当前版本不存在: agentIdPresent={}, versionPresent={}",
+                    "Agent 当前版本不存在或未发布: agentIdPresent={}, versionPresent={}",
                     agentId != null,
                     versionNumber != null);
             return null;
@@ -303,11 +303,20 @@ public class AgentLoader {
             merged.putAll(dto.getConfig());
         }
 
+        // Graph topology and factory type come from the outer node definition.
+        merged.put("nodeId", nodeId);
+        merged.put("nodeType", dto.getNodeType());
+
         return JSONUtils.convertValue(merged, configClass);
     }
 
     private ConditionEdge buildConditionEdge(
             String sourceId, GraphConfigRequest.ConditionalEdgeDTO dto) {
+        if (dto == null
+                || ((dto.getNodeMappings() == null || dto.getNodeMappings().isEmpty())
+                        && (dto.getDefaultTarget() == null || dto.getDefaultTarget().isBlank()))) {
+            throw new IllegalArgumentException("条件边必须配置映射或默认目标: " + sourceId);
+        }
         Map<String, String> mappings =
                 dto.getNodeMappings() != null ? dto.getNodeMappings() : new HashMap<>();
         String defaultTarget = dto.getDefaultTarget() != null ? dto.getDefaultTarget() : "";

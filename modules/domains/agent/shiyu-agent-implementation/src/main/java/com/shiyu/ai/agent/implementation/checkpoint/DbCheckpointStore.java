@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.implementation.checkpoint;
 
 import com.shiyu.ai.agent.implementation.domain.model.AgentCheckpointBO;
+import com.shiyu.ai.agent.contract.node.NodeActorContext;
 import com.shiyu.ai.agent.implementation.port.repository.AgentCheckpointRepository;
 import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -9,6 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +50,16 @@ public class DbCheckpointStore implements CheckpointStore {
         doObj.setCheckpointId(checkpoint.getCheckpointId());
         doObj.setExecutionId(checkpoint.getExecutionId());
         doObj.setNodeId(checkpoint.getNodeId());
-        doObj.setStateData(JSONUtils.toJsonString(checkpoint.getState()));
+        Map<String, Object> publicState = NodeActorContext.publicData(checkpoint.getState());
+        if (checkpoint.getNextNodeId() == null) {
+            doObj.setStateData(JSONUtils.toJsonString(publicState));
+        } else {
+            doObj.setStateData(JSONUtils.toJsonString(Map.of(
+                    "__agentCheckpointFormat", "langgraph4j-v2",
+                    "nextNodeId", checkpoint.getNextNodeId(),
+                    "state", publicState,
+                    "typeHints", CheckpointStateCodec.typeHints(publicState))));
+        }
         doObj.setCreateTime(LocalDateTime.now());
         checkpointRepository.insert(tenantId, doObj);
     }
@@ -115,12 +128,50 @@ public class DbCheckpointStore implements CheckpointStore {
     }
 
     private Checkpoint toCheckpoint(AgentCheckpointBO doObj) {
+        Map<String, Object> data = JSONUtils.parseMap(doObj.getStateData());
+        String nextNodeId = null;
+        Object format = data.get("__agentCheckpointFormat");
+        if ("langgraph4j-v1".equals(format) || "langgraph4j-v2".equals(format)) {
+            Object next = data.get("nextNodeId");
+            Object state = data.get("state");
+            if (!(next instanceof String value) || value.isBlank()
+                    || !(state instanceof Map<?, ?> storedState)) {
+                throw new IllegalStateException("图检查点内容不完整");
+            }
+            // v1 did not record Java scalar types. Intermediate v1 checkpoints must fail closed.
+            nextNodeId = "langgraph4j-v2".equals(format)
+                    || "__agent_node_started__".equals(doObj.getNodeId()) ? value : null;
+            Map<String, Object> restored = new LinkedHashMap<>();
+            storedState.forEach((key, item) -> {
+                if (!(key instanceof String name)) {
+                    throw new IllegalStateException("图检查点状态键无效");
+                }
+                restored.put(name, item);
+            });
+            if ("langgraph4j-v2".equals(format)) {
+                if (!(data.get("typeHints") instanceof Map<?, ?> storedHints)) {
+                    throw new IllegalStateException("图检查点缺少类型信息");
+                }
+                Map<String, String> hints = new HashMap<>();
+                storedHints.forEach((key, item) -> {
+                    if (!(key instanceof String path) || !(item instanceof String type)) {
+                        throw new IllegalStateException("图检查点类型信息无效");
+                    }
+                    hints.put(path, type);
+                });
+                data = CheckpointStateCodec.restore(restored, hints);
+            } else {
+                data = restored;
+            }
+        }
         Checkpoint cp =
                 new Checkpoint(
                         new TenantId(doObj.getTenantId()),
                         doObj.getExecutionId(),
+                        doObj.getCheckpointId(),
                         doObj.getNodeId(),
-                        JSONUtils.parseMap(doObj.getStateData()));
+                        nextNodeId,
+                        NodeActorContext.publicData(data));
         return cp;
     }
 }

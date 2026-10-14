@@ -5,6 +5,7 @@ import com.shiyu.ai.common.foundation.module.BusinessModuleDescriptor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 定义 教育 Module Auto 基础设施或应用能力的配置项及装配规则。
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 @AutoConfiguration
 @ConditionalOnBusinessModule(value = "education", matchIfMissing = true)
 @ComponentScan(basePackages = "com.shiyu.ai.education.implementation")
+@EnableScheduling
 public class EducationModuleAutoConfiguration {
 
     /**

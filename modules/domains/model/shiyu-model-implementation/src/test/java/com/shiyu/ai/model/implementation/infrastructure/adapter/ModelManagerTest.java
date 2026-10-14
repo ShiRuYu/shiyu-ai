@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
 import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
 import com.shiyu.ai.model.implementation.domain.port.repository.AiModelRepository;
@@ -25,6 +26,85 @@ import java.util.List;
  * 验证 模型 Manager 相关功能、边界条件、异常路径和协作行为。
  */
 class ModelManagerTest {
+    @Test
+    void adapterLookupNeverFallsBackToAnotherTenantsPlatform() {
+        AiPlatformRepository platforms = mock(AiPlatformRepository.class);
+        AiModelRepository models = mock(AiModelRepository.class);
+        PlatformProperties props = new PlatformProperties();
+        props.setTenantId(9L);
+        props.getOpenai().setApiKey("tenant-nine-key");
+        props.init();
+        AiPlatformBO owner = new AiPlatformBO();
+        owner.setId(1L);
+        owner.setCode("OPENAI");
+        owner.setBaseUrl("http://tenant-nine.test/v1");
+        when(platforms.selectAllEnabled(new TenantId(9L))).thenReturn(List.of(owner));
+        AiModelBO ownerModel = new AiModelBO();
+        ownerModel.setModelName("private-nine-model");
+        when(models.selectDefaultByPlatformId(new TenantId(9L), 1L)).thenReturn(ownerModel);
+        ModelManager manager = new ModelManager(platforms, models, props);
+        manager.reloadFromDb();
+
+        TenantScope.withTenant(new TenantId(10L), () -> {
+            assertThrows(IllegalArgumentException.class, () -> manager.getAdapter("OPENAI"));
+            return null;
+        });
+
+        AiPlatformBO other = new AiPlatformBO();
+        other.setId(2L);
+        other.setCode("OPENAI");
+        other.setBaseUrl("http://tenant-ten.test/v1");
+        other.setStatus(1);
+        when(platforms.selectByCode(new TenantId(10L), "OPENAI")).thenReturn(other);
+        when(platforms.selectAllEnabled(new TenantId(10L))).thenReturn(List.of(other));
+        when(platforms.selectDefault(new TenantId(10L))).thenReturn(other);
+        AiModelBO otherModel = new AiModelBO();
+        otherModel.setModelName("private-ten-model");
+        when(models.selectDefaultByPlatformId(new TenantId(10L), 2L)).thenReturn(otherModel);
+
+        String selected = TenantScope.withTenant(new TenantId(10L),
+                () -> manager.getAdapter("OPENAI").getDefaultModelName());
+        assertEquals("private-ten-model", selected);
+        assertFalse(TenantScope.withTenant(new TenantId(10L),
+                () -> manager.getAdapter("OPENAI").isAvailable()));
+        assertEquals("private-ten-model", TenantScope.withTenant(new TenantId(10L),
+                () -> manager.availableModels().getFirst().id()));
+        assertEquals("OPENAI", TenantScope.withTenant(new TenantId(10L),
+                manager::getDefaultPlatform));
+        assertEquals("private-nine-model", manager.getAdapter("OPENAI").getDefaultModelName());
+    }
+
+    @Test
+    void bindsConfiguredTenantForStartupAndLazyRepositoryReads() {
+        AiPlatformRepository platforms = mock(AiPlatformRepository.class);
+        AiModelRepository models = mock(AiModelRepository.class);
+        PlatformProperties props = new PlatformProperties();
+        props.setTenantId(9L);
+        props.init();
+        AiPlatformBO platform = new AiPlatformBO();
+        platform.setId(7L);
+        platform.setCode("OPENAI");
+        platform.setBaseUrl("http://localhost:1234/v1");
+        when(platforms.selectAllEnabled(new TenantId(9L))).thenAnswer(invocation -> {
+            assertEquals(new TenantId(9L), TenantScope.require());
+            return List.of(platform);
+        });
+        when(models.selectDefaultByPlatformId(new TenantId(9L), 7L)).thenAnswer(invocation -> {
+            assertEquals(new TenantId(9L), TenantScope.require());
+            return null;
+        });
+        when(platforms.selectDefault(new TenantId(9L))).thenAnswer(invocation -> {
+            assertEquals(new TenantId(9L), TenantScope.require());
+            return platform;
+        });
+
+        ModelManager manager = new ModelManager(platforms, models, props);
+        manager.reloadFromDb();
+        assertTrue(manager.isDbLoaded());
+        assertEquals("OPENAI", manager.getDefaultPlatform());
+        assertTrue(TenantScope.current().isEmpty());
+    }
+
     @Test
     void refreshesDedicatedDeepSeekProviderFromDatabase() {
         AiPlatformRepository platforms = mock(AiPlatformRepository.class);

@@ -119,7 +119,15 @@ public final class AuthIdentityUseCase {
                     roles == null
                             ? null
                             : roles.stream()
-                                    .filter(role -> roleId.equals(role.getId()))
+                                    .filter(
+                                            role ->
+                                                    roleId.equals(role.getId())
+                                                            && currentTenantId.equals(
+                                                                    role.getTenantId())
+                                                            && role.getStatus() != null
+                                                            && role.getStatus() == 1
+                                                            && (role.getDelFlag() == null
+                                                                    || role.getDelFlag() == 0))
                                     .findFirst()
                                     .orElse(null);
             if (target == null) {
@@ -251,9 +259,22 @@ public final class AuthIdentityUseCase {
                                                                     item))
                                     .map(UserScopeRoleBO::getRoleId)
                                     .map(tenantRoleRepository::selectRoleById)
-                                    .anyMatch(contextSupport::isTenantSuperRole);
+                                    .anyMatch(
+                                            role ->
+                                                    role != null
+                                                            && homeTenant.equals(role.getTenantId())
+                                                            && contextSupport.isTenantSuperRole(role));
             boolean returningHome = homeTenantId.equals(targetTenantValue);
             boolean switchedAwayFromHome = !homeTenantId.equals(currentTenantId);
+            if (homeTenantSuper
+                    && switchedAwayFromHome
+                    && assignedRole == null
+                    && !returningHome
+                    && !tenantRepository
+                            .selectDescendantIds(new TenantId(homeTenantId))
+                            .contains(currentTenantId)) {
+                return false;
+            }
             Long allowedRootTenantId =
                     homeTenantSuper && switchedAwayFromHome ? currentTenantId : homeTenantId;
             boolean targetInAllowedSubtree =
@@ -281,12 +302,19 @@ public final class AuthIdentityUseCase {
                             && assignedRole == null
                             && homeTenantSuper
                             && targetInAllowedSubtree;
-            extInfoMap.put("currentTenantId", targetTenantValue);
-            extInfoMap.put("homeTenantId", homeTenantId);
             RoleBO role =
                     parentSuperAdminSwitch
                             ? contextSupport.findTenantSuperRole(targetTenantValue)
                             : assignedRole;
+            if (parentSuperAdminSwitch
+                    && (role == null
+                            || !Long.valueOf(targetTenantValue).equals(role.getTenantId())
+                            || !contextSupport.isTenantSuperRole(role))) {
+                log.warn("切换租户失败，目标租户缺少可用的超级管理员角色");
+                return false;
+            }
+            extInfoMap.put("currentTenantId", targetTenantValue);
+            extInfoMap.put("homeTenantId", homeTenantId);
             if (role != null) {
                 Map<String, Object> roleMap = new LinkedHashMap<>();
                 roleMap.put("roleId", role.getId());
@@ -334,6 +362,9 @@ public final class AuthIdentityUseCase {
      */
     public List<TenantInfoVO> getUserTenants(ActorContext actor, Long userId) {
         Objects.requireNonNull(actor, "actor must not be null");
+        if (actor.userId() == null || !Objects.equals(actor.userId().value(), userId)) {
+            return List.of();
+        }
         List<UserScopeRoleBO> assignments = userScopeRoleRepository.selectByUserId(userId);
         List<TenantInfoVO> tenants = contextSupport.buildTenantList(assignments);
         UserBO user = userRepository.selectById(userId);
@@ -360,11 +391,21 @@ public final class AuthIdentityUseCase {
                                                         && contextSupport.isActiveAssignment(item))
                                 .map(UserScopeRoleBO::getRoleId)
                                 .map(tenantRoleRepository::selectRoleById)
-                                .anyMatch(contextSupport::isTenantSuperRole);
+                                .anyMatch(
+                                        role ->
+                                                role != null
+                                                        && resolvedHomeTenantId.equals(
+                                                                role.getTenantId())
+                                                        && contextSupport.isTenantSuperRole(role));
         if (homeTenantSuperAdmin
                 && resolvedHomeTenantId != null
                 && currentTenantId != null
                 && !resolvedHomeTenantId.equals(currentTenantId)) {
+            if (!tenantRepository
+                    .selectDescendantIds(new TenantId(resolvedHomeTenantId))
+                    .contains(currentTenantId)) {
+                return tenants;
+            }
             return contextSupport.buildScopedTenantList(currentTenantId, resolvedHomeTenantId);
         }
         if (homeTenantSuperAdmin) {

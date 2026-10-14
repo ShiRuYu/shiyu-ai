@@ -53,8 +53,8 @@ public class RoleServiceImpl implements RoleService {
      */
     @Override
     public RoleVO detailView(ActorContext actor, Long id, TenantId tenantId) {
-        return MapstructUtils.convert(
-                getRoleDetail(requireActor(actor), id, tenantId), RoleVO.class);
+        RoleBO role = getRoleDetail(requireActor(actor), id, tenantId);
+        return role == null ? null : MapstructUtils.convert(role, RoleVO.class);
     }
 
     /**
@@ -65,6 +65,7 @@ public class RoleServiceImpl implements RoleService {
      * @return 返回本次条件判断是否成立。
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean createRole(ActorContext actor, RoleRequest request) {
         return createRole(requireActor(actor), MapstructUtils.convert(request, RoleBO.class));
     }
@@ -78,6 +79,7 @@ public class RoleServiceImpl implements RoleService {
      * @return 返回本次条件判断是否成立。
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateRole(ActorContext actor, Long id, RoleRequest request) {
         return updateRole(requireActor(actor), id, MapstructUtils.convert(request, RoleBO.class));
     }
@@ -187,7 +189,13 @@ public class RoleServiceImpl implements RoleService {
             return null;
         }
         RoleBO role = roleRepository.selectById(id, tenantId);
-        if (role == null) return null;
+        if (role == null
+                || !id.equals(role.getId())
+                || !Long.valueOf(tenantId.value()).equals(role.getTenantId())
+                || !Integer.valueOf(1).equals(role.getStatus())
+                || !Integer.valueOf(0).equals(role.getDelFlag())) {
+            return null;
+        }
         List<Long> menuIds =
                 roleRepository.selectMenuIdsByRoleId(
                         id, new TenantId(role.getTenantId()), tenantId);
@@ -195,7 +203,6 @@ public class RoleServiceImpl implements RoleService {
         return role;
     }
 
-    @Transactional(rollbackFor = Exception.class)
     private boolean updateRole(ActorContext actor, Long id, RoleBO roleBO) {
         log.info("修改角色，roleIdPresent: {}", id != null);
         if (roleBO == null || roleBO.getTenantId() == null) {
@@ -211,6 +218,10 @@ public class RoleServiceImpl implements RoleService {
         if (targetTenantId == null || !targetTenantId.equals(existingRole.getTenantId())) {
             return false;
         }
+        if (roleBO.getPermissions() != null
+                && !areMenusAssignable(actor, roleBO.getPermissions())) {
+            throw new IllegalArgumentException("菜单不存在、已停用或超出当前租户可见范围");
+        }
 
         // 保存角色基本信息
         roleBO.setId(id);
@@ -219,9 +230,6 @@ public class RoleServiceImpl implements RoleService {
 
         // 如果提供了permissions，则更新角色-菜单关联
         if (success && roleBO.getPermissions() != null) {
-            if (!areMenusAssignable(actor, roleBO.getPermissions())) {
-                throw new IllegalArgumentException("菜单不存在、已停用或超出当前租户可见范围");
-            }
             // 先删除旧的关联
             roleRepository.deleteRoleMenus(
                     id, new TenantId(targetTenantId), new TenantId(targetTenantId));
@@ -327,6 +335,8 @@ public class RoleServiceImpl implements RoleService {
                         actor.tenantId() != null);
                 return false;
             }
+        }
+        for (Long userId : userIds) {
             userScopeRoleRepository.deleteByUserIdRoleIdAndTenantId(userId, roleId, tenantId);
             menuService.evictRouteMenuCache(userId);
         }
@@ -375,6 +385,8 @@ public class RoleServiceImpl implements RoleService {
                         actor.tenantId() != null);
                 return false;
             }
+        }
+        for (Long userId : userIds) {
             UserScopeRoleBO uwr = new UserScopeRoleBO();
             uwr.setUserId(userId);
             uwr.setTenantId(tenantId.value());
@@ -385,7 +397,6 @@ public class RoleServiceImpl implements RoleService {
         return true;
     }
 
-    @Transactional(rollbackFor = Exception.class)
     private boolean createRole(ActorContext actor, RoleBO roleBO) {
         log.info("新增角色");
         if (roleBO == null || roleBO.getTenantId() == null) {
@@ -397,15 +408,17 @@ public class RoleServiceImpl implements RoleService {
             return false;
         }
         roleBO.setTenantId(targetTenantId);
+        if (roleBO.getPermissions() != null
+                && !roleBO.getPermissions().isEmpty()
+                && !areMenusAssignable(actor, roleBO.getPermissions())) {
+            throw new IllegalArgumentException("菜单不存在、已停用或超出当前租户可见范围");
+        }
 
         // 保存角色基本信息
         RoleBO savedRole = roleRepository.insert(roleBO);
 
         // 如果提供了permissions，则保存角色-菜单关联
         if (roleBO.getPermissions() != null && !roleBO.getPermissions().isEmpty()) {
-            if (!areMenusAssignable(actor, roleBO.getPermissions())) {
-                throw new IllegalArgumentException("菜单不存在、已停用或超出当前租户可见范围");
-            }
             roleRepository.insertRoleMenus(
                     savedRole.getId(),
                     new TenantId(targetTenantId),

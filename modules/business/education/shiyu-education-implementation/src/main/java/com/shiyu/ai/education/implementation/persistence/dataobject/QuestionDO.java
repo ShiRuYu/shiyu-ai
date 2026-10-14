@@ -35,6 +35,8 @@ public class QuestionDO extends TenantEntity {
      * 类型，表示当前对象中的对应属性。
      */
     private String type;
+    /** Student answer visibility policy for this question. */
+    private String purpose;
     /**
      * 学科编码，表示当前对象中的对应属性。
      */

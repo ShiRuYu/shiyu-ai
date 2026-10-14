@@ -44,6 +44,9 @@ public class AgentExecutionBO implements Serializable {
     /** 节点类型 */
     private String nodeType;
 
+    /** Last checkpoint durably associated with this execution. */
+    private String lastCheckpointId;
+
     /** 输入数据（JSON） */
     private String inputData;
 

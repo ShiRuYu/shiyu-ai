@@ -419,9 +419,12 @@ def generate_permission_matrix(
             continue
         role_ids = re.search(r'R\."ID"\s+IN\s*\(([\d,\s]+)\)', statement, re.I)
         code_ids = re.search(r'C\."ID"\s+IN\s*\(([\d,\s]+)\)', statement, re.I)
-        if not role_ids or not code_ids:
+        code_literal = re.search(r'SELECT\s+R\."ID"\s*,\s*(\d+)\s*,', statement, re.I)
+        if not role_ids or (not code_ids and not code_literal):
             raise ValueError("Unsupported role permission seed query; update documentation parser explicitly")
-        for code_id in map(int, code_ids.group(1).split(",")):
+        selected_codes = (map(int, code_ids.group(1).split(",")) if code_ids
+                          else [int(code_literal.group(1))])
+        for code_id in selected_codes:
             code_roles[code_id].update(map(int, role_ids.group(1).split(",")))
     permission_to_roles = {
         value["code"]: [roles[role_id]["code"] for role_id in sorted(code_roles.get(code_id, set())) if role_id in roles]

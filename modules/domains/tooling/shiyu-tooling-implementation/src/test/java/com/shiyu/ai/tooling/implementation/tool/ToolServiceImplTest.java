@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,6 +22,15 @@ class ToolServiceImplTest {
     void setUp() {
         service = new ToolServiceImpl();
         service.init();
+    }
+
+    @Test
+    void customAndUnknownToolsRequireApprovalEvenWhenGraphCallsThemNormal() {
+        service.registerTool("external.write", "external action", Map.of(), args -> "done");
+
+        assertFalse(service.requiresApproval("CALCULATOR"));
+        assertTrue(service.requiresApproval("external.write"));
+        assertTrue(service.requiresApproval("missing-tool"));
     }
 
     @Test
@@ -200,5 +210,40 @@ class ToolServiceImplTest {
                 service.listToolDescriptors().stream().anyMatch(t -> t.getName().equals("CUSTOM")));
         service.unregisterTool("CUSTOM");
         assertNull(service.getToolDefinition("CUSTOM"));
+    }
+
+    @Test
+    void validatesDeclaredParameterFamiliesBeforeCallingCustomExecutors() {
+        Map<String, Object> accepted = Map.of(
+                "boolean", true,
+                "integer", 2L,
+                "number", 2.5D,
+                "object", Map.of("key", "value"),
+                "array", List.of("value"),
+                "any", new Object());
+        for (var entry : accepted.entrySet()) {
+            String tool = "TYPE_" + entry.getKey().toUpperCase();
+            service.registerTool(tool, "typed", Map.of("value",
+                    new ParameterInfo(entry.getKey(), "value", true)), p -> "called");
+            assertTrue(service.execute(tool, Map.of("value", entry.getValue())).success(),
+                    entry.getKey());
+            if (!entry.getKey().equals("any")) {
+                assertFalse(service.execute(tool, Map.of("value", new Object())).success(),
+                        entry.getKey());
+            }
+        }
+        assertTrue(service.execute("TYPE_ARRAY",
+                Map.of("value", new String[] {"value"})).success());
+        for (Object integer : List.of((byte) 1, (short) 1, 1,
+                java.math.BigInteger.ONE)) {
+            assertTrue(service.execute("TYPE_INTEGER", Map.of("value", integer)).success());
+        }
+        assertFalse(service.execute("TYPE_INTEGER", Map.of("value", 1.5D)).success());
+        service.registerTool("TYPE_UNTYPED", "legacy untyped parameter",
+                Map.of("value", new ParameterInfo(null, "value", true)), p -> "called");
+        service.registerTool("TYPE_BLANK", "legacy blank parameter",
+                Map.of("value", new ParameterInfo(" ", "value", true)), p -> "called");
+        assertTrue(service.execute("TYPE_UNTYPED", Map.of("value", new Object())).success());
+        assertTrue(service.execute("TYPE_BLANK", Map.of("value", new Object())).success());
     }
 }

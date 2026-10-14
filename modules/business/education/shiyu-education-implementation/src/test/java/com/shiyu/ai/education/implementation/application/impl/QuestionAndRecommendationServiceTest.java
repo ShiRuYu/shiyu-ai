@@ -40,9 +40,10 @@ class QuestionAndRecommendationServiceTest {
         QuestionBO question = new QuestionBO();
         question.setId(9L);
         question.setStatus(1);
+        question.setPurpose("PRACTICE");
         QuestionResponse response =
                 new QuestionResponse(
-                        9L, "q", "SINGLE", "math", 5, 2, null, "title", null, "A", null, null, 0L);
+                        9L, "q", "SINGLE", "PRACTICE", "math", 5, 2, null, "title", null, "A", null, null, 0L);
         QuestionRequest request = new QuestionRequest();
         request.setId(9L);
         request.setCode("q");
@@ -111,7 +112,7 @@ class QuestionAndRecommendationServiceTest {
                 .thenReturn(List.of(strong, medium, weak, unknown));
         QuestionResponse question =
                 new QuestionResponse(
-                        1L, "q", "SINGLE", "math", 5, 1, null, "title", null, "A", null, null, 0L);
+                        1L, "q", "SINGLE", "PRACTICE", "math", 5, 1, null, "title", null, "A", null, null, 0L);
         when(questions.listByDifficulty(ACTOR, 1)).thenReturn(List.of(question));
         when(questions.listByDifficulty(ACTOR, 2)).thenReturn(List.of(question));
         ReviewTaskResponse review =

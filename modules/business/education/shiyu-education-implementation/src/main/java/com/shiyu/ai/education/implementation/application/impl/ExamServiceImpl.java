@@ -1,12 +1,12 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.application.ExamService;
 import com.shiyu.ai.education.implementation.domain.model.ExamBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.ExamRepository;
 import com.shiyu.ai.education.implementation.web.dto.ExamResponse;
-import com.shiyu.ai.education.implementation.web.dto.SubmitAnswerRequest;
 import com.shiyu.ai.education.implementation.web.request.ExamRequest;
 import com.shiyu.ai.kernel.context.ActorContext;
 
@@ -86,19 +86,6 @@ public class ExamServiceImpl implements ExamService {
     }
 
     /**
-     * 执行 考试 相关业务数据，并返回处理结果。
-     *
-     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
-     * @param examId 用于定位exam的标识。
-     * @param request 封装本次操作所需业务字段的请求对象。
-     * @return 返回 考试 相关操作生成的结果数据。
-     */
-    @Override
-    public ExamResponse submit(ActorContext actor, Long examId, SubmitAnswerRequest request) {
-        return getById(actor, examId);
-    }
-
-    /**
      * 执行 考试 相关业务操作，并维护必要的状态和协作关系。
      *
      * @param class 用于完成本次业务处理的 class 参数。
@@ -114,7 +101,9 @@ public class ExamServiceImpl implements ExamService {
         bo.setTeacherId(request.getTeacherId());
         bo.setDurationMin(request.getDurationMin());
         bo.setTotalScore(request.getTotalScore());
-        bo.setStatus(request.getStatus() == null ? 1 : request.getStatus());
+        bo.setStatus(0);
+        bo.setStartTime(request.getStartTime());
+        bo.setEndTime(request.getEndTime());
         examRepository.insert(actor.tenantId(), bo);
         return MapstructUtils.convert(bo, ExamResponse.class);
     }
@@ -129,6 +118,9 @@ public class ExamServiceImpl implements ExamService {
     public void update(ActorContext actor, ExamRequest request) {
         ExamBO bo = examRepository.selectById(actor.tenantId(), request.getId());
         if (bo != null) {
+            if (!Integer.valueOf(0).equals(bo.getStatus())) {
+                throw new ServiceException("只能编辑草稿考试");
+            }
             bo.setName(request.getName());
             bo.setType(request.getType());
             bo.setSubjectCode(request.getSubjectCode());
@@ -136,7 +128,8 @@ public class ExamServiceImpl implements ExamService {
             bo.setTeacherId(request.getTeacherId());
             bo.setDurationMin(request.getDurationMin());
             bo.setTotalScore(request.getTotalScore());
-            if (request.getStatus() != null) bo.setStatus(request.getStatus());
+            bo.setStartTime(request.getStartTime());
+            bo.setEndTime(request.getEndTime());
             examRepository.update(actor.tenantId(), bo);
         }
     }
@@ -149,6 +142,10 @@ public class ExamServiceImpl implements ExamService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteById(ActorContext actor, Long id) {
+        ExamBO exam = examRepository.selectById(actor.tenantId(), id);
+        if (exam == null || !Integer.valueOf(0).equals(exam.getStatus())) {
+            throw new ServiceException("只能删除草稿考试");
+        }
         examRepository.deleteById(actor.tenantId(), id);
     }
 }

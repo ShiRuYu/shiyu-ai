@@ -13,6 +13,9 @@ import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -83,6 +86,9 @@ public class GenerationController {
      * @return 返回当前操作产生的结果。
      */
     @GetMapping(value = "/{id}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @ApiResponse(responseCode = "200", description = "Each SSE data event is a GenerationEvent",
+            content = @Content(mediaType = MediaType.TEXT_EVENT_STREAM_VALUE,
+                    schema = @Schema(implementation = GenerationEvent.class)))
     public Flux<ServerSentEvent<GenerationEvent>> stream(
             @PathVariable String id,
             @RequestParam(defaultValue = "-1") int afterSeq,
@@ -264,6 +270,7 @@ public class GenerationController {
                 switch (event.type()) {
                     case RUN_STARTED -> GenerationEventType.STARTED;
                     case MODEL_BLOCK_STARTED -> GenerationEventType.BLOCK_STARTED;
+                    case MODEL_DELTA -> GenerationEventType.DELTA;
                     case MODEL_REASONING_DELTA -> GenerationEventType.REASONING_DELTA;
                     case MODEL_TOOL_CALL_DELTA -> GenerationEventType.TOOL_CALL;
                     case MODEL_BLOCK_COMPLETED -> GenerationEventType.BLOCK_COMPLETED;
@@ -272,7 +279,20 @@ public class GenerationController {
                     case RUN_COMPLETED -> GenerationEventType.COMPLETED;
                     case RUN_CANCELLED -> GenerationEventType.CANCELLED;
                     case RUN_FAILED -> GenerationEventType.FAILED;
-                    default -> GenerationEventType.DELTA;
+                    case TURN_STARTED,
+                            TURN_COMPLETED,
+                            STEP_STARTED,
+                            STEP_COMPLETED,
+                            PROMPT_ASSEMBLED,
+                            RETRIEVAL_STARTED,
+                            RETRIEVAL_COMPLETED,
+                            MODEL_STARTED,
+                            TOOL_REQUESTED,
+                            TOOL_APPROVAL_REQUIRED,
+                            TOOL_APPROVAL_DECIDED,
+                            TOOL_COMPLETED,
+                            MEMORY_READ,
+                            MEMORY_WRITE -> GenerationEventType.METADATA;
                 };
         String generationId =
                 event.generationId() == null || event.generationId().isBlank()

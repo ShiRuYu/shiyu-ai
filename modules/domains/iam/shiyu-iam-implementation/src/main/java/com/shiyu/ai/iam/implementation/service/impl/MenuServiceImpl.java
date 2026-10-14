@@ -20,9 +20,11 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -192,12 +194,6 @@ public class MenuServiceImpl implements MenuService {
         return getAllTree(actor);
     }
 
-    private List<MenuBO> getMenuTree(ActorContext actor) {
-        log.info("获取权限树 - 菜单");
-        List<MenuBO> menus = menuRepository.selectAllByType(actor.tenantId(), "MENU");
-        return buildMenuTree(menus);
-    }
-
     private List<MenuBO> getAllTree(ActorContext actor) {
         log.info("获取权限树 all");
         List<MenuBO> allMenuBOs = menuRepository.selectAll(actor.tenantId());
@@ -268,7 +264,7 @@ public class MenuServiceImpl implements MenuService {
         }
         normalizeMenuType(menuBO);
         Long currentTenantId = actor.tenantId().value();
-        if (!isParentMenuInTenant(actor, menuBO.getParentId())) return false;
+        if (!isParentChainValid(actor, null, menuBO.getParentId())) return false;
         menuBO.setTenantId(currentTenantId);
         menuRepository.insert(menuBO);
         evictAllRouteMenuCache();
@@ -287,7 +283,7 @@ public class MenuServiceImpl implements MenuService {
         }
         normalizeMenuType(menuBO);
         Long currentTenantId = actor.tenantId().value();
-        if (!isParentMenuInTenant(actor, menuBO.getParentId())) {
+        if (!isParentChainValid(actor, id, menuBO.getParentId())) {
             return false;
         }
 
@@ -318,42 +314,6 @@ public class MenuServiceImpl implements MenuService {
     private List<MenuBO> getChildrenByParentId(ActorContext actor, Long parentId) {
         log.info("获取子菜单，parentIdPresent: {}", parentId != null);
         return menuRepository.selectByParentId(actor.tenantId(), parentId);
-    }
-
-    private List<MenuBO> getMenuTreeByUserId(ActorContext actor, Long userId) {
-        log.info("根据用户 ID 获取菜单树，userIdPresent: {}", userId != null);
-        // 复用单 JOIN 查询 + 建树
-        List<MenuBO> userMenus =
-                menuRepository.selectMenusByUserId(
-                        actor.tenantId(),
-                        userId,
-                        actor.activeRoleCode(),
-                        actor.parentSuperAdminSwitch(),
-                        null);
-        if (userMenus.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return buildMenuTree(userMenus);
-    }
-
-    private List<MenuBO> getMenusByUserIdAndType(ActorContext actor, Long userId, String type) {
-        log.info(
-                "根据用户 ID 和类型获取菜单树，userIdPresent: {}, typePresent: {}",
-                userId != null,
-                type != null);
-        List<MenuBO> userMenus =
-                menuRepository.selectMenusByUserId(
-                        actor.tenantId(),
-                        userId,
-                        actor.activeRoleCode(),
-                        actor.parentSuperAdminSwitch(),
-                        null);
-        if (userMenus.isEmpty()) {
-            return new ArrayList<>();
-        }
-        List<MenuBO> filtered =
-                userMenus.stream().filter(menu -> type.equals(menu.getType())).toList();
-        return buildMenuTree(filtered);
     }
 
     /**
@@ -426,7 +386,9 @@ public class MenuServiceImpl implements MenuService {
                 + ":"
                 + actor.activeRoleId()
                 + ":"
-                + actor.activeRoleCode();
+                + actor.activeRoleCode()
+                + ":"
+                + actor.parentSuperAdminSwitch();
     }
 
     /** 清除指定用户的路由菜单缓存 */
@@ -483,12 +445,20 @@ public class MenuServiceImpl implements MenuService {
         menuBO.setType(menuBO.getType().trim().toUpperCase(Locale.ROOT));
     }
 
-    private boolean isParentMenuInTenant(ActorContext actor, Long parentId) {
-        if (parentId == null) {
-            return true;
+    private boolean isParentChainValid(ActorContext actor, Long menuId, Long parentId) {
+        Set<Long> visited = new HashSet<>();
+        Long currentId = parentId;
+        while (currentId != null) {
+            if (Objects.equals(currentId, menuId) || !visited.add(currentId)) {
+                return false;
+            }
+            MenuBO parent = menuRepository.selectById(actor.tenantId(), currentId);
+            if (parent == null || !Objects.equals(actor.tenantId().value(), parent.getTenantId())) {
+                return false;
+            }
+            currentId = parent.getParentId();
         }
-        MenuBO parent = menuRepository.selectById(actor.tenantId(), parentId);
-        return parent != null && actor.tenantId().value() == parent.getTenantId();
+        return true;
     }
 
     private ActorContext requireActor(ActorContext actor) {

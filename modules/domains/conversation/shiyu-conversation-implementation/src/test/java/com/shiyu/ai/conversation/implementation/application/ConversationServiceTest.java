@@ -62,6 +62,21 @@ class ConversationServiceTest {
     }
 
     @Test
+    void branchReplyKeepsTheOtherActiveTurnSelected() {
+        Conversation conversation = conversation("c1", "m2", 3);
+        when(conversations.listMessages("c1", new TenantId(7), 8, 1000))
+                .thenReturn(List.of(message("m2", "c1", 2), message("m1", "c1", 1)));
+        when(conversations.updateConversation(any(Conversation.class), eq(3L))).thenReturn(1);
+
+        ConversationMessage reply = service.appendMessagePreservingLeaf(
+                conversation, "m1", MessageRole.ASSISTANT, "answer", null, Map.of());
+
+        assertEquals("m1", reply.parentMessageId());
+        verify(conversations).updateConversation(
+                argThat(updated -> "m2".equals(updated.activeLeafMessageId())), eq(3L));
+    }
+
+    @Test
     void generationRejectsWrongConversationInactiveLeafAndRunningDuplicate() {
         Conversation conversation = conversation("c1", "m1", 1);
         ConversationMessage wrong = message("m2", "other", 0);

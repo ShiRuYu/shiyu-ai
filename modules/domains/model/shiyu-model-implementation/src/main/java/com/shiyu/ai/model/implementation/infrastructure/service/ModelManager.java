@@ -3,6 +3,7 @@ package com.shiyu.ai.model.implementation.infrastructure.service;
 import com.shiyu.ai.model.implementation.infrastructure.port.ModelAdapter;
 
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.model.contract.api.ModelRoutingPort;
 import com.shiyu.ai.model.implementation.domain.model.AiModelBO;
 import com.shiyu.ai.model.implementation.domain.model.AiPlatformBO;
@@ -116,11 +117,13 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
 
         try {
             TenantId tenantId = configuredTenant();
-            List<AiPlatformBO> platforms = platformRepository.selectAllEnabled(tenantId);
+            List<AiPlatformBO> platforms = TenantScope.withTenant(tenantId,
+                    () -> platformRepository.selectAllEnabled(tenantId));
             if (platforms != null && !platforms.isEmpty()) {
                 for (AiPlatformBO platform : platforms) {
                     try {
-                        ModelAdapter adapter = createAdapterFromDb(tenantId, platform);
+                        ModelAdapter adapter = TenantScope.withTenant(tenantId,
+                                () -> createAdapterFromDb(tenantId, platform));
                         if (adapter != null) {
                             adapterMap.put(platform.getCode(), adapter);
                             log.info("从数据库注册适配器: {} ({})", platform.getCode(), platform.getName());
@@ -172,7 +175,8 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
         String baseUrl = platform.getBaseUrl();
         String apiKey = platform.getApiKey();
 
-        String externalApiKey = getExternalApiKey(code);
+        String externalApiKey = tenantId.equals(configuredTenant())
+                ? getExternalApiKey(code) : null;
         if (StringUtils.isNotBlank(externalApiKey)) {
             apiKey = externalApiKey;
             log.debug("平台 {} 使用外部配置 apiKey", code);
@@ -201,7 +205,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
             return new OllamaPlatformAdapter(baseUrl, defaultModelName, temperature, maxRetries);
         }
 
-        if ("DEEPSEEK".equals(code)) {
+        if ("DEEPSEEK".equals(code) && tenantId.equals(configuredTenant())) {
             deepSeekProvider =
                     new DeepSeekHttpProvider(
                             baseUrl,
@@ -310,6 +314,17 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
      * @return 处理结果。
      */
     public DeepSeekHttpProvider getDeepSeekProvider() {
+        TenantId scopedTenant = TenantScope.current().orElse(null);
+        if (scopedTenant != null && !scopedTenant.equals(configuredTenant())) {
+            AiPlatformBO platform = requireTenantPlatform(scopedTenant, "DEEPSEEK");
+            AiModelBO defaultModel = TenantScope.withTenant(scopedTenant,
+                    () -> modelRepository.selectDefaultByPlatformId(scopedTenant,
+                            platform.getId()));
+            String modelName = defaultModel == null ? platformProperties.getDeepseek().getModel()
+                    : defaultModel.getModelName();
+            return new DeepSeekHttpProvider(platform.getBaseUrl(), platform.getApiKey(),
+                    modelName);
+        }
         if (!initialized) {
             synchronized (this) {
                 if (!initialized) reloadFromDb();
@@ -432,6 +447,12 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
      * @return 返回 模型 相关操作生成的结果数据。
      */
     public ModelAdapter getAdapter(String platformType) {
+        TenantId scopedTenant = TenantScope.current().orElse(null);
+        if (scopedTenant != null && !scopedTenant.equals(configuredTenant())) {
+            return TenantScope.withTenant(scopedTenant,
+                    () -> createAdapterFromDb(scopedTenant,
+                            requireTenantPlatform(scopedTenant, platformType)));
+        }
         if (!initialized) {
             synchronized (this) {
                 if (!initialized) {
@@ -447,13 +468,29 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
+     * Reads a platform only from the authenticated tenant and rejects disabled entries.
+     *
+     * @param tenantId authenticated request tenant
+     * @param code platform code requested by the model call
+     * @return enabled platform owned by the request tenant
+     */
+    private AiPlatformBO requireTenantPlatform(TenantId tenantId, String code) {
+        AiPlatformBO platform = TenantScope.withTenant(tenantId,
+                () -> platformRepository.selectByCode(tenantId, code));
+        if (platform == null || !Integer.valueOf(1).equals(platform.getStatus())) {
+            throw new IllegalArgumentException("平台在当前租户不可用");
+        }
+        return platform;
+    }
+
+    /**
      * 校验或判断 模型 相关业务数据，并返回处理结果。
      *
      * @param platformType 用于完成本次业务处理的 platformType 参数。
      * @return 返回本次条件判断是否成立。
      */
     public boolean isPlatformAvailable(String platformType) {
-        ModelAdapter adapter = adapterMap.get(platformType);
+        ModelAdapter adapter = getAllAdapters().get(platformType);
         return adapter != null && adapter.isAvailable();
     }
 
@@ -463,7 +500,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
      * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<String> getAvailablePlatforms() {
-        return adapterMap.values().stream()
+        return getAllAdapters().values().stream()
                 .filter(ModelAdapter::isAvailable)
                 .map(ModelAdapter::getPlatformType)
                 .collect(Collectors.toList());
@@ -476,7 +513,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
      */
     @Override
     public List<ModelDescriptor> availableModels() {
-        return adapterMap.entrySet().stream()
+        return getAllAdapters().entrySet().stream()
                 .map(
                         entry ->
                                 new ModelDescriptor(
@@ -521,6 +558,19 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
      * @return 返回 模型 相关操作生成的结果数据。
      */
     public Map<String, ModelAdapter> getAllAdapters() {
+        TenantId scopedTenant = TenantScope.current().orElse(null);
+        if (scopedTenant != null && !scopedTenant.equals(configuredTenant())) {
+            return TenantScope.withTenant(scopedTenant, () -> {
+                Map<String, ModelAdapter> scopedAdapters = new ConcurrentHashMap<>();
+                for (AiPlatformBO platform : platformRepository.selectAllEnabled(scopedTenant)) {
+                    if (platform != null && StringUtils.isNotBlank(platform.getCode())) {
+                        scopedAdapters.put(platform.getCode(),
+                                createAdapterFromDb(scopedTenant, platform));
+                    }
+                }
+                return scopedAdapters;
+            });
+        }
         return new ConcurrentHashMap<>(adapterMap);
     }
 
@@ -531,7 +581,7 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
      * @return 返回 模型 相关操作生成的结果数据。
      */
     public String getDefaultModelName(String platformType) {
-        ModelAdapter adapter = adapterMap.get(platformType);
+        ModelAdapter adapter = getAllAdapters().get(platformType);
         return adapter != null ? adapter.getDefaultModelName() : null;
     }
 
@@ -551,7 +601,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
      */
     public String getDefaultPlatform() {
         try {
-            AiPlatformBO defaultPlatform = platformRepository.selectDefault(configuredTenant());
+            TenantId tenantId = TenantScope.current().orElseGet(this::configuredTenant);
+            AiPlatformBO defaultPlatform = TenantScope.withTenant(tenantId,
+                    () -> platformRepository.selectDefault(tenantId));
             if (defaultPlatform != null && StringUtils.isNotBlank(defaultPlatform.getCode())) {
                 return defaultPlatform.getCode();
             }
@@ -562,8 +614,9 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
                     e.getMessage() == null ? 0 : e.getMessage().length());
         }
 
-        if (!adapterMap.isEmpty()) {
-            return adapterMap.keySet().iterator().next();
+        Map<String, ModelAdapter> availableAdapters = getAllAdapters();
+        if (!availableAdapters.isEmpty()) {
+            return availableAdapters.keySet().iterator().next();
         }
 
         return "SILICON_FLOW";

@@ -44,7 +44,8 @@ def coverage(report: Path, source_root: Path, counter_type: str) -> float:
 def implementation_modules(root: Path) -> list[Path]:
     return sorted(
         module
-        for module in (root / "modules/domains").glob("*/implementation")
+        for area in ("domains", "business")
+        for module in (root / "modules" / area).glob("*/*-implementation")
         if (module / "src" / "main" / "java").is_dir()
     )
 
@@ -59,7 +60,10 @@ def main() -> int:
 
     failures: list[str] = []
     rows: list[tuple[str, float | None, float | None, str]] = []
-    for module in implementation_modules(args.root):
+    modules = implementation_modules(args.root)
+    if not modules:
+        failures.append("no implementation modules discovered")
+    for module in modules:
         report = module / "target" / "site" / "jacoco" / "jacoco.xml"
         name = module.relative_to(args.root).as_posix()
         if not report.is_file():

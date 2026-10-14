@@ -16,6 +16,11 @@ public interface ToolService {
      */
     ToolExecutionResult execute(String toolName, Map<String, Object> parameters);
 
+    /** External or unknown tools require approval unless an implementation proves them safe. */
+    default boolean requiresApproval(String toolName) {
+        return true;
+    }
+
     /**
      * 封装 工具 Execution 相关的不可变数据及其字段约束。
      */

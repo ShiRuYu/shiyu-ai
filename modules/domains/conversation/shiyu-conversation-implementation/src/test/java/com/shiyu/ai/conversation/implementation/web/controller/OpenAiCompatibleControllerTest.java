@@ -586,6 +586,34 @@ class OpenAiCompatibleControllerTest {
     }
 
     @Test
+    void storedCompletionLeavesRuntimeFinalizationToConversationService() {
+        Conversation conversation = mock(Conversation.class);
+        when(conversation.id()).thenReturn("c1");
+        when(repository.findConversation("c1", new TenantId(7), 8))
+                .thenReturn(Optional.of(conversation));
+        when(repository.listMessages("c1", new TenantId(7), 8, 1000))
+                .thenReturn(List.of());
+        ConversationMessage input = mock(ConversationMessage.class);
+        when(conversations.appendMessage(any(), any(), any(), anyString(), isNull(), isNull()))
+                .thenReturn(input);
+        when(engine.chat(any()))
+                .thenReturn(ChatResponse.builder().success(true).content("answer").build());
+
+        Object result = controller.chatCompletions(
+                new OpenAiCompatibleController.ChatCompletionRequest(
+                        "gpt", "OPENAI", List.of(Map.of("role", "user", "content", "hello")),
+                        false, true, null, 256, null, "c1", null));
+
+        assertTrue(((Map<?, ?>) result).containsKey("choices"));
+        verify(conversations).recordCompletedGeneration(
+                eq(conversation), eq(input), eq("answer"), eq("OPENAI"), eq("gpt"),
+                anyLong(), anyLong(), eq(runtime), eq(run));
+        verify(runtime, never()).recordUsage(anyString(), any(), anyLong(), anyLong(),
+                anyLong(), anyBoolean(), any());
+        verify(runtime, never()).finish(anyString(), any(), anyLong(), any(), any());
+    }
+
+    @Test
     void coversOpenAiEdgeMappingsAndUnsuccessfulStreamTermination() throws Exception {
         @SuppressWarnings("unchecked")
         List<ChatMessage> empty =

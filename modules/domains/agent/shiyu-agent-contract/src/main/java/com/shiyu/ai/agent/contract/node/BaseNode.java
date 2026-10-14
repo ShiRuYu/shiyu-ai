@@ -3,7 +3,7 @@ package com.shiyu.ai.agent.contract.node;
 import com.shiyu.ai.agent.contract.ExecutionHistoryService;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
@@ -99,6 +100,9 @@ public abstract class BaseNode {
                 }
                 try {
                     NodeOutput output = executeWithTimeout(input, timeoutMs);
+                    if (output == null || !output.isSuccess()) {
+                        throw new IllegalStateException("node returned an unsuccessful result");
+                    }
                     afterExecute(stateData, output);
 
                     if (executionHistoryService != null && executionId != null) {
@@ -108,6 +112,7 @@ public abstract class BaseNode {
                     return output.toMap();
 
                 } catch (Exception e) {
+                    if (e instanceof NodeApprovalRequiredException) throw e;
                     lastError = e;
                     log.warn(
                             "节点执行失败: nodeNameLength={}, attempt={}/{}, errorType={},"
@@ -132,6 +137,7 @@ public abstract class BaseNode {
             return fallback;
 
         } catch (Exception e) {
+            if (e instanceof NodeApprovalRequiredException) throw e;
             log.error(
                     "节点执行失败: nodeNameLength={}, errorType={}, errorMessageLength={}",
                     valueLength(config.getNodeName()),
@@ -157,10 +163,24 @@ public abstract class BaseNode {
         if (timeoutMs <= 0) {
             return doExecute(input);
         }
+        TenantId tenantId = TenantScope.current().orElse(null);
         ExecutorService executor = java.util.concurrent.Executors.newCachedThreadPool();
-        Future<NodeOutput> future = executor.submit(() -> doExecute(input));
+        Future<NodeOutput> future = executor.submit(() -> {
+            TenantId previous = TenantScope.current().orElse(null);
+            if (tenantId == null) TenantScope.clear();
+            else TenantScope.set(tenantId);
+            try {
+                return doExecute(input);
+            } finally {
+                if (previous == null) TenantScope.clear();
+                else TenantScope.set(previous);
+            }
+        });
         try {
             return future.get(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof NodeApprovalRequiredException required) throw required;
+            throw e;
         } catch (TimeoutException e) {
             future.cancel(true);
             throw new Exception("节点执行超时 (" + timeoutMs + "ms): " + config.getNodeName());
@@ -282,39 +302,7 @@ public abstract class BaseNode {
         return v != null ? v.toString() : null;
     }
 
-    private static Long getLong(Map<String, Object> data, NodeFields.FieldKey key) {
-        Object v = data.get(key.key());
-        if (v instanceof Number n) return n.longValue();
-        if (v instanceof String s) {
-            try {
-                return Long.parseLong(s);
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        return null;
-    }
-
     private static ActorContext actor(Map<String, Object> data) {
-        Long tenantId = getLong(data, "tenantId");
-        Long userId = getLong(data, NodeFields.FieldKey.USER_ID);
-        if (tenantId == null || tenantId <= 0) {
-            throw new IllegalStateException("tenant context is required");
-        }
-        if (userId == null || userId <= 0) {
-            throw new IllegalStateException("user context is required");
-        }
-        return new ActorContext(new TenantId(tenantId), new UserId(userId), false);
-    }
-
-    private static Long getLong(Map<String, Object> data, String key) {
-        Object value = data.get(key);
-        if (value instanceof Number number) return number.longValue();
-        if (value instanceof String text) {
-            try {
-                return Long.parseLong(text);
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        return null;
+        return NodeActorContext.require(data);
     }
 }

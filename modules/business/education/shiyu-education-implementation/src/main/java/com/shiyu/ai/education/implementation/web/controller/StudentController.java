@@ -1,6 +1,7 @@
 package com.shiyu.ai.education.implementation.web.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaCheckLogin;
 
 import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.common.foundation.api.Result;
@@ -30,6 +31,14 @@ public class StudentController {
      * 学生服务，表示当前对象中的对应属性。
      */
     private final StudentService studentService;
+
+    /** Returns the student belonging to the authenticated user in the active tenant. */
+    @SaCheckLogin
+    @GetMapping("/me")
+    public Result<StudentResponse> getMe() {
+        ActorContext current = actor();
+        return Result.success(studentService.getByUserId(current, current.userId().value()));
+    }
 
     /**
      * 查询 学生 相关业务数据，并返回处理结果。

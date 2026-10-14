@@ -3,6 +3,7 @@ package com.shiyu.ai.education.implementation.web.dto;
 import com.shiyu.ai.education.implementation.domain.model.ExamBO;
 
 import io.github.linpeilie.annotations.AutoMapper;
+import java.time.LocalDateTime;
 
 /**
  * 封装 考试 相关的不可变数据及其字段约束。
@@ -17,4 +18,6 @@ public record ExamResponse(
         Long teacherId,
         Integer durationMin,
         Integer totalScore,
-        Integer status) {}
+        Integer status,
+        LocalDateTime startTime,
+        LocalDateTime endTime) {}

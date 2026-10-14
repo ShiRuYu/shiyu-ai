@@ -1,7 +1,7 @@
 # API 接口参考
 
 > 本文档由 `scripts/docs/generate_reference_docs.py` 从 SpringDoc OpenAPI 自动生成。
-> 生成源：`../shiyu-ui/tests/contracts/shiyu-ai-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
+> 生成源：`E:\Dev\shiyu\.worktrees\fix-2026-10-05-ui\tests\contracts\shiyu-ai-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
 
 ## 契约约定
 
@@ -288,6 +288,12 @@
 | GET | `/api/governance/usage/overview` | 用量概览（所有类型） | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultMapStringObject |
 | GET | `/api/governance/usage/weekly` | 按周聚合（所有类型，按 usage_type 分组） | 登录态；细粒度权限见权限矩阵 | weeks[query,可选]:integer/int32 | 200=*/*:ResultListMapStringObject |
 
+### agent-conversation-controller
+
+| 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
+|---|---|---|---|---|---|
+| POST | `/api/conversation/conversations/{conversationId}/agent-executions` | execute | 登录态；细粒度权限见权限矩阵 | conversationId[path,必填]:string; body[必填]=application/json:Request | 200=text/event-stream:array<ServerSentEventMapStringObject> |
+
 ### ai-runtime-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
@@ -299,7 +305,7 @@
 | GET | `/api/agent/apps/{id}/versions` | versions | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultListAiAppVersion |
 | POST | `/api/agent/apps/{id}/versions` | version | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[必填]=application/json:VersionRequest | 200=*/*:ResultAiAppVersion |
 | POST | `/api/agent/apps/{id}/versions/{versionId}/archive` | archive_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; versionId[path,必填]:string | 200=*/*:ResultAiAppVersion |
-| POST | `/api/agent/apps/{id}/versions/{versionId}/publish` | publish_4 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; versionId[path,必填]:string | 200=*/*:ResultAiAppVersion |
+| POST | `/api/agent/apps/{id}/versions/{versionId}/publish` | publish_5 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; versionId[path,必填]:string | 200=*/*:ResultAiAppVersion |
 | GET | `/api/agent/generations/{generationId}/runtime-events` | generationEvents | 登录态；细粒度权限见权限矩阵 | generationId[path,必填]:string; afterSeq[query,可选]:integer/int64; follow[query,可选]:boolean; waitMs[query,可选]:integer/int32; Last-Event-ID[header,可选]:string | 200=text/event-stream:array<ServerSentEventAiRunEvent> |
 | GET | `/api/agent/runs` | runs | 登录态；细粒度权限见权限矩阵 | limit[query,可选]:integer/int32 | 200=*/*:ResultListAiRun |
 | POST | `/api/agent/runs` | startRun | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:RunRequest | 200=*/*:ResultAiRun |
@@ -395,12 +401,33 @@
 | GET | `/api/education/exam/{id}` | getById_10 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultExamResponse |
 | PUT | `/api/education/exam/{id}` | update_13 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:ExamRequest | 200=*/*:ResultVoid |
 
+### exam-publishing-controller
+
+| 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
+|---|---|---|---|---|---|
+| PUT | `/api/education/exam/{examId}/composition` | replaceComposition | 登录态；细粒度权限见权限矩阵 | examId[path,必填]:integer/int64; body[必填]=application/json:ExamCompositionRequest | 200=*/*:ResultVoid |
+| POST | `/api/education/exam/{examId}/publish` | publish_2 | 登录态；细粒度权限见权限矩阵 | examId[path,必填]:integer/int64 | 200=*/*:ResultVoid |
+
+### exam-taking-controller
+
+| 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
+|---|---|---|---|---|---|
+| GET | `/api/education/exam/attempts/{attemptId}` | result | 登录态；细粒度权限见权限矩阵 | attemptId[path,必填]:integer/int64 | 200=*/*:ResultExamResultResponse |
+| GET | `/api/education/exam/attempts/{attemptId}/draft` | draft | 登录态；细粒度权限见权限矩阵 | attemptId[path,必填]:integer/int64 | 200=*/*:ResultMapLongString |
+| PUT | `/api/education/exam/attempts/{attemptId}/draft` | saveDraft | 登录态；细粒度权限见权限矩阵 | attemptId[path,必填]:integer/int64; body[必填]=application/json:ExamSubmissionAnswer | 200=*/*:ResultVoid |
+| POST | `/api/education/exam/attempts/{attemptId}/submit` | submit_2 | 登录态；细粒度权限见权限矩阵 | attemptId[path,必填]:integer/int64; body[必填]=application/json:SubmitExamRequest | 200=*/*:ResultExamResultResponse |
+| GET | `/api/education/exam/available` | available | 登录态；细粒度权限见权限矩阵 | subjectCode[query,可选]:string; pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataExamResponse |
+| GET | `/api/education/exam/available-summary` | availableSummary | 登录态；细粒度权限见权限矩阵 | subjectCode[query,可选]:string; pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataExamSummaryResponse |
+| GET | `/api/education/exam/history` | history | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataExamSummaryResponse |
+| POST | `/api/education/exam/{examId}/attempts` | start | 登录态；细粒度权限见权限矩阵 | examId[path,必填]:integer/int64 | 200=*/*:ResultExamPaperResponse |
+| GET | `/api/education/exam/{examId}/paper` | paper | 登录态；细粒度权限见权限矩阵 | examId[path,必填]:integer/int64 | 200=*/*:ResultExamPaperResponse |
+
 ### generation-controller
 
 | 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
 |---|---|---|---|---|---|
 | POST | `/api/conversation/generations/{id}/cancel` | cancel_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultVoid |
-| GET | `/api/conversation/generations/{id}/events` | stream | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; afterSeq[query,可选]:integer/int32; follow[query,可选]:boolean; waitMs[query,可选]:integer/int32; Last-Event-ID[header,可选]:string | 200=text/event-stream:array<ServerSentEventGenerationEvent> |
+| GET | `/api/conversation/generations/{id}/events` | stream | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; afterSeq[query,可选]:integer/int32; follow[query,可选]:boolean; waitMs[query,可选]:integer/int32; Last-Event-ID[header,可选]:string | 200=text/event-stream:GenerationEvent |
 
 ### intent-def-controller
 
@@ -456,7 +483,7 @@
 | GET | `/api/conversation/prompts` | list_10 | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListPromptTemplate |
 | POST | `/api/conversation/prompts` | create_18 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:CreateRequest | 200=*/*:ResultPromptTemplate |
 | POST | `/api/conversation/prompts/preview` | preview | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:PreviewRequest | 200=*/*:ResultPromptPreview |
-| POST | `/api/conversation/prompts/{id}/publish` | publish_2 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultPromptTemplate |
+| POST | `/api/conversation/prompts/{id}/publish` | publish_3 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultPromptTemplate |
 
 ### question-controller
 
@@ -533,10 +560,33 @@
 |---|---|---|---|---|---|
 | GET | `/api/education/students` | list_4 | 登录态；细粒度权限见权限矩阵 | pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataStudentResponse |
 | POST | `/api/education/students` | create_11 | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudentRequest | 200=*/*:ResultStudentResponse |
+| GET | `/api/education/students/me` | getMe | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultStudentResponse |
 | GET | `/api/education/students/user` | getByUserId | 登录态；细粒度权限见权限矩阵 | userId[query,必填]:integer/int64 | 200=*/*:ResultStudentResponse |
 | DELETE | `/api/education/students/{id}` | delete_9 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultVoid |
 | GET | `/api/education/students/{id}` | getById_6 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultStudentResponse |
 | PUT | `/api/education/students/{id}` | update_9 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:StudentRequest | 200=*/*:ResultVoid |
+
+### student-learning-controller
+
+| 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
+|---|---|---|---|---|---|
+| GET | `/api/education/student-learning/courses` | courses | 登录态；细粒度权限见权限矩阵 | subjectCode[query,可选]:string; grade[query,可选]:integer/int32; pageNum[query,可选]:integer/int32; pageSize[query,可选]:integer/int32 | 200=*/*:ResultPageDataCourseResponse |
+| GET | `/api/education/student-learning/courses/{id}` | course | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultCourseDetailResponse |
+| GET | `/api/education/student-learning/questions` | questions | 登录态；细粒度权限见权限矩阵 | subjectCode[query,必填]:string; grade[query,可选]:integer/int32 | 200=*/*:ResultListPracticeQuestionResponse |
+| GET | `/api/education/student-learning/questions/{id}` | question | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64 | 200=*/*:ResultPracticeQuestionResponse |
+| POST | `/api/education/student-learning/questions/{id}/check` | check | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:PracticeCheckRequest | 200=*/*:ResultPracticeCheckResponse |
+| POST | `/api/education/student-learning/questions/{id}/submissions` | submit_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:integer/int64; body[必填]=application/json:PracticeSubmissionRequest | 200=*/*:ResultPracticeSubmissionResponse |
+| GET | `/api/education/student-learning/wrong-questions` | wrongQuestions | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListWrongPracticeResponse |
+
+### student-tutor-controller
+
+| 方法 | 路径 | 摘要 | 鉴权 | 请求 | 响应 |
+|---|---|---|---|---|---|
+| GET | `/api/education/student-tutor/knowledge` | knowledge | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListKnowledgeResponse |
+| POST | `/api/education/student-tutor/plan` | plan | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudentTutorRequest | 200=*/*:ResultStudentTutorResponse |
+| POST | `/api/education/student-tutor/practice` | practice | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudentTutorRequest | 200=*/*:ResultStudentTutorResponse |
+| POST | `/api/education/student-tutor/report` | report | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudentTutorRequest | 200=*/*:ResultStudentTutorResponse |
+| POST | `/api/education/student-tutor/teach` | teach | 登录态；细粒度权限见权限矩阵 | body[必填]=application/json:StudentTutorRequest | 200=*/*:ResultStudentTutorResponse |
 
 ### study-plan-controller
 
@@ -805,6 +855,7 @@
 | `CaseView` | object | - | expectedAnswer:string; expectedDocIds:string; id:integer/int64; question:string; spaceId:integer/int64 |
 | `ChangePasswordRequest` | object | newPassword, oldPassword | newPassword*:string; oldPassword*:string |
 | `ChannelObject` | object | - | default:-; reducer:ReducerObject |
+| `Chapter` | object | - | id:integer/int64; name:string; orderNo:integer/int32; sections:array<Section> |
 | `ChapterRequest` | object | name, textbookId | chapterOrder:integer/int32; id:integer/int64; name*:string; parentId:integer/int64; status:integer/int32; textbookId*:integer/int64 |
 | `ChapterResponse` | object | - | chapterOrder:integer/int32; children:array<ChapterResponse>; id:integer/int64; name:string; parentId:integer/int64; textbookId:integer/int64 |
 | `CharacterAsset` | object | - | card:CharacterCardV2; createdAt:string/date-time; id:string; ownerUserId:integer/int64; pngData:string/byte; tenantId:integer/int64; updatedAt:string/date-time; visibility:string |
@@ -824,6 +875,7 @@
 | `ContentPart` | object | - | mediaUri:string; metadata:object; mimeType:string; text:string; type:string |
 | `Conversation` | object | - | activeLeafMessageId:string; branchFromMessageId:string; createdAt:string/date-time; id:string; model:string; ownerUserId:integer/int64; parentConversationId:string; platform:string; rollingSummary:string; sceneType:string; status:string(ACTIVE,ARCHIVED,DELETED); tenantId:integer/int64; title:string; updatedAt:string/date-time; version:integer/int64 |
 | `ConversationMessage` | object | - | contentParts:array<ContentPart>; conversationId:string; createdAt:string/date-time; generationId:string; id:string; parentMessageId:string; role:string(SYSTEM,USER,ASSISTANT,TOOL); sequence:integer/int32; sourceMessageId:string; status:string(PENDING,STREAMING,COMPLETED,CANCELLED,FAILED,DELETED); toolCall:object; updatedAt:string/date-time |
+| `CourseDetailResponse` | object | - | chapters:array<Chapter>; course:CourseResponse |
 | `CourseRequest` | object | name | coverUrl:string; description:string; grade:integer/int32; id:integer/int64; name*:string; status:integer/int32; subjectCode:string; teacherId:integer/int64; textbookId:integer/int64; totalHours:integer/int32 |
 | `CourseResponse` | object | - | coverUrl:string; description:string; grade:integer/int32; id:integer/int64; name:string; status:integer/int32; subjectCode:string; teacherId:integer/int64; textbookId:integer/int64; totalHours:integer/int32 |
 | `CreateCaseRequest` | object | question | expectedAnswer:string; expectedDocIds:string; question*:string; spaceId:integer/int64 |
@@ -851,8 +903,19 @@
 | `EvalResult` | object | - | caseId:string; detail:string; metric:string(EXACT_MATCH,CONTAINS,JSON_SCHEMA,TOOL_CALL_SCHEMA,CITATION_COVERAGE,RETRIEVAL_HIT,TOKEN_BUDGET,COST_BUDGET); passed:boolean; score:number/double |
 | `EvalRun` | object | - | appVersionId:string; completedAt:string/date-time; createdAt:string/date-time; datasetId:string; id:string; metric:string(EXACT_MATCH,CONTAINS,JSON_SCHEMA,TOOL_CALL_SCHEMA,CITATION_COVERAGE,RETRIEVAL_HIT,TOKEN_BUDGET,COST_BUDGET); ownerUserId:integer/int64; passRate:number/double; results:array<EvalResult>; status:string; tenantId:integer/int64 |
 | `EventRequest` | object | - | attributes:object; confidence:number/double; confirmationPolicy:string(AUTO,REQUIRED,DISABLED); content:string; eventType:string; importance:number/double; namespace:string; occurredAt:string/date-time; sourceId:string; sourceType:string; subjectId:string; subjectType:string |
-| `ExamRequest` | object | durationMin, grade, name, subjectCode, totalScore, type | durationMin*:integer/int32; grade*:integer/int32; id:integer/int64; name*:string; status:integer/int32; subjectCode*:string; teacherId:integer/int64; totalScore*:integer/int32; type*:string |
-| `ExamResponse` | object | - | durationMin:integer/int32; grade:integer/int32; id:integer/int64; name:string; status:integer/int32; subjectCode:string; teacherId:integer/int64; totalScore:integer/int32; type:string |
+| `ExamCompositionQuestion` | object | questionId, score | questionId*:integer/int64; score*:number |
+| `ExamCompositionRequest` | object | sections | sections*:array<ExamCompositionSection> |
+| `ExamCompositionSection` | object | name, questions | name*:string; questions*:array<ExamCompositionQuestion> |
+| `ExamPaperOption` | object | - | label:string; value:string |
+| `ExamPaperQuestion` | object | - | id:integer/int64; options:array<ExamPaperOption>; questionId:integer/int64; score:number; title:string; type:string |
+| `ExamPaperResponse` | object | - | attemptId:integer/int64; deadlineAt:string/date-time; durationMin:integer/int32; examId:integer/int64; grade:integer/int32; name:string; sections:array<ExamPaperSection>; subjectCode:string; totalScore:integer/int32 |
+| `ExamPaperSection` | object | - | id:integer/int64; name:string; orderNo:integer/int32; questions:array<ExamPaperQuestion> |
+| `ExamQuestionResult` | object | - | analysis:string; answer:string; correctAnswer:string; maxScore:number; questionId:integer/int64; score:number; title:string |
+| `ExamRequest` | object | durationMin, grade, name, subjectCode, totalScore, type | durationMin*:integer/int32; endTime:string/date-time; grade*:integer/int32; id:integer/int64; name*:string; startTime:string/date-time; status:integer/int32; subjectCode*:string; teacherId:integer/int64; totalScore*:integer/int32; type*:string |
+| `ExamResponse` | object | - | durationMin:integer/int32; endTime:string/date-time; grade:integer/int32; id:integer/int64; name:string; startTime:string/date-time; status:integer/int32; subjectCode:string; teacherId:integer/int64; totalScore:integer/int32; type:string |
+| `ExamResultResponse` | object | - | attemptId:integer/int64; examId:integer/int64; questions:array<ExamQuestionResult>; score:number; status:string; submittedAt:string/date-time; totalScore:number |
+| `ExamSubmissionAnswer` | object | questionId | answer:string; questionId*:integer/int64 |
+| `ExamSummaryResponse` | object | - | attemptId:integer/int64; attemptStatus:string; deadlineAt:string/date-time; durationMin:integer/int32; examId:integer/int64; grade:integer/int32; name:string; score:number; subjectCode:string; totalScore:integer/int32; type:string |
 | `ExchangeRequest` | object | - | grant:string |
 | `ExecutionHistoryService` | - | - | - |
 | `FieldMeta` | object | - | defaultValue:-; description:string; key:string; label:string; options:object; required:boolean; source:DataSourceConfig; type:string |
@@ -860,6 +923,7 @@
 | `FilterCondition` | object | - | field:string; operator:string(EQ,NE,GT,GE,LT,LE,LIKE,IN,NOT_IN,IS_NULL,IS_NOT_NULL); value:- |
 | `ForgetPasswordRequest` | object | captchaKey, code, email, newPassword | captchaKey*:string; code*:string; email*:string/email; newPassword*:string |
 | `GenerateRequest` | object | - | format:string; prompt:string; provider:string |
+| `GenerationEvent` | object | - | createdAt:string/date-time; generationRunId:string; payload:string; sequence:integer/int32; type:string(STARTED,BLOCK_STARTED,DELTA,METADATA,REASONING_DELTA,TOOL_CALL,BLOCK_COMPLETED,USAGE,COMPLETED,FAILED,CANCELLED) |
 | `GenerationRun` | object | - | assistantMessageId:string; cancelRequested:boolean; completionTokens:integer/int64; conversationId:string; createdAt:string/date-time; errorCode:string; id:string; inputMessageId:string; lastEventSequence:integer/int32; latencyMs:integer/int64; model:string; platform:string; promptTokens:integer/int64; runtimeRunId:string; speakerId:string; status:string(CREATED,RUNNING,COMPLETED,CANCELLED,FAILED); updatedAt:string/date-time; version:integer/int64 |
 | `Graph` | object | - | channels:object; compiled:boolean; compiledGraph:CompiledGraphAgentState; conditionalEdges:object; description:string; edges:object; endNode:string; name:string; nodes:object; startNode:string |
 | `GraphConfigRequest` | object | - | conditionalEdges:object; description:string; edges:object; endNode:string; name:string; nodes:object; startNode:string |
@@ -926,6 +990,7 @@
 | `PageDataDictVO` | object | - | items:array<DictVO>; total:integer/int64 |
 | `PageDataDocumentView` | object | - | items:array<DocumentView>; total:integer/int64 |
 | `PageDataExamResponse` | object | - | items:array<ExamResponse>; total:integer/int64 |
+| `PageDataExamSummaryResponse` | object | - | items:array<ExamSummaryResponse>; total:integer/int64 |
 | `PageDataIntentDefVO` | object | - | items:array<IntentDefVO>; total:integer/int64 |
 | `PageDataJobView` | object | - | items:array<JobView>; total:integer/int64 |
 | `PageDataKnowledgeAuditResponse` | object | - | items:array<KnowledgeAuditResponse>; total:integer/int64 |
@@ -947,6 +1012,11 @@
 | `PluginInfoVO` | object | - | description:string; id:string; loadedAt:string; name:string; state:string; version:string |
 | `PluginMarketEntry` | object | - | checksum:string; enabled:boolean; id:string; manifest:string; permissions:array<string>; publishedAt:string/date-time; publisherKey:string; signature:string; source:string; updatePolicy:string; version:string |
 | `PointView` | object | - | category:string; code:string; description:string; difficultyLevel:integer/int32; id:integer/int64; name:string; spaceId:integer/int64; tags:string |
+| `PracticeCheckRequest` | object | answer | answer*:string |
+| `PracticeCheckResponse` | object | - | analysis:string; correct:boolean; correctAnswer:string; questionId:integer/int64 |
+| `PracticeQuestionResponse` | object | - | grade:integer/int32; id:integer/int64; options:array<ExamPaperOption>; subjectCode:string; title:string; type:string |
+| `PracticeSubmissionRequest` | object | answer, submissionKey | answer*:string; submissionKey*:string |
+| `PracticeSubmissionResponse` | object | - | analysis:string; correct:boolean; correctAnswer:string; questionId:integer/int64; recordId:integer/int64 |
 | `PredicateCondition` | object | - | predicate:-; target:string |
 | `Preview` | object | - | expiresAt:string/date-time; messages:array<ImportedMessage>; token:string |
 | `PreviewRequest` | object | - | template:string; variables:object |
@@ -962,8 +1032,8 @@
 | `PublishRequest` | object | - | version:integer/int32 |
 | `QueryRequest` | object | - | from:string/date-time; graphTypes:array<string(TEMPORAL,SEMANTIC,CAUSAL,ENTITY)>; intent:string(SEMANTIC,TEMPORAL,CAUSAL,ENTITY,HYBRID); maxDepth:integer/int32; maxNodes:integer/int32; maxTokens:integer/int32; namespace:string; subjectId:string; subjectType:string; text:string; to:string/date-time |
 | `QuestionRecommendResponse` | object | - | difficulty:integer/int32; knowledgeId:integer/int64; knowledgeName:string; questionId:integer/int64; reason:string; recommendType:string; score:integer/int32; title:string; type:string |
-| `QuestionRequest` | object | answer, difficulty, grade, subjectCode, title, type | abilityDimension:string; analysis:string; answer*:string; code:string; difficulty*:integer/int32; grade*:integer/int32; id:integer/int64; options:string; status:integer/int32; subjectCode*:string; tags:string; title*:string; type*:string |
-| `QuestionResponse` | object | - | abilityDimension:string; analysis:string; answer:string; code:string; difficulty:integer/int32; grade:integer/int32; id:integer/int64; options:string; subjectCode:string; tags:string; title:string; type:string; usedCount:integer/int64 |
+| `QuestionRequest` | object | answer, difficulty, grade, subjectCode, title, type | abilityDimension:string; analysis:string; answer*:string; code:string; difficulty*:integer/int32; grade*:integer/int32; id:integer/int64; options:string; purpose:string(PRACTICE,EXAM_PRIVATE); status:integer/int32; subjectCode*:string; tags:string; title*:string; type*:string |
+| `QuestionResponse` | object | - | abilityDimension:string; analysis:string; answer:string; code:string; difficulty:integer/int32; grade:integer/int32; id:integer/int64; options:string; purpose:string(PRACTICE,EXAM_PRIVATE); subjectCode:string; tags:string; title:string; type:string; usedCount:integer/int64 |
 | `RebuildRequest` | object | spaceId | spaceId*:integer/int64 |
 | `ReducerObject` | - | - | - |
 | `RefreshTokenRequest` | object | accessToken | accessToken*:string |
@@ -973,7 +1043,7 @@
 | `ReplaceDocumentRelationsRequest` | object | relations | relations*:array<DocumentRelationRequest> |
 | `ReplacePointsRequest` | object | pointIds | pointIds*:array<integer/int64>; relationType:string |
 | `ReplaceRequest` | object | documentIds | documentIds*:array<integer/int64>; relationType:string |
-| `Request` | object | - | argumentsRedacted:string; toolName:string |
+| `Request` | object | appId, prompt | appId*:string; appVersionId:string; prompt*:string; sourceMessageId:string |
 | `ResetPasswordRequest` | object | - | password:string |
 | `ResourceRecommendResponse` | object | - | knowledgeId:integer/int64; knowledgeName:string; reason:string; recommendType:string; resourceId:integer/int64; score:integer/int32; title:string; type:string |
 | `ResourceRequest` | object | name, type, url | coverUrl:string; description:string; difficulty:integer/int32; grade:integer/int32; id:integer/int64; name*:string; status:integer/int32; subjectCode:string; type*:string; url*:string |
@@ -1003,6 +1073,7 @@
 | `ResultCharacterAsset` | object | - | code:integer/int32; data:CharacterAsset; error:string; message:string; success:boolean |
 | `ResultConversation` | object | - | code:integer/int32; data:Conversation; error:string; message:string; success:boolean |
 | `ResultConversationMessage` | object | - | code:integer/int32; data:ConversationMessage; error:string; message:string; success:boolean |
+| `ResultCourseDetailResponse` | object | - | code:integer/int32; data:CourseDetailResponse; error:string; message:string; success:boolean |
 | `ResultCourseResponse` | object | - | code:integer/int32; data:CourseResponse; error:string; message:string; success:boolean |
 | `ResultDictVO` | object | - | code:integer/int32; data:DictVO; error:string; message:string; success:boolean |
 | `ResultDifficultyScaleView` | object | - | code:integer/int32; data:DifficultyScaleView; error:string; message:string; success:boolean |
@@ -1010,7 +1081,9 @@
 | `ResultEvalCase` | object | - | code:integer/int32; data:EvalCase; error:string; message:string; success:boolean |
 | `ResultEvalDataset` | object | - | code:integer/int32; data:EvalDataset; error:string; message:string; success:boolean |
 | `ResultEvalRun` | object | - | code:integer/int32; data:EvalRun; error:string; message:string; success:boolean |
+| `ResultExamPaperResponse` | object | - | code:integer/int32; data:ExamPaperResponse; error:string; message:string; success:boolean |
 | `ResultExamResponse` | object | - | code:integer/int32; data:ExamResponse; error:string; message:string; success:boolean |
+| `ResultExamResultResponse` | object | - | code:integer/int32; data:ExamResultResponse; error:string; message:string; success:boolean |
 | `ResultFileView` | object | - | code:integer/int32; data:FileView; error:string; message:string; success:boolean |
 | `ResultGenerationRun` | object | - | code:integer/int32; data:GenerationRun; error:string; message:string; success:boolean |
 | `ResultGraphValidationVO` | object | - | code:integer/int32; data:GraphValidationVO; error:string; message:string; success:boolean |
@@ -1047,6 +1120,7 @@
 | `ResultListGroupChatAsset` | object | - | code:integer/int32; data:array<GroupChatAsset>; error:string; message:string; success:boolean |
 | `ResultListIdNameOptionVO` | object | - | code:integer/int32; data:array<IdNameOptionVO>; error:string; message:string; success:boolean |
 | `ResultListKnowledgeRecommendResponse` | object | - | code:integer/int32; data:array<KnowledgeRecommendResponse>; error:string; message:string; success:boolean |
+| `ResultListKnowledgeResponse` | object | - | code:integer/int32; data:array<KnowledgeResponse>; error:string; message:string; success:boolean |
 | `ResultListLong` | object | - | code:integer/int32; data:array<integer/int64>; error:string; message:string; success:boolean |
 | `ResultListLorebookAsset` | object | - | code:integer/int32; data:array<LorebookAsset>; error:string; message:string; success:boolean |
 | `ResultListMapStringObject` | object | - | code:integer/int32; data:array<object>; error:string; message:string; success:boolean |
@@ -1060,6 +1134,7 @@
 | `ResultListPersonaAsset` | object | - | code:integer/int32; data:array<PersonaAsset>; error:string; message:string; success:boolean |
 | `ResultListPluginInfoVO` | object | - | code:integer/int32; data:array<PluginInfoVO>; error:string; message:string; success:boolean |
 | `ResultListPluginMarketEntry` | object | - | code:integer/int32; data:array<PluginMarketEntry>; error:string; message:string; success:boolean |
+| `ResultListPracticeQuestionResponse` | object | - | code:integer/int32; data:array<PracticeQuestionResponse>; error:string; message:string; success:boolean |
 | `ResultListPromptTemplate` | object | - | code:integer/int32; data:array<PromptTemplate>; error:string; message:string; success:boolean |
 | `ResultListPromptTemplateVersion` | object | - | code:integer/int32; data:array<PromptTemplateVersion>; error:string; message:string; success:boolean |
 | `ResultListQuestionRecommendResponse` | object | - | code:integer/int32; data:array<QuestionRecommendResponse>; error:string; message:string; success:boolean |
@@ -1083,10 +1158,12 @@
 | `ResultListUserTenantAssignmentVO` | object | - | code:integer/int32; data:array<UserTenantAssignmentVO>; error:string; message:string; success:boolean |
 | `ResultListVersionView` | object | - | code:integer/int32; data:array<VersionView>; error:string; message:string; success:boolean |
 | `ResultListWeakPointResponse` | object | - | code:integer/int32; data:array<WeakPointResponse>; error:string; message:string; success:boolean |
+| `ResultListWrongPracticeResponse` | object | - | code:integer/int32; data:array<WrongPracticeResponse>; error:string; message:string; success:boolean |
 | `ResultListWrongQuestionResponse` | object | - | code:integer/int32; data:array<WrongQuestionResponse>; error:string; message:string; success:boolean |
 | `ResultLoginResponseVO` | object | - | code:integer/int32; data:LoginResponseVO; error:string; message:string; success:boolean |
 | `ResultLong` | object | - | code:integer/int32; data:integer/int64; error:string; message:string; success:boolean |
 | `ResultLorebookAsset` | object | - | code:integer/int32; data:LorebookAsset; error:string; message:string; success:boolean |
+| `ResultMapLongString` | object | - | code:integer/int32; data:object; error:string; message:string; success:boolean |
 | `ResultMapStringObject` | object | - | code:integer/int32; data:object; error:string; message:string; success:boolean |
 | `ResultMapStringString` | object | - | code:integer/int32; data:object; error:string; message:string; success:boolean |
 | `ResultMcpToolDescriptor` | object | - | code:integer/int32; data:McpToolDescriptor; error:string; message:string; success:boolean |
@@ -1107,6 +1184,7 @@
 | `ResultPageDataDictVO` | object | - | code:integer/int32; data:PageDataDictVO; error:string; message:string; success:boolean |
 | `ResultPageDataDocumentView` | object | - | code:integer/int32; data:PageDataDocumentView; error:string; message:string; success:boolean |
 | `ResultPageDataExamResponse` | object | - | code:integer/int32; data:PageDataExamResponse; error:string; message:string; success:boolean |
+| `ResultPageDataExamSummaryResponse` | object | - | code:integer/int32; data:PageDataExamSummaryResponse; error:string; message:string; success:boolean |
 | `ResultPageDataIntentDefVO` | object | - | code:integer/int32; data:PageDataIntentDefVO; error:string; message:string; success:boolean |
 | `ResultPageDataJobView` | object | - | code:integer/int32; data:PageDataJobView; error:string; message:string; success:boolean |
 | `ResultPageDataKnowledgeAuditResponse` | object | - | code:integer/int32; data:PageDataKnowledgeAuditResponse; error:string; message:string; success:boolean |
@@ -1124,6 +1202,9 @@
 | `ResultPersonaAsset` | object | - | code:integer/int32; data:PersonaAsset; error:string; message:string; success:boolean |
 | `ResultPluginMarketEntry` | object | - | code:integer/int32; data:PluginMarketEntry; error:string; message:string; success:boolean |
 | `ResultPointView` | object | - | code:integer/int32; data:PointView; error:string; message:string; success:boolean |
+| `ResultPracticeCheckResponse` | object | - | code:integer/int32; data:PracticeCheckResponse; error:string; message:string; success:boolean |
+| `ResultPracticeQuestionResponse` | object | - | code:integer/int32; data:PracticeQuestionResponse; error:string; message:string; success:boolean |
+| `ResultPracticeSubmissionResponse` | object | - | code:integer/int32; data:PracticeSubmissionResponse; error:string; message:string; success:boolean |
 | `ResultPreview` | object | - | code:integer/int32; data:Preview; error:string; message:string; success:boolean |
 | `ResultPromptDiff` | object | - | code:integer/int32; data:PromptDiff; error:string; message:string; success:boolean |
 | `ResultPromptPreview` | object | - | code:integer/int32; data:PromptPreview; error:string; message:string; success:boolean |
@@ -1142,6 +1223,7 @@
 | `ResultSpaceView` | object | - | code:integer/int32; data:SpaceView; error:string; message:string; success:boolean |
 | `ResultString` | object | - | code:integer/int32; data:string; error:string; message:string; success:boolean |
 | `ResultStudentResponse` | object | - | code:integer/int32; data:StudentResponse; error:string; message:string; success:boolean |
+| `ResultStudentTutorResponse` | object | - | code:integer/int32; data:StudentTutorResponse; error:string; message:string; success:boolean |
 | `ResultStudyPlanResponse` | object | - | code:integer/int32; data:StudyPlanResponse; error:string; message:string; success:boolean |
 | `ResultStudyRecordResponse` | object | - | code:integer/int32; data:StudyRecordResponse; error:string; message:string; success:boolean |
 | `ResultSubjectResponse` | object | - | code:integer/int32; data:SubjectResponse; error:string; message:string; success:boolean |
@@ -1172,8 +1254,9 @@
 | `SearchRequest` | object | query, spaceId | mode:string; query*:string; rerank:boolean; spaceId*:integer/int64; threshold:number/double; topK:integer/int32 |
 | `SearchResponse` | object | - | hits:array<HybridHit>; mode:string; spaceId:integer/int64 |
 | `SecretChange` | object | - | action:string; value:string |
+| `Section` | object | - | durationMin:integer/int32; id:integer/int64; name:string; orderNo:integer/int32 |
 | `ServerSentEventAiRunEvent` | - | - | - |
-| `ServerSentEventGenerationEvent` | - | - | - |
+| `ServerSentEventMapStringObject` | - | - | - |
 | `SessionResponse` | object | - | authenticated:boolean; csrfToken:string |
 | `SetTimezoneRequest` | object | timezone | timezone*:string |
 | `SpaceView` | object | - | accessMode:string; activeIndexVersion:integer/int64; bindingMode:string; chunkOverlap:integer/int32; chunkSize:integer/int32; chunkStrategy:string; code:string; createTime:string/date-time; description:string; difficultyScaleId:integer/int64; domainCode:string; embeddingProfile:string; id:integer/int64; name:string; rerankProfile:string; reviewMode:string; status:integer/int32; updateTime:string/date-time |
@@ -1181,12 +1264,15 @@
 | `StateSerializerAgentState` | - | - | - |
 | `StudentRequest` | object | grade, name, userId | className:string; grade*:integer/int32; gradeLevel:string; id:integer/int64; name*:string; school:string; status:integer/int32; studentNo:string; userId*:integer/int64 |
 | `StudentResponse` | object | - | className:string; gender:integer/int32; grade:integer/int32; gradeLevel:string; id:integer/int64; name:string; school:string; studentNo:string; userId:integer/int64 |
+| `StudentTutorRequest` | object | - | count:integer/int32; difficulty:integer/int32; knowledgeId:integer/int64; period:string; style:string; targetDate:string |
+| `StudentTutorResponse` | object | - | averageScore:number/double; content:string; insufficientData:boolean; knowledgeId:integer/int64; knowledgeName:string; period:string; recordCount:integer/int32 |
 | `StudyPlanRequest` | object | studentId | endDate:string/date; id:integer/int64; name:string; startDate:string/date; status:string; studentId*:integer/int64 |
 | `StudyPlanResponse` | object | - | completedItems:integer/int32; endDate:string; id:integer/int64; items:array<DailyTaskResponse>; name:string; startDate:string; status:integer/int32; statusDesc:string; studentId:integer/int64; totalItems:integer/int32 |
 | `StudyRecordRequest` | object | knowledgeId, recordType, studentId | accuracy:number/double; durationSec:integer/int32; id:integer/int64; knowledgeId*:integer/int64; questionId:integer/int64; recordType*:string; score:number/double; studentId*:integer/int64 |
 | `StudyRecordResponse` | object | - | accuracy:number/double; createTime:string/date-time; durationSec:integer/int32; id:integer/int64; knowledgeId:integer/int64; questionId:integer/int64; recordType:string; score:number/double; studentId:integer/int64 |
 | `SubjectRequest` | object | code, name | code*:string; description:string; gradeLevel:string; icon:string; id:integer/int64; name*:string; sortOrder:integer/int32; status:integer/int32 |
 | `SubjectResponse` | object | - | code:string; gradeLevel:string; icon:string; id:integer/int64; name:string; sortOrder:integer/int32 |
+| `SubmitExamRequest` | object | answers | answers*:array<ExamSubmissionAnswer> |
 | `SwitchContextResponse` | object | - | tenants:array<TenantInfoVO>; userInfo:UserVO |
 | `SwitchRoleRequest` | object | roleId | roleId*:integer/int64 |
 | `SwitchTenantRequest` | object | tenantId | tenantId*:integer/int64 |
@@ -1225,6 +1311,7 @@
 | `VersionView` | object | - | checksum:string; createTime:string/date-time; documentId:integer/int64; fileSize:integer/int64; id:integer/int64; lifecycleStatus:string; mimeType:string; modelProfile:string; objectKey:string; parseStatus:string; publishedAt:string/date-time; spaceId:integer/int64; title:string; versionNo:integer/int32 |
 | `VisionResult` | object | - | labels:array<string>; text:string |
 | `WeakPointResponse` | object | - | knowledgeId:integer/int64; knowledgeName:string; mastery:number/double |
+| `WrongPracticeResponse` | object | - | correctTimes:integer/int32; id:integer/int64; lastAnswer:string; questionId:integer/int64; title:string |
 | `WrongQuestionRequest` | object | questionId, studentId | correctTimes:integer/int32; id:integer/int64; knowledgeId:integer/int64; questionId*:integer/int64; status:integer/int32; studentAnswer:string; studentId*:integer/int64 |
 | `WrongQuestionResponse` | object | - | correctAnswer:string; correctTimes:integer/int32; id:integer/int64; knowledgeId:integer/int64; questionId:integer/int64; questionTitle:string; studentAnswer:string; studentId:integer/int64 |
 

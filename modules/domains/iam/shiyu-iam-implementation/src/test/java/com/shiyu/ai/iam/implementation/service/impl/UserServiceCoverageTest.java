@@ -32,6 +32,73 @@ class UserServiceCoverageTest {
             new ActorContext(new TenantId(7), new UserId(11), false);
 
     @Test
+    void userDetailOmitsDisabledAndForeignRolesFromCurrentTenant() {
+        UserRepository users = mock(UserRepository.class);
+        UserScopeRoleRepository assignments = mock(UserScopeRoleRepository.class);
+        UserServiceImpl service = new UserServiceImpl(
+                users, mock(RoleRepository.class), assignments, mock(TenantRepository.class),
+                mock(TenantRoleRepository.class), mock(MenuService.class));
+        UserBO user = user(11L, "member");
+        user.setExtInfo("{\"currentRole\":{\"roleId\":31}}");
+        RoleBO active = role(30L, 7L, "member");
+        RoleBO foreign = role(31L, 9L, "tenant_super");
+        RoleBO disabled = role(32L, 7L, "manager");
+        disabled.setStatus(0);
+        RoleBO deleted = role(33L, 7L, "auditor");
+        deleted.setDelFlag(1);
+        RoleBO unknownStatus = role(34L, 7L, "editor");
+        unknownStatus.setStatus(null);
+        when(users.isUserInScope(11L, new TenantId(7L))).thenReturn(true);
+        when(users.selectById(11L)).thenReturn(user);
+        when(assignments.selectByUserId(11L)).thenReturn(List.of(
+                assignment(11L, 30L, 7L, 1, 0),
+                assignment(11L, 31L, 7L, 1, 0),
+                assignment(11L, 32L, 7L, 1, 0),
+                assignment(11L, 33L, 7L, 1, 0),
+                assignment(11L, 34L, 7L, 1, 0)));
+        when(users.selectRolesByUserId(11L))
+                .thenReturn(List.of(active, foreign, disabled, deleted, unknownStatus));
+        try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
+            mapper.when(() -> MapstructUtils.convert(any(UserBO.class), eq(UserVO.class)))
+                    .thenReturn(new UserVO());
+            assertNotNull(service.detailView(ACTOR, 11L));
+        }
+        assertEquals(List.of(active), user.getRoles());
+        assertEquals(List.of(30L), user.getRoleIds());
+        assertSame(active, user.getCurrentRole());
+    }
+
+    @Test
+    void staleDelegatedMarkerCannotGrantTenantSuperRoleInUserDetail() {
+        UserRepository users = mock(UserRepository.class);
+        UserScopeRoleRepository assignments = mock(UserScopeRoleRepository.class);
+        TenantRoleRepository tenantRoles = mock(TenantRoleRepository.class);
+        UserServiceImpl service = new UserServiceImpl(
+                users, mock(RoleRepository.class), assignments, mock(TenantRepository.class),
+                tenantRoles, mock(MenuService.class));
+        ActorContext actor = new ActorContext(new TenantId(20L), new UserId(31L), false);
+        UserBO member = user(31L, "member");
+        member.setExtInfo("{\"homeTenantId\":10,\"currentTenantId\":20,"
+                + "\"switchMode\":\"PARENT_SUPER_ADMIN\","
+                + "\"currentRole\":{\"roleId\":90,\"roleKey\":\"tenant_super\"}}");
+        RoleBO ordinary = role(30L, 20L, "member");
+        when(users.isUserInScope(31L, new TenantId(20L))).thenReturn(true);
+        when(users.selectById(31L)).thenReturn(member);
+        when(users.selectRolesByUserId(31L)).thenReturn(List.of(ordinary));
+        when(assignments.selectByUserId(31L))
+                .thenReturn(List.of(assignment(31L, 30L, 20L, 1, 0)));
+        when(tenantRoles.selectTenantSuperRole(new TenantId(20L)))
+                .thenReturn(role(99L, 20L, "tenant_super"));
+        try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
+            mapper.when(() -> MapstructUtils.convert(any(UserBO.class), eq(UserVO.class)))
+                    .thenReturn(new UserVO());
+            assertNotNull(service.detailView(actor, 31L));
+        }
+        assertEquals(List.of(ordinary), member.getRoles());
+        verify(tenantRoles, never()).selectTenantSuperRole(new TenantId(20L));
+    }
+
+    @Test
     void coversTenantScopedDetailsListsCreateUpdateAndDeletion() {
         UserRepository users = mock(UserRepository.class);
         RoleRepository roles = mock(RoleRepository.class);
@@ -154,6 +221,8 @@ class UserServiceCoverageTest {
                     .thenReturn(vo);
             assertNotNull(service.detailView(parent, 20L));
         }
+        assertNull(user.getCurrentRole());
+        verify(tenantRoles, never()).selectTenantSuperRole(new TenantId(7L));
         assertFalse(service.replaceTenantAssignments(ACTOR, 99L, List.of()));
     }
 
@@ -394,6 +463,15 @@ class UserServiceCoverageTest {
         when(assignments.selectByUserId(90L)).thenReturn(List.of());
         assertTrue(service.getTenantAssignments(delegated, 90L).isEmpty());
 
+        ActorContext delegatedSelf = new ActorContext(
+                new TenantId(7L), new UserId(11L), null, null,
+                new TenantId(1L), "PARENT_SUPER_ADMIN", false);
+        when(users.isUserInScope(11L, new TenantId(7L))).thenReturn(false);
+        when(users.isUserInScope(11L, new TenantId(1L))).thenReturn(true);
+        when(assignments.selectByUserId(11L)).thenReturn(List.of());
+        assertTrue(service.getTenantAssignments(delegatedSelf, 11L).isEmpty());
+        verify(tenants).selectDescendantIds(new TenantId(7L));
+
         ActorContext noHome =
                 new ActorContext(
                         new TenantId(7L),
@@ -449,6 +527,7 @@ class UserServiceCoverageTest {
         }
 
         when(users.update(any(UserBO.class))).thenReturn(false);
+        when(roles.isRoleOwnedByTenant(30L, new TenantId(7L))).thenReturn(true);
         UserRequest conflictRequest = new UserRequest();
         UserBO conflictPatch = user(null, "conflict");
         try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
@@ -560,27 +639,36 @@ class UserServiceCoverageTest {
         ActorContext delegated =
                 new ActorContext(
                         new TenantId(7),
-                        new UserId(11),
+                        new UserId(61),
                         null,
                         "tenant_super",
-                        new TenantId(7),
+                        new TenantId(1),
                         "PARENT_SUPER_ADMIN",
                         true);
         UserBO delegatedUser = user(61L, "delegated");
-        delegatedUser.setExtInfo("{\"switchMode\":\"PARENT_SUPER_ADMIN\"}");
+        delegatedUser.setExtInfo(
+                "{\"homeTenantId\":1,\"currentTenantId\":7,\"switchMode\":\"PARENT_SUPER_ADMIN\"}");
         RoleBO superRole = role(99L, 7L, "super");
-        when(users.isUserInScope(61L, new TenantId(7L))).thenReturn(true);
+        when(users.isUserInScope(61L, new TenantId(7L))).thenReturn(false);
         when(users.selectById(61L)).thenReturn(delegatedUser);
-        when(assignments.selectByUserId(61L)).thenReturn(List.of());
+        when(assignments.selectByUserId(61L))
+                .thenReturn(List.of(assignment(61L, 70L, 1L, 1, 0)));
+        when(tenants.selectDescendantIds(new TenantId(1L))).thenReturn(List.of(1L, 7L));
+        when(tenantRoles.selectRoleById(70L)).thenReturn(role(70L, 1L, "tenant_super"));
         when(tenantRoles.selectTenantSuperRole(new TenantId(7L))).thenReturn(superRole);
         try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
-            mapper.when(() -> MapstructUtils.convert(superRole, RoleBO.class))
-                    .thenReturn(superRole);
             mapper.when(() -> MapstructUtils.convert(any(UserBO.class), eq(UserVO.class)))
                     .thenReturn(new UserVO());
             assertNotNull(service.detailView(delegated, 61L));
         }
         assertEquals("super", delegatedUser.getCurrentRole().getCode());
+        superRole.setStatus(0);
+        when(users.selectRolesByUserId(61L)).thenReturn(List.of());
+        try (MockedStatic<MapstructUtils> mapper = mockStatic(MapstructUtils.class)) {
+            mapper.when(() -> MapstructUtils.convert(any(UserBO.class), eq(UserVO.class)))
+                    .thenReturn(new UserVO());
+            assertNull(service.detailView(delegated, 61L));
+        }
 
         TenantBO active = tenant(7L, 1, null);
         TenantBO deleted = tenant(10L, 1, 1);
@@ -594,7 +682,7 @@ class UserServiceCoverageTest {
         when(assignments.selectByUserId(70L))
                 .thenReturn(
                         List.of(
-                                assignment(70L, 30L, 7L, null, null),
+                                assignment(70L, 30L, 7L, 1, null),
                                 assignment(70L, 31L, 8L, 1, 0),
                                 assignment(70L, 32L, 9L, 1, 0),
                                 assignment(70L, 33L, 10L, 1, 0),
@@ -666,5 +754,49 @@ class UserServiceCoverageTest {
         value.setStatus(status);
         value.setDelFlag(delFlag);
         return value;
+    }
+
+    @Test
+    void tenantAssignmentListOmitsInactiveAndMislinkedMemberships() {
+        UserRepository users = mock(UserRepository.class);
+        UserScopeRoleRepository assignments = mock(UserScopeRoleRepository.class);
+        TenantRepository tenants = mock(TenantRepository.class);
+        TenantRoleRepository tenantRoles = mock(TenantRoleRepository.class);
+        UserServiceImpl service = new UserServiceImpl(
+                users, mock(RoleRepository.class), assignments, tenants, tenantRoles,
+                mock(MenuService.class));
+        when(users.isUserInScope(80L, new TenantId(7L))).thenReturn(true);
+        when(tenants.selectDescendantIds(new TenantId(7L))).thenReturn(List.of(7L, 8L, 9L));
+        java.util.ArrayList<UserScopeRoleBO> grants = new java.util.ArrayList<>();
+        grants.add(null);
+        grants.add(assignment(80L, 30L, 7L, null, 0));
+        grants.add(assignment(80L, 30L, 7L, 1, 1));
+        grants.add(assignment(80L, 30L, 99L, 1, 0));
+        grants.add(assignment(80L, 31L, 7L, 1, 0));
+        grants.add(assignment(80L, 32L, 7L, 1, 0));
+        grants.add(assignment(80L, 33L, 8L, 1, 0));
+        grants.add(assignment(80L, 34L, 9L, 1, 0));
+        grants.add(assignment(80L, 30L, 7L, 1, 0));
+        when(assignments.selectByUserId(80L)).thenReturn(grants);
+        when(tenantRoles.selectTenantById(new TenantId(7L)))
+                .thenReturn(tenant(7L, 1, 0));
+        when(tenantRoles.selectTenantById(new TenantId(8L)))
+                .thenReturn(tenant(8L, 0, 0));
+        when(tenantRoles.selectTenantById(new TenantId(9L)))
+                .thenReturn(tenant(9L, 1, 0));
+        RoleBO foreign = role(31L, 9L, "foreign");
+        RoleBO deleted = role(32L, 7L, "deleted");
+        deleted.setDelFlag(1);
+        when(tenantRoles.selectRoleById(31L)).thenReturn(foreign);
+        when(tenantRoles.selectRoleById(32L)).thenReturn(deleted);
+        when(tenantRoles.selectRoleById(33L)).thenReturn(role(33L, 8L, "disabled-tenant"));
+        when(tenantRoles.selectRoleById(34L)).thenReturn(null);
+        when(tenantRoles.selectRoleById(30L)).thenReturn(role(30L, 7L, "member"));
+
+        var visible = service.getTenantAssignments(ACTOR, 80L);
+
+        assertEquals(1, visible.size());
+        assertEquals(7L, visible.get(0).getTenantId());
+        assertEquals(30L, visible.get(0).getRoleId());
     }
 }

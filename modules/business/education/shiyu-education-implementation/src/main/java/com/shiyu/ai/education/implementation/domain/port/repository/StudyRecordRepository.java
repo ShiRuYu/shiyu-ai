@@ -19,6 +19,15 @@ public interface StudyRecordRepository {
      */
     List<StudyRecordBO> selectByStudent(TenantId tenantId, Long studentId);
 
+    /** Finds a practice submission by its tenant, student and idempotency key. */
+    StudyRecordBO selectBySubmissionKey(TenantId tenantId, Long studentId, String key);
+
+    /** Reads a tenant-owned scored learning record. */
+    StudyRecordBO selectById(TenantId tenantId, Long id);
+
+    /** Atomically claims a trusted record for one ability update. */
+    int claimAnalysis(TenantId tenantId, Long studentId, Long id);
+
     /**
      * 根据条件查询并返回所需数据。
      *

@@ -27,6 +27,11 @@ public class StudentRepositoryImpl
     @Resource private StudentMapper studentMapper;
 
     @Override
+    public boolean lockForStudentWrite(TenantId tenantId, Long studentId) {
+        return studentMapper.lockForStudentWrite(tenantId.value(), studentId) != null;
+    }
+
+    @Override
     public StudentBO selectById(TenantId tenantId, Long id) {
         return MapstructUtils.convert(
                 studentMapper.selectOneByQuery(

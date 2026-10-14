@@ -8,9 +8,8 @@ import com.shiyu.ai.agent.contract.node.NodeInputParam;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
 import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
+import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 import com.shiyu.ai.kernel.context.ActorContext;
-import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -140,6 +139,13 @@ public class AgentCallNode extends BaseNode {
                             ? agentRuntime.execute(actor, targetAgentId, targetVersion, agentInput)
                             : agentRuntime.execute(actor, targetAgentId, agentInput);
 
+            if (execution == null || execution.getStatus() != ExecutionStatus.COMPLETED) {
+                NodeOutput failed = new NodeOutput();
+                failed.setSuccess(false);
+                failed.setMsg("目标 Agent 未成功完成");
+                return failed;
+            }
+
             Map<String, Object> result = execution.getOutput();
 
             // 5. 构建输出结果
@@ -173,20 +179,28 @@ public class AgentCallNode extends BaseNode {
 
     /** 获取目标 Agent ID */
     private String getTargetAgentId(NodeInput input) {
+        String configuredAgentId = config.getTargetAgentId();
+        if (configuredAgentId != null && !configuredAgentId.trim().isEmpty()) {
+            return configuredAgentId;
+        }
         String targetAgentId = input.getParameter(FieldKey.TARGET_AGENT_ID.key());
         if (targetAgentId != null && !targetAgentId.trim().isEmpty()) {
             return targetAgentId;
         }
-        return config.getTargetAgentId();
+        return configuredAgentId;
     }
 
     /** 获取目标版本 */
     private String getTargetVersion(NodeInput input) {
+        String configuredVersion = config.getTargetVersion();
+        if (configuredVersion != null && !configuredVersion.trim().isEmpty()) {
+            return configuredVersion;
+        }
         String targetVersion = input.getParameter(FieldKey.TARGET_VERSION.key());
         if (targetVersion != null && !targetVersion.trim().isEmpty()) {
             return targetVersion;
         }
-        return config.getTargetVersion();
+        return configuredVersion;
     }
 
     /** 准备目标 Agent 的输入参数 */
@@ -217,16 +231,7 @@ public class AgentCallNode extends BaseNode {
     }
 
     private ActorContext actor(NodeInput input) {
-        Object tenantValue = input.getParameter("tenantId");
-        Object userValue = input.getParameter("userId");
-        if (!(tenantValue instanceof Number tenant) || tenant.longValue() <= 0) {
-            throw new IllegalStateException("tenant context is required");
-        }
-        if (!(userValue instanceof Number user) || user.longValue() <= 0) {
-            throw new IllegalStateException("user context is required");
-        }
-        return new ActorContext(
-                new TenantId(tenant.longValue()), new UserId(user.longValue()), false);
+        return NodeActorContext.require(input.toMap());
     }
 
     /**

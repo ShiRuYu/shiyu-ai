@@ -57,6 +57,20 @@ public class SaTokenDaoImpl implements SaTokenDao {
     private final Cache<String, Object> localCache =
             Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.SECONDS).maximumSize(50000).build();
 
+    /** 缓存的登录标识与持久化 token 共用相同的到期时间。 */
+    private record CachedToken(String loginId, long expireTime) {
+        private boolean expired() {
+            return expireTime != Long.MAX_VALUE && expireTime <= System.currentTimeMillis();
+        }
+    }
+
+    /** 缓存会话仍遵循持久化会话的到期时间。 */
+    private record CachedSession(SaSession session, long expireTime) {
+        private boolean expired() {
+            return expireTime != Long.MAX_VALUE && expireTime <= System.currentTimeMillis();
+        }
+    }
+
     /** 反向索引缓存：token → userId 由于 token 已改为纯随机字符串，不再包含 userId，需要用此缓存快速查找 */
     private final Cache<String, Long> tokenToUserCache =
             Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).maximumSize(50000).build();
@@ -108,7 +122,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
         if (!key.startsWith(TOKEN_PREFIX)) return null;
 
         Object cached = localCache.getIfPresent(key);
-        if (cached instanceof String s) return s;
+        if (cached instanceof CachedToken token) {
+            if (!token.expired()) return token.loginId();
+            localCache.invalidate(key);
+        }
 
         Long userId = extractUserIdFromTokenKey(key);
         if (userId == null) return null;
@@ -129,8 +146,8 @@ public class SaTokenDaoImpl implements SaTokenDao {
         }
 
         String loginId = (String) entry.get("loginId");
-        if (loginId != null) {
-            localCache.put(key, loginId);
+        if (loginId != null && entry.get("expireTime") instanceof Number expiry) {
+            localCache.put(key, new CachedToken(loginId, expiry.longValue()));
         }
         return loginId;
     }
@@ -152,7 +169,8 @@ public class SaTokenDaoImpl implements SaTokenDao {
         // 建立反向索引：token → userId（供后续 get/delete/session 查询使用）
         tokenToUserCache.put(key, userId);
 
-        localCache.put(key, value);
+        long expireTime =
+                timeout > 0 ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE;
         UserLockManager.INSTANCE.executeWithLock(
                 userId,
                 () -> {
@@ -177,14 +195,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
                     Map<String, Object> entry = new LinkedHashMap<>();
                     entry.put("loginId", value);
-                    entry.put(
-                            "expireTime",
-                            timeout > 0
-                                    ? System.currentTimeMillis() + timeout * 1000
-                                    : Long.MAX_VALUE);
+                    entry.put("expireTime", expireTime);
                     tokens.put(tokenValue, entry);
 
                     saveExtInfo(userId, ext);
+                    localCache.put(key, new CachedToken(value, expireTime));
                 });
     }
 
@@ -221,7 +236,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
         entry.put("loginId", value);
         saveExtInfo(userId, ext);
-        localCache.put(key, value);
+        if (entry.get("expireTime") instanceof Number expiry) {
+            localCache.put(key, new CachedToken(value, expiry.longValue()));
+        } else {
+            localCache.invalidate(key);
+        }
     }
 
     /**
@@ -311,6 +330,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
                 "expireTime",
                 timeout > 0 ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE);
         saveExtInfo(userId, ext);
+        localCache.invalidate(key);
     }
 
     // ==================== Object 存储（仅内存 Caffeine） ====================
@@ -406,7 +426,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
     @Override
     public SaSession getSession(String sessionId) {
         Object cached = localCache.getIfPresent(sessionId);
-        if (cached instanceof SaSession ss) return ss;
+        if (cached instanceof CachedSession entry) {
+            if (!entry.expired()) return entry.session();
+            localCache.invalidate(sessionId);
+        }
 
         Long userId = extractUserIdFromSessionKey(sessionId);
         if (userId == null) return null;
@@ -433,8 +456,8 @@ public class SaTokenDaoImpl implements SaTokenDao {
         if (data == null) return null;
 
         SaSession session = deserializeSession(data);
-        if (session != null) {
-            localCache.put(sessionId, session);
+        if (session != null && entry.get("expireTime") instanceof Number expiry) {
+            localCache.put(sessionId, new CachedSession(session, expiry.longValue()));
         }
         return session;
     }
@@ -451,7 +474,8 @@ public class SaTokenDaoImpl implements SaTokenDao {
         Long userId = extractUserIdFromSessionKey(sessionId);
         if (userId == null) return;
 
-        localCache.put(sessionId, session);
+        long expireTime =
+                timeout > 0 ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE;
         UserLockManager.INSTANCE.executeWithLock(
                 userId,
                 () -> {
@@ -468,14 +492,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
                     Map<String, Object> entry = new LinkedHashMap<>();
                     entry.put("data", serializeSession(session));
-                    entry.put(
-                            "expireTime",
-                            timeout > 0
-                                    ? System.currentTimeMillis() + timeout * 1000
-                                    : Long.MAX_VALUE);
+                    entry.put("expireTime", expireTime);
                     sectionMap.put(valueKey, entry);
 
                     saveExtInfo(userId, ext);
+                    localCache.put(sessionId, new CachedSession(session, expireTime));
                 });
     }
 
@@ -504,7 +525,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
         entry.put("data", serializeSession(session));
         saveExtInfo(userId, ext);
-        localCache.put(sessionId, session);
+        if (entry.get("expireTime") instanceof Number expiry) {
+            localCache.put(sessionId, new CachedSession(session, expiry.longValue()));
+        } else {
+            localCache.invalidate(sessionId);
+        }
     }
 
     /**
@@ -585,6 +610,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
                 "expireTime",
                 timeout > 0 ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE);
         saveExtInfo(userId, ext);
+        localCache.invalidate(sessionId);
     }
 
     // ==================== 搜索 ====================
@@ -612,15 +638,19 @@ public class SaTokenDaoImpl implements SaTokenDao {
         Long cachedUserId = tokenToUserCache.getIfPresent(key);
         if (cachedUserId != null) return cachedUserId;
 
-        // 缓存未命中，遍历所有用户的 extInfo 查找（兜底）
+        // 缓存未命中时查询持久化 token，并重建反向索引。
         String tokenValue = key.substring(TOKEN_PREFIX.length());
-        return findUserIdByToken(tokenValue);
+        Long userId = findUserIdByToken(tokenValue);
+        if (userId != null) tokenToUserCache.put(key, userId);
+        return userId;
     }
 
     /** 从 token 字符串中解析 userId（缓存未命中时调用）。 */
     private Long findUserIdByToken(String tokenValue) {
         try {
-            return parseUserIdFromToken(tokenValue);
+            Long encodedUserId = parseUserIdFromToken(tokenValue);
+            if (encodedUserId != null) return encodedUserId;
+            return saTokenUserRepository.findUserIdByToken(tokenValue);
         } catch (Exception ignored) {
         }
         return null;
@@ -643,7 +673,9 @@ public class SaTokenDaoImpl implements SaTokenDao {
                 if (cached != null) return cached;
 
                 // 缓存未命中时从当前格式 token 中解析 userId
-                return parseUserIdFromToken(valueKey);
+                Long found = findUserIdByToken(valueKey);
+                if (found != null) tokenToUserCache.put(tokenKey, found);
+                return found;
             }
 
             return Long.parseLong(valueKey);

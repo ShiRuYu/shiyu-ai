@@ -11,6 +11,7 @@ import com.shiyu.ai.iam.implementation.service.AuthService;
 import com.shiyu.ai.iam.implementation.service.TenantService;
 import com.shiyu.ai.iam.implementation.vo.TenantVO;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
 
 import jakarta.validation.Valid;
@@ -98,9 +99,10 @@ public class TenantController {
                     .filter(t -> r.getCode() != null && r.getCode().equals(t.getCode()))
                     .findFirst()
                     .ifPresent(
-                            t ->
-                                    knowledgeSpaceService.initializeTenantDefaults(
-                                            new TenantId(t.getId())));
+                            t -> TenantScope.withTenant(new TenantId(t.getId()), () -> {
+                                knowledgeSpaceService.initializeTenantDefaults(new TenantId(t.getId()));
+                                return null;
+                            }));
             return Result.success();
         }
         return Result.fail("新增失败");

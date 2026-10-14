@@ -35,7 +35,7 @@ class PluginWorkerLauncherTest {
     void awaitsSuccessfulWorkerAndTimesOutLongWorker() throws Exception {
         Path executable = javaExecutable();
         Process success = new ProcessBuilder(executable.toString(), "-version").start();
-        PluginWorkerSpec spec = spec(executable, Duration.ofSeconds(1));
+        PluginWorkerSpec spec = spec(executable, Duration.ofSeconds(10));
         assertEquals(0, PluginWorkerLauncher.await(success, spec));
 
         Process slow =

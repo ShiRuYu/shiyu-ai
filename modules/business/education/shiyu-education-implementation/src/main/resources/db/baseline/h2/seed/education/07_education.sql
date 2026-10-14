@@ -12,10 +12,16 @@ INSERT INTO "PUBLIC"."EDU_STUDENT"
 VALUES (1, 2, 'DEMO-2026-001', '示例学生', 1, DATE '2013-05-18', 7, 'K2', '拾羽实验学校', '七年级一班', 'visual', 1, 1, 0, 'system', 'system');
 
 INSERT INTO "PUBLIC"."EDU_QUESTION"
-    ("ID", "CODE", "TYPE", "SUBJECT_CODE", "GRADE", "DIFFICULTY", "ABILITY_DIMENSION", "TITLE", "OPTIONS", "ANSWER", "ANALYSIS", "SOURCE", "TAGS", "STATUS", "TENANT_ID", "DEL_FLAG", "CREATE_BY", "UPDATE_BY")
-VALUES (1, 'MATH-7-ALG-001', 'CHOICE', 'MATH', 7, 2, 'apply',
+    ("ID", "CODE", "TYPE", "PURPOSE", "SUBJECT_CODE", "GRADE", "DIFFICULTY", "ABILITY_DIMENSION", "TITLE", "OPTIONS", "ANSWER", "ANALYSIS", "SOURCE", "TAGS", "STATUS", "TENANT_ID", "DEL_FLAG", "CREATE_BY", "UPDATE_BY")
+VALUES (1, 'MATH-7-ALG-001', 'CHOICE', 'EXAM_PRIVATE', 'MATH', 7, 2, 'apply',
         '若 2x + 5 = 17，则 x 的值为？', '["A. 5","B. 6","C. 7","D. 8"]', 'B',
         '移项得 2x = 12，因此 x = 6。', '七年级数学阶段测验', '["一元一次方程","基础运算"]', 1, 1, 0, 'system', 'system');
+
+INSERT INTO "PUBLIC"."EDU_QUESTION"
+    ("ID", "CODE", "TYPE", "PURPOSE", "SUBJECT_CODE", "GRADE", "DIFFICULTY", "ABILITY_DIMENSION", "TITLE", "OPTIONS", "ANSWER", "ANALYSIS", "SOURCE", "TAGS", "STATUS", "TENANT_ID", "DEL_FLAG", "CREATE_BY", "UPDATE_BY")
+VALUES (2, 'MATH-7-PRACTICE-001', 'CHOICE', 'PRACTICE', 'MATH', 7, 1, 'apply',
+        '3 + 4 的值为？', '["A. 6","B. 7","C. 8"]', 'B',
+        '3 加 4 等于 7。', '公开练习', '["基础运算"]', 1, 1, 0, 'system', 'system');
 
 INSERT INTO "PUBLIC"."EDU_EXAM"
     ("ID", "NAME", "TYPE", "SUBJECT_CODE", "GRADE", "DURATION_MIN", "TOTAL_SCORE", "STATUS", "TEACHER_ID", "START_TIME", "END_TIME", "TENANT_ID", "DEL_FLAG", "CREATE_BY", "UPDATE_BY")
@@ -32,7 +38,7 @@ VALUES (1, 1, 1, 1, 1, 95.00, 1, 1, 0, 'system', 'system');
 
 INSERT INTO "PUBLIC"."EDU_STUDY_RECORD"
     ("ID", "STUDENT_ID", "KNOWLEDGE_ID", "RECORD_TYPE", "QUESTION_ID", "SCORE", "ACCURACY", "DURATION_SEC", "TENANT_ID", "STATUS", "DEL_FLAG", "CREATE_BY", "UPDATE_BY")
-VALUES (1, 1, 1001, 'PRACTICE', 1, 92.00, 0.92, 420, 1, 1, 0, 'system', 'system');
+VALUES (1, 1, 1001, 'PRACTICE', 2, 92.00, 0.92, 420, 1, 1, 0, 'system', 'system');
 
 INSERT INTO "PUBLIC"."EDU_STUDY_RECORD"
     ("ID", "STUDENT_ID", "KNOWLEDGE_ID", "RECORD_TYPE", "QUESTION_ID", "SCORE", "ACCURACY", "DURATION_SEC", "TENANT_ID", "STATUS", "DEL_FLAG", "CREATE_BY", "UPDATE_BY")

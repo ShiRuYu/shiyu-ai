@@ -58,9 +58,16 @@ jobs:
       - name: 运行 Maven 编译、架构和测试门禁
         run: mvn --batch-mode --no-transfer-progress -Pstrict-warnings verify -Ddependency-check.skip=true
 
+      - name: 用一次性 PostgreSQL 验证基线和业务读取
+        run: bash scripts/database/verify_postgresql_ci.sh
+
       - name: 验证包归属清单和边界夹具
         run: |
           python -m unittest discover -s scripts/architecture/tests -p 'test_*.py'
+          python -m unittest discover -s scripts/database/tests -p 'test_*.py'
+          pwsh -NoProfile -File scripts/database/tests/test_migrate.ps1
+          python scripts/database/generate-postgresql-baseline.py
+          git diff --exit-code -- scripts/database/postgresql/baseline-schema.sql scripts/database/postgresql/baseline-seed.sql
           python scripts/architecture/check_functional_javadocs.py modules --include-tests --baseline scripts/architecture/functional-javadoc-baseline.json --report docs/工程功能注释整改清单.md
           git diff --exit-code -- docs/工程功能注释整改清单.md
           python scripts/architecture/check_type_javadocs.py modules --include-tests

@@ -64,7 +64,8 @@ def verify_required(root: Path, required: dict[str, list[str]], failures: list[s
                 failures.append(f"missing section '{phrase}': {path}")
 
 
-def verify_links(files: list[Path], failures: list[str]) -> int:
+def verify_links(files: list[Path], failures: list[str],
+                 backend: Path | None = None, frontend: Path | None = None) -> int:
     checked = 0
     pattern = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
     for path in files:
@@ -75,7 +76,16 @@ def verify_links(files: list[Path], failures: list[str]) -> int:
             if not target:
                 continue
             checked += 1
-            if not (path.parent / target).resolve().exists():
+            resolved = (path.parent / target).resolve()
+            if not resolved.exists() and backend is not None and frontend is not None:
+                # Documentation uses the public sibling checkout names. Map those
+                # names to the explicitly paired worktrees during local verification.
+                for alias, actual in ((backend.parent / "shiyu-ui", frontend),
+                                      (frontend.parent / "shiyu-ai", backend)):
+                    if resolved.is_relative_to(alias) and (actual / resolved.relative_to(alias)).exists():
+                        resolved = actual / resolved.relative_to(alias)
+                        break
+            if not resolved.exists():
                 failures.append(f"broken link: {path} -> {target}")
     return checked
 
@@ -191,7 +201,7 @@ def main() -> None:
     verify_required(frontend / "docs", FRONTEND_REQUIRED, failures)
     files = markdown_files(backend / "docs") + markdown_files(frontend / "docs")
     files.extend([backend / "README.md", frontend / "README.md"])
-    links = verify_links(files, failures)
+    links = verify_links(files, failures, backend, frontend)
     counts = verify_counts(backend, frontend, failures)
     secondary_sql = verify_final_baseline(backend, failures)
     print(

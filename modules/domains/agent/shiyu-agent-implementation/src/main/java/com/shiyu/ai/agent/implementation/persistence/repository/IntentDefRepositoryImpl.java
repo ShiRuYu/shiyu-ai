@@ -43,7 +43,7 @@ public class IntentDefRepositoryImpl
         QueryWrapper countWrapper = new QueryWrapper();
         countWrapper
                 .eq(IntentDefDO::getTenantId, tenantId.value())
-                .eq(IntentDefDO::getDelFlag, "0");
+                .eq(IntentDefDO::getDelFlag, 0);
         if (agentId != null) countWrapper.eq(IntentDefDO::getAgentId, agentId);
         if (name != null) countWrapper.like(IntentDefDO::getName, name);
         if (code != null) countWrapper.like(IntentDefDO::getCode, code);
@@ -53,7 +53,7 @@ public class IntentDefRepositoryImpl
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper
                 .eq(IntentDefDO::getTenantId, tenantId.value())
-                .eq(IntentDefDO::getDelFlag, "0");
+                .eq(IntentDefDO::getDelFlag, 0);
         if (agentId != null) queryWrapper.eq(IntentDefDO::getAgentId, agentId);
         if (name != null) queryWrapper.like(IntentDefDO::getName, name);
         if (code != null) queryWrapper.like(IntentDefDO::getCode, code);
@@ -76,7 +76,7 @@ public class IntentDefRepositoryImpl
         requireTenant(tenantId);
         QueryWrapper qw = new QueryWrapper();
         qw.eq(IntentDefDO::getTenantId, tenantId.value())
-                .eq(IntentDefDO::getDelFlag, "0")
+                .eq(IntentDefDO::getDelFlag, 0)
                 .eq(IntentDefDO::getEnabled, "1")
                 .eq(IntentDefDO::getStatus, 1)
                 .and("(agent_id = ? OR agent_id = 'default')", agentId)
@@ -93,7 +93,7 @@ public class IntentDefRepositoryImpl
         requireTenant(tenantId);
         QueryWrapper qw = new QueryWrapper();
         qw.eq(IntentDefDO::getTenantId, tenantId.value())
-                .eq(IntentDefDO::getDelFlag, "0")
+                .eq(IntentDefDO::getDelFlag, 0)
                 .eq(IntentDefDO::getEnabled, "1")
                 .eq(IntentDefDO::getStatus, 1)
                 .eq(IntentDefDO::getCategory, category)
@@ -165,7 +165,7 @@ public class IntentDefRepositoryImpl
         requireTenant(tenantId);
         QueryWrapper qw = new QueryWrapper();
         qw.eq(IntentDefDO::getTenantId, tenantId.value())
-                .eq(IntentDefDO::getDelFlag, "0")
+                .eq(IntentDefDO::getDelFlag, 0)
                 .eq(IntentDefDO::getEnabled, "1")
                 .eq(IntentDefDO::getStatus, 1)
                 .orderBy(IntentDefDO::getPriority, true);

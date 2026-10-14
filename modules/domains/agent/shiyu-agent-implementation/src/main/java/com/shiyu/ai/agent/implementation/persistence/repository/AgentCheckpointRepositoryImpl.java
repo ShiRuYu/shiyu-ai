@@ -46,6 +46,7 @@ public class AgentCheckpointRepositoryImpl
         QueryWrapper qw = scope(tenantId);
         qw.eq("execution_id", executionId);
         qw.orderBy("create_time", false);
+        qw.orderBy("id", false);
         qw.limit(1);
         return MapstructUtils.convert(
                 agentCheckpointMapper.selectOneByQuery(qw), AgentCheckpointBO.class);
@@ -63,6 +64,7 @@ public class AgentCheckpointRepositoryImpl
         QueryWrapper qw = scope(tenantId);
         qw.eq("execution_id", executionId);
         qw.orderBy("create_time", true);
+        qw.orderBy("id", true);
         return MapstructUtils.convert(
                 agentCheckpointMapper.selectListByQuery(qw), AgentCheckpointBO.class);
     }

@@ -129,6 +129,16 @@ class KnowledgeDocumentUploadServiceImplTest {
         assertThrows(
                 ServiceException.class,
                 () -> service.importUrl(ACTOR, 10L, "t", "http://127.0.0.1/a"));
+        assertThrows(ServiceException.class,
+                () -> service.importUrl(ACTOR, 10L, "t", "http://0.0.0.0/a"));
+        assertThrows(ServiceException.class,
+                () -> service.importUrl(ACTOR, 10L, "t", "http://169.254.1.1/a"));
+        assertThrows(ServiceException.class,
+                () -> service.importUrl(ACTOR, 10L, "t", "http://10.0.0.1/a"));
+        assertThrows(ServiceException.class,
+                () -> service.importUrl(ACTOR, 10L, "t", "http://224.0.0.1/a"));
+        assertThrows(ServiceException.class,
+                () -> service.importUrl(ACTOR, 10L, "t", "http:///missing-host"));
         assertThrows(ServiceException.class, () -> service.importUrl(ACTOR, 10L, "t", null));
     }
 

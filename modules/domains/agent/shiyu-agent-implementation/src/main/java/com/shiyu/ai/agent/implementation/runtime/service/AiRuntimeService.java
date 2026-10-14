@@ -5,6 +5,10 @@ import com.shiyu.ai.agent.implementation.runtime.model.AiApp;
 import com.shiyu.ai.agent.implementation.runtime.model.AiAppPreview;
 import com.shiyu.ai.agent.implementation.runtime.model.AiAppVersion;
 import com.shiyu.ai.agent.implementation.runtime.port.AiAppRepository;
+import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
+import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
+import com.shiyu.ai.agent.implementation.graph.AgentGraphConfigValidator;
+import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.common.foundation.utils.JSONUtils;
@@ -36,6 +40,7 @@ public class AiRuntimeService implements AiRuntimePort {
      * apps 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final AiAppRepository apps;
+    private final AgentAdminRepository agentAdminRepository;
 
     /**
      * {@code AiRuntimeService} 创建并初始化当前类型实例。
@@ -50,10 +55,16 @@ public class AiRuntimeService implements AiRuntimePort {
      * @param runs 用于完成本次业务处理的 runs 参数。
      * @param apps 用于完成本次业务处理的 apps 参数。
      */
-    @Autowired
     public AiRuntimeService(AiRunRepository runs, AiAppRepository apps) {
+        this(runs, apps, null);
+    }
+
+    @Autowired
+    public AiRuntimeService(
+            AiRunRepository runs, AiAppRepository apps, AgentAdminRepository agentAdminRepository) {
         this.runs = runs;
         this.apps = apps;
+        this.agentAdminRepository = agentAdminRepository;
     }
 
     /**
@@ -167,6 +178,7 @@ public class AiRuntimeService implements AiRuntimePort {
         if ("ARCHIVED".equals(version.status()))
             throw new IllegalStateException("archived app version cannot publish");
         validateConfig(version.configJson());
+        validateAgentBinding(version.configJson(), tenantId);
         if (apps.publishVersion(appId, versionId, tenant(tenantId)) != 1)
             throw new IllegalStateException("app version publish conflict");
         return apps.findVersion(appId, versionId, tenant(tenantId)).orElseThrow();
@@ -605,6 +617,27 @@ public class AiRuntimeService implements AiRuntimePort {
                 providerRequestId);
     }
 
+    private void validateAgentBinding(String configJson, TenantId tenantId) {
+        if (agentAdminRepository == null || configJson == null || configJson.isBlank()) return;
+        Map<String, Object> config = JSONUtils.parseMap(configJson);
+        Object boundId = config.get("agentId");
+        if (boundId == null) return;
+        String agentId = String.valueOf(boundId);
+        AgentDefBO agent = agentAdminRepository.selectByAgentId(tenantId, agentId);
+        if (agent == null || !Integer.valueOf(1).equals(agent.getStatus()))
+            throw new IllegalArgumentException("bound agent is not active in this tenant");
+        Object requestedVersion = config.get("agentVersion");
+        String versionNumber = requestedVersion == null
+                ? agent.getCurrentVersion() : String.valueOf(requestedVersion);
+        if (versionNumber == null || versionNumber.isBlank())
+            throw new IllegalArgumentException("bound agent has no active version");
+        AgentVersionBO version = agentAdminRepository.selectVersionByAgentIdAndNumber(
+                tenantId, agentId, versionNumber);
+        if (version == null || !Integer.valueOf(1).equals(version.getStatus())
+                || !AgentGraphConfigValidator.isValidJson(version.getGraphConfig()))
+            throw new IllegalArgumentException("bound agent version is not published or has no valid graph");
+    }
+
     private void validateConfig(String configJson) {
         if (configJson == null || configJson.isBlank()) return;
         try {
@@ -682,6 +715,10 @@ public class AiRuntimeService implements AiRuntimePort {
             throw new IllegalArgumentException("budget must be an object");
         for (String key : List.of("maxTokens", "maxCost")) {
             Object value = budget.get(key);
+            if (value != null && !(value instanceof Number))
+                throw new IllegalArgumentException("budget values must be numeric");
+            if (value instanceof Number number && !Double.isFinite(number.doubleValue()))
+                throw new IllegalArgumentException("budget values must be finite");
             if (value instanceof Number number && number.doubleValue() < 0)
                 throw new IllegalArgumentException("budget values cannot be negative");
         }

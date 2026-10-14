@@ -149,32 +149,60 @@ public final class AuthAuthenticationUseCase {
                             .map(UserScopeRoleBO::getRoleId)
                             .filter(Objects::nonNull)
                             .collect(Collectors.toSet());
-            roles = roles.stream().filter(role -> currentRoleIds.contains(role.getId())).toList();
+            roles =
+                    roles.stream()
+                            .filter(role -> role != null && currentRoleIds.contains(role.getId()))
+                            .filter(role -> currentTenantId.equals(role.getTenantId()))
+                            .filter(role -> role.getStatus() != null && role.getStatus() == 1)
+                            .filter(role -> role.getDelFlag() == null || role.getDelFlag() == 0)
+                            .toList();
             RoleBO currentRole =
                     contextSupport.resolveCurrentRoleForTenant(
                             roleId, roles, assignments, currentTenantId);
+            boolean delegatedRoleSelected = false;
             if (currentRole == null
-                    && "PARENT_SUPER_ADMIN".equals(savedExtInfo.get("switchMode"))) {
+                    && contextSupport.isDelegatedTenantContext(
+                            savedExtInfo, assignments, currentTenantId)) {
                 RoleBO delegatedRole = contextSupport.findTenantSuperRole(currentTenantId);
-                if (delegatedRole != null) {
-                    currentRole = delegatedRole;
-                    roles = new ArrayList<>(roles);
-                    roles.add(currentRole);
+                if (delegatedRole == null
+                        || !currentTenantId.equals(delegatedRole.getTenantId())
+                        || !contextSupport.isTenantSuperRole(delegatedRole)) {
+                    log.warn("登录失败，委派租户缺少有效的超级管理员角色");
+                    return null;
                 }
+                currentRole = delegatedRole;
+                delegatedRoleSelected = true;
+                roles = new ArrayList<>(roles);
+                roles.add(currentRole);
             }
             TenantBO tenant =
                     tenantRoleRepository.selectTenantById(
                             new com.shiyu.ai.kernel.context.TenantId(currentTenantId));
-            String tenantName = tenant == null ? null : tenant.getName();
+            if (tenant == null
+                    || tenant.getStatus() == null
+                    || tenant.getStatus() != 1
+                    || (tenant.getDelFlag() != null && tenant.getDelFlag() != 0)) {
+                log.warn("登录失败，当前租户不存在或已停用");
+                return null;
+            }
+            String tenantName = tenant.getName();
             LocalDateTime now = LocalDateTime.now();
             String resolvedLoginIp = loginIp == null || loginIp.isBlank() ? "unknown" : loginIp;
             Map<String, Object> extInfoMap =
                     contextSupport.buildExtInfo(
                             user.getExtInfo(), currentRole, currentTenantId, now, resolvedLoginIp);
             extInfoMap.put("homeTenantId", homeTenantId);
-            extInfoMap.putIfAbsent("switchMode", "NORMAL");
+            String switchMode = delegatedRoleSelected ? "PARENT_SUPER_ADMIN" : "NORMAL";
+            extInfoMap.put("switchMode", switchMode);
+            if (delegatedRoleSelected) {
+                extInfoMap.put("switchFromTenantId", homeTenantId);
+            } else {
+                extInfoMap.remove("switchFromTenantId");
+            }
+            if (currentRole == null) {
+                extInfoMap.remove("currentRole");
+            }
             user.setExtInfo(JSONUtils.toJsonString(extInfoMap));
-            String switchMode = (String) extInfoMap.getOrDefault("switchMode", "NORMAL");
             if (!userRepository.update(user)) {
                 log.warn("登录失败，最后登录信息持久化被拒绝, userIdPresent={}", user.getId() != null);
                 return null;
@@ -198,13 +226,21 @@ public final class AuthAuthenticationUseCase {
                                                                     item))
                                     .map(UserScopeRoleBO::getRoleId)
                                     .map(tenantRoleRepository::selectRoleById)
-                                    .anyMatch(contextSupport::isTenantSuperRole);
+                                    .anyMatch(
+                                            role ->
+                                                    role != null
+                                                            && resolvedHomeTenantId.equals(
+                                                                    role.getTenantId())
+                                                            && contextSupport.isTenantSuperRole(
+                                                                    role));
             if (homeTenantSuperAdmin) {
-                tenantList =
-                        currentTenantId != null && !resolvedHomeTenantId.equals(currentTenantId)
-                                ? contextSupport.buildScopedTenantList(
-                                        currentTenantId, homeTenantId)
-                                : contextSupport.buildScopedTenantList(homeTenantId, homeTenantId);
+                if (resolvedHomeTenantId.equals(currentTenantId)) {
+                    tenantList = contextSupport.buildScopedTenantList(homeTenantId, homeTenantId);
+                } else if (contextSupport.isTenantInHomeScope(
+                        resolvedHomeTenantId, currentTenantId)) {
+                    tenantList =
+                            contextSupport.buildScopedTenantList(currentTenantId, homeTenantId);
+                }
             }
             LoginResponseVO response = new LoginResponseVO();
             response.setId(user.getId());
@@ -313,7 +349,12 @@ public final class AuthAuthenticationUseCase {
             RoleBO defaultRole =
                     tenantRoleRepository.selectEnabledRoleByCode(
                             new com.shiyu.ai.kernel.context.TenantId(1L), "user");
-            if (defaultRole == null) {
+            if (defaultRole == null
+                    || defaultRole.getId() == null
+                    || !Objects.equals(defaultRole.getTenantId(), 1L)
+                    || !"user".equals(defaultRole.getCode())
+                    || !Objects.equals(defaultRole.getStatus(), 1)
+                    || !Objects.equals(defaultRole.getDelFlag(), 0)) {
                 throw new IllegalStateException("default user role is not configured for tenant 1");
             }
             UserScopeRoleBO assignment = new UserScopeRoleBO();

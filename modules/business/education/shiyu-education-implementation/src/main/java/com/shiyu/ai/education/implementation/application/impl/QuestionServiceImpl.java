@@ -1,6 +1,7 @@
 package com.shiyu.ai.education.implementation.application.impl;
 
 import com.shiyu.ai.common.foundation.api.PageData;
+import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.application.QuestionService;
 import com.shiyu.ai.education.implementation.domain.model.QuestionBO;
@@ -127,6 +128,7 @@ public class QuestionServiceImpl implements QuestionService {
         QuestionBO bo = new QuestionBO();
         bo.setCode(request.getCode());
         bo.setType(request.getType());
+        bo.setPurpose(purpose(request.getPurpose()));
         bo.setSubjectCode(request.getSubjectCode());
         bo.setGrade(request.getGrade());
         bo.setDifficulty(request.getDifficulty());
@@ -151,6 +153,10 @@ public class QuestionServiceImpl implements QuestionService {
     public void update(ActorContext actor, QuestionRequest request) {
         QuestionBO bo = questionRepository.selectById(actor.tenantId(), request.getId());
         if (bo != null) {
+            if (request.getPurpose() != null
+                    && !bo.getPurpose().equals(purpose(request.getPurpose()))) {
+                throw new ServiceException("题目用途创建后不可修改，请新建题目");
+            }
             bo.setCode(request.getCode());
             bo.setType(request.getType());
             bo.setSubjectCode(request.getSubjectCode());
@@ -187,5 +193,13 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteById(ActorContext actor, Long id) {
         questionRepository.deleteById(actor.tenantId(), id);
+    }
+
+    private static String purpose(String value) {
+        String selected = value == null ? "PRACTICE" : value;
+        if (!"PRACTICE".equals(selected) && !"EXAM_PRIVATE".equals(selected)) {
+            throw new ServiceException("题目用途无效");
+        }
+        return selected;
     }
 }

@@ -146,6 +146,12 @@ public class ToolServiceImpl implements ToolService {
 
     // ======================== 工具执行 ========================
 
+    @Override
+    public boolean requiresApproval(String toolName) {
+        McpToolDescriptor descriptor = toolName == null ? null : toolRegistry.get(toolName);
+        return descriptor == null || !descriptor.isBuiltin();
+    }
+
     /**
      * 调用 工具 相关业务数据，并返回处理结果。
      *

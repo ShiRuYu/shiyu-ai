@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * 封装 考试 操作所需的请求条件和输入数据。
@@ -69,4 +70,8 @@ public class ExamRequest implements Serializable {
      * 状态，表示当前对象中的对应属性。
      */
     private Integer status;
+
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
 }

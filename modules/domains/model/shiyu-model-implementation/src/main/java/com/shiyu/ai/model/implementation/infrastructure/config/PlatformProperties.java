@@ -72,7 +72,7 @@ public class PlatformProperties {
         /**
          * model 属性，保存当前对象中的业务数据或协作依赖。
          */
-        private String model = "deepseek-v4-flash";
+        private String model = "deepseek-flash";
     }
 
     /**

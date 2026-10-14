@@ -44,6 +44,16 @@ public interface AgentExecutionRepository {
     List<AgentExecutionBO> selectBySessionId(TenantId tenantId, String sessionId);
 
     /**
+     * 查询当前租户中指定用户的执行，独立于会话 ID。
+     *
+     * @param tenantId 执行所属租户
+     * @param userId 执行所属用户
+     * @param limit 最大返回条数
+     * @return 按开始时间倒序排列的执行
+     */
+    List<AgentExecutionBO> selectByUserId(TenantId tenantId, long userId, int limit);
+
+    /**
      * 查询 智能体 Execution 相关业务数据，并返回处理结果。
      *
      * @param tenantId 当前操作涉及的租户标识。
@@ -52,4 +62,16 @@ public interface AgentExecutionRepository {
      * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     List<AgentExecutionBO> selectByAgentId(TenantId tenantId, String agentId, int limit);
+
+    /**
+     * Returns one user's Agent executions within a tenant before applying the result limit.
+     *
+     * @param tenantId tenant that owns the records
+     * @param agentId Agent whose executions are requested
+     * @param userId owner of the executions
+     * @param limit maximum number of records to return
+     * @return the matching executions in repository order
+     */
+    List<AgentExecutionBO> selectByAgentIdAndUserId(
+            TenantId tenantId, String agentId, long userId, int limit);
 }

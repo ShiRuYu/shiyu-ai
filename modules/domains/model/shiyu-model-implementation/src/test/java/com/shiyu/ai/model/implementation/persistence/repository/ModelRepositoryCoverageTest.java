@@ -34,7 +34,8 @@ class ModelRepositoryCoverageTest {
                         com.shiyu.ai.model.implementation.persistence.mapper.AiModelMapper.class,
                         mapperAnswer(false));
         inject(models, "aiModelMapper", modelMapper);
-        AiPlatformRepositoryImpl platforms = new AiPlatformRepositoryImpl();
+        AiPlatformRepositoryImpl platforms = new AiPlatformRepositoryImpl(
+                new PlatformCredentialCipher(""));
         com.shiyu.ai.model.implementation.persistence.mapper.AiPlatformMapper platformMapper =
                 mock(
                         com.shiyu.ai.model.implementation.persistence.mapper.AiPlatformMapper.class,

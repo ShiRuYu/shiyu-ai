@@ -85,6 +85,18 @@ public class AgentRuntimeImpl implements AgentRuntime {
             AgentCheckpointRepository checkpointRepository,
             EventPublisher eventPublisher,
             AiRuntimeService runtime) {
+        this(cacheManager, agentLoader, executionRepository, checkpointRepository,
+                eventPublisher, runtime, null);
+    }
+
+    public AgentRuntimeImpl(
+            AgentCacheManager cacheManager,
+            AgentLoader agentLoader,
+            AgentExecutionRepository executionRepository,
+            AgentCheckpointRepository checkpointRepository,
+            EventPublisher eventPublisher,
+            AiRuntimeService runtime,
+            ToolApprovalService approvals) {
         CheckpointManager checkpointManager =
                 new CheckpointManager(new DbCheckpointStore(checkpointRepository));
         this.agentExecutor = new AgentExecutor(checkpointManager);
@@ -99,7 +111,8 @@ public class AgentRuntimeImpl implements AgentRuntime {
                         checkpointManager,
                         eventPublisher,
                         stateStore,
-                        eventBridge);
+                        eventBridge,
+                        approvals);
     }
 
     /**

@@ -4,6 +4,7 @@ import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 import com.shiyu.ai.common.foundation.utils.JSONUtils;
+import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,16 @@ final class AgentRuntimeEventBridge {
         this.runtime = runtime;
     }
 
+    AiRun executionRun(ActorContext actor, String executionId) {
+        if (runtime == null) return null;
+        try {
+            return runtime.requireExecutionRun(executionId,
+                    actor.tenantId(), actor.userId().value());
+        } catch (IllegalArgumentException absent) {
+            return null;
+        }
+    }
+
     AiRun start(Execution execution, Map<String, Object> input) {
         if (runtime == null) return null;
         long tenant = number(input == null ? null : input.get("tenantId"));
@@ -32,17 +43,18 @@ final class AgentRuntimeEventBridge {
                         ? number(input == null ? null : input.get("userId"))
                         : execution.getUserId();
         if (tenant <= 0 || owner <= 0) return null;
+        AiRun run = null;
         try {
             String appId = string(input == null ? null : input.get("__appId"));
             String appVersionId = string(input == null ? null : input.get("__appVersionId"));
-            AiRun run =
-                    runtime.startRun(
+            String conversationId = string(input == null ? null : input.get("__conversationId"));
+            run = runtime.startRun(
                             new AiRunContext(
                                     new TenantId(tenant),
                                     owner,
                                     appId,
                                     appVersionId,
-                                    null,
+                                    conversationId,
                                     null,
                                     execution.getExecutionId(),
                                     null,
@@ -54,6 +66,15 @@ final class AgentRuntimeEventBridge {
             runtime.append(run, AiRunEventType.MODEL_STARTED, "{}", true);
             return run;
         } catch (RuntimeException failure) {
+            if (run != null) {
+                try {
+                    runtime.finish(run.id(), run.tenantId(), run.ownerUserId().value(),
+                            AiRunStatus.FAILED, "RUN_EVENT_WRITE_FAILED");
+                } catch (RuntimeException cleanupFailure) {
+                    log.warn("运行记录事件失败后终止运行记录失败: runIdPresent={}, errorType={}",
+                            run.id() != null, cleanupFailure.getClass().getSimpleName());
+                }
+            }
             if (input != null && input.get("__appId") != null) {
                 throw new IllegalStateException("runtime admission failed", failure);
             }

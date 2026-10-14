@@ -43,9 +43,15 @@ class AgentLoaderTest {
         inactive.setStatus(0);
         when(repository.selectByAgentId(ACTOR.tenantId(), "inactive")).thenReturn(inactive);
         assertNull(loader.loadFromDb(ACTOR, "inactive"));
+        AgentDefBO unknownStatus = new AgentDefBO();
+        when(repository.selectByAgentId(ACTOR.tenantId(), "unknown-status"))
+                .thenReturn(unknownStatus);
+        assertNull(loader.loadFromDb(ACTOR, "unknown-status"));
         AgentDefBO noVersion = new AgentDefBO();
         noVersion.setStatus(1);
         when(repository.selectByAgentId(ACTOR.tenantId(), "noversion")).thenReturn(noVersion);
+        assertNull(loader.loadFromDb(ACTOR, "noversion"));
+        noVersion.setCurrentVersion("");
         assertNull(loader.loadFromDb(ACTOR, "noversion"));
         AgentDefBO missingGraph = new AgentDefBO();
         missingGraph.setStatus(1);
@@ -55,10 +61,17 @@ class AgentLoaderTest {
                 .thenReturn(null);
         assertNull(loader.loadFromDb(ACTOR, "nog"));
         AgentVersionBO blankGraph = new AgentVersionBO();
+        blankGraph.setStatus(1);
         blankGraph.setGraphConfig(" ");
         when(repository.selectByAgentId(ACTOR.tenantId(), "blank")).thenReturn(missingGraph);
         when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "blank", "v1"))
                 .thenReturn(blankGraph);
+        assertNull(loader.loadFromDb(ACTOR, "blank"));
+        blankGraph.setGraphConfig("");
+        assertNull(loader.loadFromDb(ACTOR, "blank"));
+        blankGraph.setGraphConfig(null);
+        assertNull(loader.loadFromDb(ACTOR, "blank"));
+        blankGraph.setStatus(null);
         assertNull(loader.loadFromDb(ACTOR, "blank"));
     }
 
@@ -114,6 +127,7 @@ class AgentLoaderTest {
         intentConfig.setEndNode("end");
         intentConfig.setNodes(Map.of("start", start, "end", end));
         GraphConfigRequest.ConditionalEdgeDTO intent = new GraphConfigRequest.ConditionalEdgeDTO();
+        intent.setNodeMappings(Map.of("UNKNOWN", "end", "LOGIN", "end"));
         intentConfig.setConditionalEdges(Map.of("start", intent));
         Graph intentGraph = loader.buildGraph("agent", intentConfig);
         assertEquals(
@@ -130,6 +144,22 @@ class AgentLoaderTest {
                         .get("start")
                         .getFunctionCondition()
                         .apply(Map.of("intentCode", "LOGIN")));
+    }
+
+    @Test
+    void rejectsStoredConditionalRouteWithoutDestination() {
+        AgentLoader loader = new AgentLoader(mock(NodeFactory.class),
+                mock(AgentAdminRepository.class));
+        GraphConfigRequest config = new GraphConfigRequest();
+        config.setStartNode("start");
+        config.setEndNode("start");
+        GraphConfigRequest.NodeConfigDTO start = new GraphConfigRequest.NodeConfigDTO();
+        start.setNodeType("DEFAULT");
+        config.setNodes(Map.of("start", start));
+        config.setConditionalEdges(Map.of("start", new GraphConfigRequest.ConditionalEdgeDTO()));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> loader.buildGraph("agent", config));
     }
 
     @Test
@@ -188,7 +218,8 @@ class AgentLoaderTest {
         dto.setErrorStrategy("CONTINUE");
         dto.setLogLevel("DEBUG");
         dto.setProperties(Map.of("source", "test"));
-        dto.setConfig(Map.of("nodeName", "overridden"));
+        dto.setConfig(Map.of("nodeName", "overridden", "nodeId", "spoofed",
+                "nodeType", "LLM_CALL"));
 
         GraphConfigRequest config = new GraphConfigRequest();
         config.setStartNode("node");
@@ -196,8 +227,31 @@ class AgentLoaderTest {
         config.setNodes(Map.of("node", dto));
         Graph graph = loader.buildGraph("agent", config);
         assertEquals("overridden", captured.get().getNodeName());
+        assertEquals("node", captured.get().getNodeId());
+        assertEquals(com.shiyu.ai.agent.contract.node.NodeType.DEFAULT,
+                captured.get().getNodeType());
         assertFalse(captured.get().getEnabled());
         assertEquals(123L, captured.get().getTimeout());
+    }
+
+    @Test
+    void reportsTheNodeThatCouldNotBeConstructed() {
+        NodeFactory factory = mock(NodeFactory.class);
+        IllegalArgumentException cause = new IllegalArgumentException("invalid node config");
+        when(factory.createNode(any(NodeConfig.class))).thenThrow(cause);
+        GraphConfigRequest.NodeConfigDTO dto = new GraphConfigRequest.NodeConfigDTO();
+        dto.setNodeType("DEFAULT");
+        GraphConfigRequest config = new GraphConfigRequest();
+        config.setStartNode("broken");
+        config.setEndNode("broken");
+        config.setNodes(Map.of("broken", dto));
+
+        RuntimeException failure = assertThrows(RuntimeException.class,
+                () -> new AgentLoader(factory, mock(AgentAdminRepository.class))
+                        .buildGraph("agent", config));
+
+        assertTrue(failure.getMessage().contains("broken"));
+        assertSame(cause, failure.getCause());
     }
 
     private static BaseNode node(String id) {

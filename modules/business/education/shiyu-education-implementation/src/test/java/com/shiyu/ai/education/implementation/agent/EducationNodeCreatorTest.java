@@ -16,6 +16,7 @@ import com.shiyu.ai.education.implementation.agent.node.creator.ScoreAnalysisNod
 import com.shiyu.ai.education.implementation.agent.node.creator.TeachNodeCreator;
 import com.shiyu.ai.education.implementation.application.AbilityService;
 import com.shiyu.ai.education.implementation.application.ReviewService;
+import com.shiyu.ai.education.implementation.application.TrustedScoreAnalysisService;
 import com.shiyu.ai.education.implementation.domain.ReviewScheduler;
 import com.shiyu.ai.education.implementation.domain.port.repository.ReviewTaskRepository;
 import com.shiyu.ai.knowledge.contract.api.KnowledgePathPort;
@@ -48,7 +49,8 @@ class EducationNodeCreatorTest {
         assertCreated(new PrereqCheckNodeCreator(relations, paths), EducationNodeTypes.PREREQ_CHECK);
         assertCreated(
                 new ReviewScheduleNodeCreator(scheduler, review, tasks), EducationNodeTypes.REVIEW_SCHEDULE);
-        assertCreated(new ScoreAnalysisNodeCreator(ability), EducationNodeTypes.SCORE_ANALYSIS);
+        assertCreated(new ScoreAnalysisNodeCreator(mock(TrustedScoreAnalysisService.class)),
+                EducationNodeTypes.SCORE_ANALYSIS);
         assertCreated(new TeachNodeCreator(chat), EducationNodeTypes.EDUCATION_TEACH);
     }
 

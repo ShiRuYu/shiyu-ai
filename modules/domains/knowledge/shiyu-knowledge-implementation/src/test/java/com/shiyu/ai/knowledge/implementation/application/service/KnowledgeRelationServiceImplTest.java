@@ -134,6 +134,81 @@ class KnowledgeRelationServiceImplTest {
         verify(graph, never()).addEdge(any(), anyLong(), anyLong(), anyString(), anyDouble());
     }
 
+    @Test
+    void listsDistinctDirectionsAndKeepsMissingEndpointMetadataExplicit() {
+        KnowledgeRelationRepository relations = mock(KnowledgeRelationRepository.class);
+        KnowledgeRepository knowledge = mock(KnowledgeRepository.class);
+        KnowledgeBO source = knowledge(1L, 7L, "source");
+        when(knowledge.findById(ACTOR.tenantId(), 1L)).thenReturn(source);
+        KnowledgeRelationBO outgoing = relation(1L, 2L, "PRE");
+        KnowledgeRelationBO incoming = relation(3L, 1L, "RELATED");
+        when(relations.findBySourceId(ACTOR.tenantId(), 7L, 1L))
+                .thenReturn(List.of(outgoing));
+        when(relations.findByTargetId(ACTOR.tenantId(), 7L, 1L))
+                .thenReturn(List.of(outgoing, incoming));
+        KnowledgeRelationServiceImpl service = new KnowledgeRelationServiceImpl(
+                relations, knowledge, mock(KnowledgeGraph.class),
+                mock(KnowledgeSpaceService.class));
+
+        var listed = service.list(ACTOR, 1L);
+
+        assertEquals(2, listed.size());
+        assertNotNull(listed.getFirst().source());
+        assertNull(listed.getFirst().target());
+        assertNull(listed.getLast().source());
+        assertNotNull(listed.getLast().target());
+    }
+
+    @Test
+    void relatedViewsSkipDeletedKnowledgeWithoutDroppingValidNeighbors() {
+        KnowledgeRelationRepository relations = mock(KnowledgeRelationRepository.class);
+        KnowledgeRepository knowledge = mock(KnowledgeRepository.class);
+        when(knowledge.findById(ACTOR.tenantId(), 1L))
+                .thenReturn(knowledge(1L, 7L, "source"));
+        when(knowledge.findById(ACTOR.tenantId(), 2L))
+                .thenReturn(knowledge(2L, 7L, "valid"));
+        when(relations.findBySourceIdAndType(ACTOR.tenantId(), 7L, 1L, "PRE"))
+                .thenReturn(List.of(relation(1L, 3L, "PRE"), relation(1L, 2L, "PRE")));
+        when(relations.findByTargetIdAndType(ACTOR.tenantId(), 7L, 1L, "PRE"))
+                .thenReturn(List.of(relation(3L, 1L, "PRE"), relation(2L, 1L, "PRE")));
+        when(relations.findBySourceIdAndType(ACTOR.tenantId(), 7L, 1L, "RELATED"))
+                .thenReturn(List.of(relation(1L, 3L, "RELATED"),
+                        relation(1L, 2L, "RELATED")));
+        KnowledgeRelationServiceImpl service = new KnowledgeRelationServiceImpl(
+                relations, knowledge, mock(KnowledgeGraph.class),
+                mock(KnowledgeSpaceService.class));
+
+        assertEquals(2L, service.getPrerequisites(ACTOR, 1L).getFirst().id());
+        assertEquals(2L, service.getSubsequent(ACTOR, 1L).getFirst().id());
+        assertEquals(2L, service.getRelated(ACTOR, 1L).getFirst().id());
+    }
+
+    @Test
+    void addsWeightedNonPrerequisiteAndRejectsIncompleteKnowledge() {
+        KnowledgeRelationRepository relations = mock(KnowledgeRelationRepository.class);
+        KnowledgeRepository knowledge = mock(KnowledgeRepository.class);
+        KnowledgeGraph graph = mock(KnowledgeGraph.class);
+        when(knowledge.findById(ACTOR.tenantId(), 1L))
+                .thenReturn(knowledge(1L, 7L, "source"));
+        when(knowledge.findById(ACTOR.tenantId(), 2L))
+                .thenReturn(knowledge(2L, 7L, "target"));
+        when(relations.insert(eq(ACTOR.tenantId()), any(KnowledgeRelationBO.class)))
+                .thenReturn(1);
+        KnowledgeRelationServiceImpl service = new KnowledgeRelationServiceImpl(
+                relations, knowledge, graph, mock(KnowledgeSpaceService.class));
+
+        service.addRelation(ACTOR, 1L, 2L, RelationType.RELATED, 0.4);
+        verify(graph).addEdge(ACTOR.tenantId(), 1L, 2L, "RELATED", 0.4);
+        verify(graph, never()).findPath(any(), anyLong(), anyLong());
+
+        when(knowledge.findById(ACTOR.tenantId(), 1L)).thenReturn(null);
+        assertThrows(ServiceException.class,
+                () -> service.addRelation(ACTOR, 1L, 2L, RelationType.RELATED, 0.4));
+        when(knowledge.findById(ACTOR.tenantId(), 1L))
+                .thenReturn(knowledge(1L, null, "incomplete"));
+        assertThrows(ServiceException.class, () -> service.list(ACTOR, 1L));
+    }
+
     private static KnowledgeBO knowledge(Long id, Long space, String name) {
         KnowledgeBO value = new KnowledgeBO();
         value.setId(id);

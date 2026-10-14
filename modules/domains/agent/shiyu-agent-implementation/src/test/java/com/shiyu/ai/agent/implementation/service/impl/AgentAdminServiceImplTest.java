@@ -59,11 +59,12 @@ class AgentAdminServiceImplTest {
         request.setAgentId("new-agent");
         request.setName("New");
         assertEquals("new-agent", service.create(ACTOR, request).getAgentId());
+        verify(agentService).evictRuntimeCache(ACTOR, "new-agent");
         request.setName("Renamed");
         assertEquals("Renamed", service.update(ACTOR, 1L, request).getName());
         service.deleteById(ACTOR, 1L);
         assertEquals(1, service.listAllOptions(ACTOR).size());
-        verify(agentService, atLeastOnce()).evictRuntimeCache("math");
+        verify(agentService, atLeastOnce()).evictRuntimeCache(ACTOR, "math");
     }
 
     @Test

@@ -4,6 +4,8 @@ import com.shiyu.ai.agent.implementation.runtime.model.AiApp;
 import com.shiyu.ai.agent.implementation.runtime.model.AiAppVersion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -77,5 +79,41 @@ class InMemoryAiAppRepositoryTest {
 
         assertEquals("a", repository.list(TENANT, 2, 1).getFirst().id());
         assertEquals("v1", repository.versions("b", TENANT).getFirst().id());
+    }
+
+    @Test
+    void keepsApplicationAndVersionOperationsWithinTheirTenantAndOwner() {
+        InMemoryAiAppRepository repository = new InMemoryAiAppRepository();
+        TenantId otherTenant = new TenantId(3);
+        repository.insert(new AiApp("owned", TENANT, new UserId(2), "Tutor", "desc",
+                "ACTIVE", null, NOW, NOW));
+        repository.insert(new AiApp("other", otherTenant, new UserId(2), "Other", "desc",
+                "ACTIVE", null, NOW, NOW));
+        repository.insertVersion(new AiAppVersion("owned-v1", "owned", TENANT, "1", "{}",
+                "DRAFT", NOW, null));
+        repository.insertVersion(new AiAppVersion("other-v1", "other", otherTenant, "1", "{}",
+                "DRAFT", NOW, null));
+
+        assertTrue(repository.find("owned", TENANT, 9).isEmpty());
+        assertTrue(repository.find("owned", otherTenant, 2).isEmpty());
+        assertTrue(repository.findByTenant("owned", otherTenant).isEmpty());
+        assertTrue(repository.list(TENANT, 9, 10).isEmpty());
+        assertEquals(1, repository.list(TENANT, 2, 10).size());
+        assertTrue(repository.findVersion("other", "owned-v1", TENANT).isEmpty());
+        assertTrue(repository.findVersion("owned", "owned-v1", otherTenant).isEmpty());
+        assertTrue(repository.versions("owned", otherTenant).isEmpty());
+        assertTrue(repository.versions("other", TENANT).isEmpty());
+        assertThrows(IllegalArgumentException.class,
+                () -> repository.publishVersion("owned", "owned-v1", otherTenant));
+        assertThrows(IllegalArgumentException.class,
+                () -> repository.archiveVersion("owned", "owned-v1", otherTenant));
+        assertEquals("DRAFT", repository.findVersion("owned", "owned-v1", TENANT)
+                .orElseThrow().status());
+        assertThrows(IllegalStateException.class,
+                () -> repository.insert(new AiApp("owned", TENANT, new UserId(2), "again",
+                        "desc", "ACTIVE", null, NOW, NOW)));
+        assertThrows(IllegalStateException.class,
+                () -> repository.insertVersion(new AiAppVersion("owned-v1", "owned", TENANT,
+                        "2", "{}", "DRAFT", NOW, null)));
     }
 }

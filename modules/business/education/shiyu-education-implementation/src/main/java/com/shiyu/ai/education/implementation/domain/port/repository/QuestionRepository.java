@@ -10,6 +10,8 @@ import java.util.List;
  * 负责 题目 的持久化查询、保存和删除，并维护数据访问边界。
  */
 public interface QuestionRepository {
+    /** Returns the primary active knowledge binding for a tenant-owned question. */
+    Long primaryKnowledgeId(TenantId tenantId, Long questionId);
     /**
      * 查询 题目 相关业务数据，并返回处理结果。
      *

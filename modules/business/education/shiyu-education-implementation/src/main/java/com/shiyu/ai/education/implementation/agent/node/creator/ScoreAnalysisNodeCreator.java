@@ -6,7 +6,7 @@ import com.shiyu.ai.agent.contract.node.NodeType;
 import com.shiyu.ai.education.contract.agent.EducationNodeTypes;
 import com.shiyu.ai.agent.contract.node.creator.NodeCreator;
 import com.shiyu.ai.education.implementation.agent.graph.ScoreAnalysisNode;
-import com.shiyu.ai.education.implementation.application.AbilityService;
+import com.shiyu.ai.education.implementation.application.TrustedScoreAnalysisService;
 
 import org.springframework.stereotype.Component;
 
@@ -19,15 +19,15 @@ public class ScoreAnalysisNodeCreator implements NodeCreator {
     /**
      * abilityService 属性，保存当前对象中的业务数据或协作依赖。
      */
-    private final AbilityService abilityService;
+    private final TrustedScoreAnalysisService analysis;
 
     /**
-     * 执行 Score Analysis Node 相关业务操作，并维护必要的状态和协作关系。
+     * 为图配置创建的评分节点注入同一个服务端可信判分处理器。
      *
-     * @param abilityService 用于完成本次业务处理的 abilityService 参数。
+     * @param analysis 校验答题归属并保证能力值更新幂等的服务
      */
-    public ScoreAnalysisNodeCreator(AbilityService abilityService) {
-        this.abilityService = abilityService;
+    public ScoreAnalysisNodeCreator(TrustedScoreAnalysisService analysis) {
+        this.analysis = analysis;
     }
 
     /**
@@ -48,7 +48,7 @@ public class ScoreAnalysisNodeCreator implements NodeCreator {
      */
     @Override
     public BaseNode create(NodeConfig config) {
-        ScoreAnalysisNode node = new ScoreAnalysisNode(abilityService);
+        ScoreAnalysisNode node = new ScoreAnalysisNode(analysis);
         node.setConfig(config);
         return node;
     }

@@ -1,12 +1,18 @@
 package com.shiyu.ai.agent.implementation.runtime.service;
 import com.shiyu.ai.agent.implementation.runtime.model.ToolApproval;
-import com.shiyu.ai.agent.implementation.runtime.model.ToolApprovalStatus;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.HexFormat;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 /**
@@ -46,8 +52,11 @@ public final class ToolExecutionPipeline {
         Objects.requireNonNull(run, "run");
         Objects.requireNonNull(request, "request");
         Objects.requireNonNull(executor, "executor");
-        String redactedArgs =
-                request.argumentsRedacted() == null ? "{}" : request.argumentsRedacted();
+        Map<String, String> approvalEnvelope = new TreeMap<>();
+        approvalEnvelope.put("summary", request.argumentsRedacted() == null
+                ? "{}" : request.argumentsRedacted());
+        approvalEnvelope.put("argumentsSha256", argumentsHash(request.arguments()));
+        String redactedArgs = JSONUtils.toJsonString(approvalEnvelope);
         runtime.append(run, AiRunEventType.TOOL_REQUESTED, redactedArgs, true);
         ToolApproval approval = null;
         if (request.highRisk()) {
@@ -66,12 +75,9 @@ public final class ToolExecutionPipeline {
                         true);
                 return Result.approvalRequired(approval);
             }
-            approval =
-                    approvals.require(
-                            request.approvalId(), run.tenantId(), run.ownerUserId().value());
-            if (approval.status() != ToolApprovalStatus.APPROVED) {
-                throw new IllegalStateException("tool approval is not approved");
-            }
+            approval = approvals.claimForExecution(
+                    request.approvalId(), run.tenantId(), run.ownerUserId().value(),
+                    run.id(), request.toolName(), redactedArgs);
         }
         try {
             Object value = executor.apply(request.arguments());
@@ -117,6 +123,28 @@ public final class ToolExecutionPipeline {
 
     private static String escape(String value) {
         return Objects.toString(value, "").replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    private static String argumentsHash(Map<String, Object> arguments) {
+        try {
+            byte[] canonical = JSONUtils.toJsonString(canonicalize(arguments))
+                    .getBytes(StandardCharsets.UTF_8);
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical));
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 is unavailable", ex);
+        }
+    }
+
+    private static Object canonicalize(Object value) {
+        if (value instanceof Map<?, ?> map) {
+            Map<String, Object> sorted = new TreeMap<>();
+            map.forEach((key, item) -> sorted.put(String.valueOf(key), canonicalize(item)));
+            return sorted;
+        }
+        if (value instanceof Collection<?> collection) {
+            return collection.stream().map(ToolExecutionPipeline::canonicalize).toList();
+        }
+        return value;
     }
 
     /**

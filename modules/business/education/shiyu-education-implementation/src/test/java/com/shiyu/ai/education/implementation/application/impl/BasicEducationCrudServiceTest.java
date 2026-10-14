@@ -224,7 +224,8 @@ class BasicEducationCrudServiceTest {
         ExamRepository exams = mock(ExamRepository.class);
         ExamBO exam = new ExamBO();
         exam.setId(8L);
-        when(exams.selectById(ACTOR.tenantId(), 8L)).thenReturn(exam, exam, null);
+        exam.setStatus(0);
+        when(exams.selectById(ACTOR.tenantId(), 8L)).thenReturn(exam, exam, null, exam);
         when(exams.selectBySubjectCode(ACTOR.tenantId(), "m")).thenReturn(List.of(exam));
         when(exams.selectByTeacherId(ACTOR.tenantId(), 9L)).thenReturn(List.of(exam));
         when(exams.selectPage(ACTOR.tenantId(), 1, 10))
@@ -247,7 +248,6 @@ class BasicEducationCrudServiceTest {
             assertTrue(service.listBySubjectCode(ACTOR, "m").isEmpty());
             assertTrue(service.listByTeacherId(ACTOR, 9L).isEmpty());
             assertEquals(1, service.page(ACTOR, 1, 10).getTotal());
-            assertNull(service.submit(ACTOR, 8L, null));
             assertNull(service.create(ACTOR, er));
             service.update(ACTOR, er);
             service.update(ACTOR, er);

@@ -3,12 +3,16 @@ import com.shiyu.ai.agent.implementation.runtime.service.AgentRuntimeImpl;
 import com.shiyu.ai.agent.implementation.runtime.service.AiRuntimeService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +31,7 @@ import com.shiyu.ai.agent.contract.runtime.AiRunStatus;
 import com.shiyu.ai.agent.implementation.cache.AgentCacheManager;
 import com.shiyu.ai.agent.implementation.cache.AgentLoader;
 import com.shiyu.ai.agent.implementation.event.publisher.EventPublisher;
+import com.shiyu.ai.agent.implementation.event.model.AgentExecutionStartedEvent;
 import com.shiyu.ai.agent.implementation.graph.Graph;
 import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.implementation.port.repository.AgentCheckpointRepository;
@@ -39,6 +44,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 验证 智能体 Runtime Impl Runtime Audit 相关功能、边界条件、异常路径和协作行为。
@@ -86,6 +93,68 @@ class AgentRuntimeImplRuntimeAuditTest {
     }
 
     @Test
+    void failedRuntimeAdmissionLeavesNoRunningExecutionForSyncOrStream() {
+        for (boolean streaming : List.of(false, true)) {
+            AgentExecutionRepository executions = mock(AgentExecutionRepository.class);
+            AtomicReference<String> executionId = new AtomicReference<>();
+            doAnswer(invocation -> {
+                com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO saved =
+                        invocation.getArgument(1);
+                executionId.set(saved.getExecutionId());
+                return null;
+            }).when(executions).insert(any(TenantId.class), any());
+            AiRuntimeService runtime = mock(AiRuntimeService.class);
+            doThrow(new IllegalStateException("runtime unavailable"))
+                    .when(runtime).startRun(any(), any(AiRunSource.class), anyString(),
+                            nullable(String.class), anyString());
+            AgentRuntimeImpl service = newRuntime(executions, runtime);
+
+            assertThrows(IllegalStateException.class, () -> {
+                if (streaming) {
+                    service.executeStream(ACTOR, "agent-1", Map.of("__appId", "app-1"));
+                } else {
+                    service.execute(ACTOR, "agent-1", Map.of("__appId", "app-1"));
+                }
+            });
+
+            verify(executions).insert(eq(ACTOR.tenantId()), argThat(saved ->
+                    executionId.get().equals(saved.getExecutionId())
+                            && Integer.valueOf(2).equals(saved.getStatus())));
+            assertNull(service.getStatus(ACTOR, executionId.get()));
+        }
+    }
+
+    @Test
+    void failedStartedEventPublicationFinishesAdmittedRunAndClearsExecution() {
+        AgentExecutionRepository executions = mock(AgentExecutionRepository.class);
+        AtomicReference<String> executionId = new AtomicReference<>();
+        doAnswer(invocation -> {
+            com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO saved =
+                    invocation.getArgument(1);
+            executionId.set(saved.getExecutionId());
+            return null;
+        }).when(executions).insert(any(TenantId.class), any());
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AiRun run = run();
+        when(runtime.startRun(any(), any(AiRunSource.class), anyString(),
+                nullable(String.class), anyString())).thenReturn(run);
+        EventPublisher publisher = mock(EventPublisher.class);
+        doThrow(new IllegalStateException("event bus unavailable"))
+                .when(publisher).publish(any(AgentExecutionStartedEvent.class));
+        AgentRuntimeImpl service = newRuntime(executions, runtime, publisher);
+
+        assertThrows(IllegalStateException.class, () ->
+                service.execute(ACTOR, "agent-1", Map.of("__appId", "app-1")));
+
+        verify(executions).insert(eq(ACTOR.tenantId()), argThat(saved ->
+                executionId.get().equals(saved.getExecutionId())
+                        && Integer.valueOf(2).equals(saved.getStatus())));
+        verify(runtime).finish("run-1", ACTOR.tenantId(), ACTOR.userId().value(),
+                AiRunStatus.FAILED, "AGENT_EXECUTION_FAILED");
+        assertNull(service.getStatus(ACTOR, executionId.get()));
+    }
+
+    @Test
     void keepsLegacyAgentExecutionTraceOptionalButDoesNotHideFinishFailure() {
         AgentExecutionRepository executions = mock(AgentExecutionRepository.class);
         when(executions.selectByExecutionId(any(TenantId.class), any(String.class)))
@@ -118,6 +187,12 @@ class AgentRuntimeImplRuntimeAuditTest {
 
     private AgentRuntimeImpl newRuntime(
             AgentExecutionRepository executions, AiRuntimeService runtime) {
+        return newRuntime(executions, runtime, mock(EventPublisher.class));
+    }
+
+    private AgentRuntimeImpl newRuntime(
+            AgentExecutionRepository executions, AiRuntimeService runtime,
+            EventPublisher publisher) {
         AgentCacheManager cache =
                 new AgentCacheManager(mock(AgentAdminRepository.class), mock(AgentLoader.class));
         BaseNode node =
@@ -155,7 +230,7 @@ class AgentRuntimeImplRuntimeAuditTest {
                 mock(AgentLoader.class),
                 executions,
                 mock(AgentCheckpointRepository.class),
-                mock(EventPublisher.class),
+                publisher,
                 runtime);
     }
 

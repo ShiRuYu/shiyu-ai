@@ -31,7 +31,8 @@ public class CourseRepositoryImpl
                 courseMapper.selectOneByQuery(
                         QueryWrapper.create()
                                 .eq(CourseDO::getTenantId, tenantId.value())
-                                .eq(CourseDO::getId, id)),
+                                .eq(CourseDO::getId, id)
+                                .eq("del_flag", 0)),
                 CourseBO.class);
     }
 
@@ -45,6 +46,23 @@ public class CourseRepositoryImpl
                                 .orderBy("id", false));
         return new PageData<>(
                 MapstructUtils.convert(page.getRecords(), CourseBO.class), page.getTotalRow());
+    }
+
+    @Override
+    public PageData<CourseBO> selectCatalogPage(TenantId tenantId, String subjectCode,
+            Integer grade, int pageNum, int pageSize) {
+        QueryWrapper query = QueryWrapper.create()
+                .eq("tenant_id", tenantId.value())
+                .eq("status", 1)
+                .eq("del_flag", 0)
+                .orderBy("id", false);
+        if (subjectCode != null && !subjectCode.isBlank()) {
+            query.eq("subject_code", subjectCode);
+        }
+        if (grade != null) query.eq("grade", grade);
+        var page = courseMapper.paginate(pageNum, pageSize, query);
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), CourseBO.class),
+                page.getTotalRow());
     }
 
     public List<CourseBO> selectBySubjectCode(TenantId tenantId, String subjectCode) {
@@ -75,6 +93,7 @@ public class CourseRepositoryImpl
     public int insert(TenantId tenantId, CourseBO entity) {
         CourseDO dataObj = MapstructUtils.convert(entity, CourseDO.class);
         dataObj.setTenantId(tenantId.value());
+        dataObj.setDelFlag(0);
         int rows = EducationWriteGuard.require(courseMapper.insert(dataObj), "insert course");
         entity.setId(dataObj.getId());
         return rows;

@@ -141,6 +141,18 @@ public class InMemoryToolApprovalRepository implements ToolApprovalRepository {
         return count[0];
     }
 
+    @Override
+    public List<ToolApproval> findOverdueRunning(Instant now, int limit) {
+        return values.values().stream()
+                .filter(value -> value.status() == ToolApprovalStatus.PENDING
+                        || value.status() == ToolApprovalStatus.EXPIRED)
+                .filter(value -> value.expiresAt().isBefore(now))
+                .sorted(java.util.Comparator.comparing(ToolApproval::expiresAt)
+                        .thenComparing(ToolApproval::id))
+                .limit(Math.max(1, Math.min(limit, 100)))
+                .toList();
+    }
+
     private static long tenant(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId is required");
         return tenantId.value();

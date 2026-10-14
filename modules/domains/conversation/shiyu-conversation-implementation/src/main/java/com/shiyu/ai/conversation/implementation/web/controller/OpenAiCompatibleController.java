@@ -11,6 +11,7 @@ import com.shiyu.ai.conversation.implementation.domain.model.ConversationMessage
 import com.shiyu.ai.conversation.implementation.domain.model.MessageRole;
 import com.shiyu.ai.conversation.implementation.domain.port.ConversationRepository;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.api.ModelRoutingPort;
 import com.shiyu.ai.model.contract.model.ChatMessage;
@@ -148,7 +149,7 @@ public class OpenAiCompatibleController {
             throw ex;
         }
         requireSuccessful(response, run);
-        persistIfRequested(
+        boolean persisted = persistIfRequested(
                 store,
                 request.conversationId(),
                 messages,
@@ -156,7 +157,7 @@ public class OpenAiCompatibleController {
                 provider,
                 request.model(),
                 run);
-        completeRun(run, response);
+        if (!persisted) completeRun(run, response);
         return completion(request.model(), response);
    }
 
@@ -211,7 +212,7 @@ public class OpenAiCompatibleController {
             throw ex;
         }
         requireSuccessful(response, run);
-        persistIfRequested(
+        boolean persisted = persistIfRequested(
                 store,
                 request.conversationId(),
                 messages,
@@ -219,7 +220,7 @@ public class OpenAiCompatibleController {
                 provider,
                 request.model(),
                 run);
-        completeRun(run, response);
+        if (!persisted) completeRun(run, response);
         Map<String, Object> output = new LinkedHashMap<>();
         output.put("type", "message");
         output.put("role", "assistant");
@@ -471,18 +472,12 @@ public class OpenAiCompatibleController {
                                         .data("[DONE]")
                                         .build()))
                 .doOnComplete(
-                        () -> {
+                        () -> TenantScope.withTenant(new TenantId(request.getTenantId()), () -> {
                             if ("COMPLETED".equals(terminal.get())) {
-                                if (Boolean.TRUE.equals(store))
-                                    persistIfRequested(
-                                            true,
-                                            conversationId,
-                                            storeMessages,
-                                            answer.toString(),
-                                            provider,
-                                            model,
-                                            run);
-                                completeRun(run, null);
+                                boolean persisted = persistIfRequested(
+                                        store, conversationId, storeMessages, answer.toString(),
+                                        provider, model, run);
+                                if (!persisted) completeRun(run, null);
                             } else if ("CANCELLED".equals(terminal.get())) {
                                 cancelRun(run);
                             } else {
@@ -491,8 +486,13 @@ public class OpenAiCompatibleController {
                                         new IllegalStateException(
                                                 "model stream ended without completion"));
                             }
-                        })
-                .doOnError(error -> failRun(run, error));
+                            return null;
+                        }))
+                .doOnError(error -> TenantScope.withTenant(
+                        new TenantId(request.getTenantId()), () -> {
+                            failRun(run, error);
+                            return null;
+                        }));
     }
 
     private AiRun beginRun(String model, List<ChatMessage> messages, String conversationId) {
@@ -535,6 +535,13 @@ public class OpenAiCompatibleController {
 
     private void appendRuntimeEvent(AiRun run, ChatResponse chunk, String type) {
         if (run == null) return;
+        TenantScope.withTenant(run.tenantId(), () -> {
+            appendRuntimeEventInTenant(run, chunk, type);
+            return null;
+        });
+    }
+
+    private void appendRuntimeEventInTenant(AiRun run, ChatResponse chunk, String type) {
         if ("USAGE".equals(type)) {
             int prompt = chunk.getPromptTokens() == null ? 0 : chunk.getPromptTokens();
             int completion = chunk.getCompletionTokens() == null ? 0 : chunk.getCompletionTokens();
@@ -838,7 +845,7 @@ public class OpenAiCompatibleController {
                 .toList();
     }
 
-    private void persistIfRequested(
+    private boolean persistIfRequested(
             Boolean store,
             String conversationId,
             List<ChatMessage> messages,
@@ -846,7 +853,7 @@ public class OpenAiCompatibleController {
             String provider,
             String model,
             AiRun runtimeRun) {
-        if (!Boolean.TRUE.equals(store)) return;
+        if (!Boolean.TRUE.equals(store)) return false;
         long tenant = ActorContextHttpAdapter.tenantId();
         long owner = ActorContextHttpAdapter.userId();
         var conversation =
@@ -926,7 +933,9 @@ public class OpenAiCompatibleController {
                     completionTokens,
                     runtime,
                     runtimeRun);
+            return true;
         }
+        return false;
     }
 
     private boolean sameMessage(ConversationMessage existing, MessageRole role, String text) {

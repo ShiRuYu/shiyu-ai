@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -116,6 +117,31 @@ public class ToolApprovalService {
         return approvals
                 .find(id, tenant, ownerUserId)
                 .orElseThrow(() -> new IllegalArgumentException("approval not found"));
+    }
+
+    /** Atomically reserves an approval for exactly one matching tool invocation. */
+    public ToolApproval claimForExecution(
+            String id,
+            TenantId tenantId,
+            long ownerUserId,
+            String runId,
+            String toolName,
+            String argumentsRedacted) {
+        ToolApproval current = require(id, tenantId, ownerUserId);
+        if (current.status() != ToolApprovalStatus.APPROVED
+                || !Objects.equals(current.runId(), runId)
+                || !Objects.equals(current.toolName(), toolName)
+                || !Objects.equals(current.argumentsRedacted(), argumentsRedacted)) {
+            throw new IllegalStateException("tool approval does not match this invocation");
+        }
+        ToolApproval claimed = new ToolApproval(
+                current.id(), current.runId(), current.tenantId(), current.ownerUserId(),
+                current.toolName(), current.argumentsRedacted(), ToolApprovalStatus.CLAIMED,
+                current.createdAt(), current.decidedAt(), current.expiresAt());
+        if (approvals.update(claimed, ToolApprovalStatus.APPROVED) != 1) {
+            throw new IllegalStateException("tool approval has already been claimed");
+        }
+        return claimed;
     }
 
     /**

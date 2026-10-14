@@ -17,6 +17,7 @@ import com.shiyu.ai.knowledge.implementation.application.service.graph.Knowledge
 import com.shiyu.ai.knowledge.implementation.domain.GraphNode;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService;
 import com.shiyu.ai.knowledge.implementation.web.response.KnowledgeGraphResponse;
 
@@ -31,6 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class KnowledgePointServiceImpl implements KnowledgePointService, KnowledgePointPort {
+
+    /** Space metadata used to restrict student tutoring to published tenant education spaces. */
+    private final KnowledgeEnterpriseRepository enterpriseRepository;
 
     /**
      * 仓储，表示当前对象中的对应属性。
@@ -111,6 +115,29 @@ public class KnowledgePointServiceImpl implements KnowledgePointService, Knowled
     public KnowledgeResponse getResponse(ActorContext actor, Long pointId) {
         PointView point = get(actor, pointId);
         return toKnowledgeResponse(point);
+    }
+
+    @Override
+    public java.util.List<KnowledgeResponse> listStudentEducationPoints(ActorContext actor) {
+        requireActor(actor);
+        java.util.Set<Long> visibleSpaces = enterpriseRepository
+                .findActiveSpacesByTenant(actor.tenantId()).stream()
+                .filter(space -> "EDUCATION".equals(space.getDomainCode()))
+                .filter(space -> "TENANT".equals(space.getAccessMode()))
+                .map(com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO::getId)
+                .collect(java.util.stream.Collectors.toSet());
+        return repository.findAll(actor.tenantId()).stream()
+                .filter(point -> visibleSpaces.contains(point.getSpaceId()))
+                .map(point -> toKnowledgeResponse(toView(point)))
+                .toList();
+    }
+
+    @Override
+    public KnowledgeResponse getStudentEducationPoint(ActorContext actor, Long pointId) {
+        if (pointId == null || pointId <= 0) throw new ServiceException("知识点不存在");
+        return listStudentEducationPoints(actor).stream()
+                .filter(point -> pointId.equals(point.id()))
+                .findFirst().orElseThrow(() -> new ServiceException("知识点不存在"));
     }
 
     /**

@@ -16,6 +16,7 @@ import com.shiyu.ai.agent.implementation.request.GraphConfigRequest;
 import com.shiyu.ai.agent.implementation.request.NodeConfigRequest;
 import com.shiyu.ai.agent.implementation.request.VersionRequest;
 import com.shiyu.ai.agent.implementation.service.AgentService;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
@@ -43,6 +44,7 @@ class AgentVersionServiceImplTest {
         AgentDefBO def = new AgentDefBO();
         def.setAgentId("math");
         AgentVersionBO version = version(2L, "math", "v2", AgentVersionStatus.DRAFT.getCode());
+        version.setGraphConfig("{\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\"}}}");
         when(repository.selectByAgentId(ACTOR.tenantId(), "math")).thenReturn(def);
         when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "math", "v2"))
                 .thenReturn(null);
@@ -58,9 +60,138 @@ class AgentVersionServiceImplTest {
         service.activateVersion(ACTOR, "math", 2L);
         verify(repository).update(eq(ACTOR.tenantId()), eq(def));
         version.setStatus(AgentVersionStatus.PUBLISHED.getCode());
+        assertThrows(IllegalStateException.class,
+                () -> service.archiveVersion(ACTOR, "math", 2L));
+        def.setCurrentVersion("v1");
         service.archiveVersion(ACTOR, "math", 2L);
         assertEquals(AgentVersionStatus.ARCHIVED.getCode(), version.getStatus());
-        verify(agentService, atLeast(2)).evictRuntimeCache("math");
+        verify(agentService, atLeast(2)).evictRuntimeCache(ACTOR, "math");
+    }
+
+    @Test
+    void activationRejectsHistoricalPublishedVersionWithInvalidGraph() {
+        AgentVersionBO invalid = version(21L, "math", "v21", AgentVersionStatus.PUBLISHED.getCode());
+        invalid.setGraphConfig("{\"startNode\":\"missing\",\"endNode\":\"n\",\"nodes\":{\"n\":{}}}");
+        AgentDefBO definition = new AgentDefBO();
+        definition.setAgentId("math");
+        definition.setCurrentVersion("v1");
+        when(repository.selectVersionById(ACTOR.tenantId(), 21L)).thenReturn(invalid);
+        when(repository.selectByAgentId(ACTOR.tenantId(), "math")).thenReturn(definition);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.activateVersion(ACTOR, "math", 21L));
+        assertEquals("v1", definition.getCurrentVersion());
+        verify(repository, never()).update(eq(ACTOR.tenantId()), any(AgentDefBO.class));
+    }
+
+    @Test
+    void activeVersionCannotBeArchivedBeforeReplacement() {
+        AgentVersionBO version = version(12L, "math", "v2", AgentVersionStatus.PUBLISHED.getCode());
+        AgentDefBO definition = new AgentDefBO();
+        definition.setAgentId("math");
+        definition.setCurrentVersion("v2");
+        when(repository.selectVersionById(ACTOR.tenantId(), 12L)).thenReturn(version);
+        when(repository.selectByAgentId(ACTOR.tenantId(), "math")).thenReturn(definition);
+
+        assertThrows(IllegalStateException.class,
+                () -> service.archiveVersion(ACTOR, "math", 12L));
+        assertEquals(AgentVersionStatus.PUBLISHED.getCode(), version.getStatus());
+        verify(repository, never()).updateVersion(eq(ACTOR.tenantId()), any());
+    }
+
+    @Test
+    void publishedVersionCannotBeDeletedAroundArchiveLifecycle() {
+        AgentVersionBO published = version(16L, "math", "v2", AgentVersionStatus.PUBLISHED.getCode());
+        when(repository.selectVersionById(ACTOR.tenantId(), 16L)).thenReturn(published);
+
+        assertThrows(IllegalStateException.class,
+                () -> service.deleteVersion(ACTOR, "math", 16L));
+
+        verify(repository, never()).deleteVersionById(ACTOR.tenantId(), 16L);
+    }
+
+    @Test
+    void publishRejectsMissingAndStructurallyInvalidGraphs() {
+        AgentVersionBO version = version(9L, "math", "v9", AgentVersionStatus.DRAFT.getCode());
+        when(repository.selectVersionById(ACTOR.tenantId(), 9L)).thenReturn(version);
+        assertThrows(IllegalArgumentException.class,
+                () -> service.publishVersion(ACTOR, "math", 9L));
+        assertEquals(AgentVersionStatus.DRAFT.getCode(), version.getStatus());
+
+        version.setGraphConfig("not-json");
+        assertThrows(IllegalArgumentException.class,
+                () -> service.publishVersion(ACTOR, "math", 9L));
+        assertEquals(AgentVersionStatus.DRAFT.getCode(), version.getStatus());
+
+        version.setGraphConfig("{\"startNode\":\"missing\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\"}}}");
+        assertThrows(IllegalArgumentException.class,
+                () -> service.publishVersion(ACTOR, "math", 9L));
+        assertEquals(AgentVersionStatus.DRAFT.getCode(), version.getStatus());
+
+        version.setGraphConfig("{\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\"}},\"conditionalEdges\":{\"n\":{\"defaultTarget\":\"missing\"}}}");
+        assertThrows(IllegalArgumentException.class,
+                () -> service.publishVersion(ACTOR, "math", 9L));
+        assertEquals(AgentVersionStatus.DRAFT.getCode(), version.getStatus());
+        verify(repository, never()).updateVersion(eq(ACTOR.tenantId()), any());
+    }
+
+    @Test
+    void publishRejectsConditionalRoutesWithoutAUsableDestination() {
+        AgentVersionBO draft = version(17L, "math", "v17", AgentVersionStatus.DRAFT.getCode());
+        when(repository.selectVersionById(ACTOR.tenantId(), 17L)).thenReturn(draft);
+        String base = "{\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\"}},\"conditionalEdges\":{\"n\":";
+
+        draft.setGraphConfig(base + "null}}");
+        assertThrows(IllegalArgumentException.class,
+                () -> service.publishVersion(ACTOR, "math", 17L));
+        draft.setGraphConfig(base + "{\"nodeMappings\":{},\"defaultTarget\":\"\"}}}");
+        assertThrows(IllegalArgumentException.class,
+                () -> service.publishVersion(ACTOR, "math", 17L));
+
+        assertEquals(AgentVersionStatus.DRAFT.getCode(), draft.getStatus());
+        verify(repository, never()).updateVersion(eq(ACTOR.tenantId()), any());
+    }
+
+    @Test
+    void publishRejectsNullNodeConfigurationThatRuntimeCannotLoad() {
+        AgentVersionBO draft = version(22L, "math", "v22", AgentVersionStatus.DRAFT.getCode());
+        draft.setGraphConfig("{\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":null}}");
+        when(repository.selectVersionById(ACTOR.tenantId(), 22L)).thenReturn(draft);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.publishVersion(ACTOR, "math", 22L));
+        assertEquals(AgentVersionStatus.DRAFT.getCode(), draft.getStatus());
+        verify(repository, never()).updateVersion(eq(ACTOR.tenantId()), any());
+    }
+
+    @Test
+    void publishedVersionGraphCannotBeChangedInPlace() {
+        AgentVersionBO published = version(10L, "math", "v10", AgentVersionStatus.PUBLISHED.getCode());
+        published.setGraphConfig("{\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\"}}}");
+        when(repository.selectVersionById(ACTOR.tenantId(), 10L)).thenReturn(published);
+        String originalGraph = published.getGraphConfig();
+        GraphConfigRequest replacement = new GraphConfigRequest();
+        NodeConfigRequest node = new NodeConfigRequest();
+        node.setNodeId("other");
+        EdgeRequest edge = new EdgeRequest();
+        edge.setSourceNodeId("n");
+        edge.setTargetNodeId("other");
+
+        assertAll(
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> service.updateGraphConfig(ACTOR, "math", 10L, replacement)),
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> service.addNode(ACTOR, "math", 10L, node)),
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> service.updateNode(ACTOR, "math", 10L, "n", node)),
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> service.deleteNode(ACTOR, "math", 10L, "n")),
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> service.addEdge(ACTOR, "math", 10L, edge)),
+                () -> assertThrows(IllegalArgumentException.class,
+                        () -> service.deleteEdge(ACTOR, "math", 10L, "n", "other")));
+        assertEquals(originalGraph, published.getGraphConfig());
+        verify(repository, never()).updateVersion(eq(ACTOR.tenantId()), any());
     }
 
     @Test
@@ -114,6 +245,48 @@ class AgentVersionServiceImplTest {
     }
 
     @Test
+    void copyingVersionRequiresAnExistingSourceOwnedByTheSameAgent() {
+        AgentDefBO target = new AgentDefBO();
+        target.setAgentId("math");
+        when(repository.selectByAgentId(ACTOR.tenantId(), "math")).thenReturn(target);
+        VersionRequest request = new VersionRequest();
+        request.setVersionNumber("v2");
+        request.setCopyFromVersionId(40L);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createVersion(ACTOR, "math", request));
+        verify(repository, never()).createVersion(eq(ACTOR.tenantId()), any());
+
+        AgentVersionBO foreign = version(40L, "other", "v1", AgentVersionStatus.PUBLISHED.getCode());
+        foreign.setGraphConfig("{\"startNode\":\"private\"}");
+        when(repository.selectVersionById(ACTOR.tenantId(), 40L)).thenReturn(foreign);
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createVersion(ACTOR, "math", request));
+        verify(repository, never()).createVersion(eq(ACTOR.tenantId()), any());
+
+        AgentVersionBO source = version(40L, "math", "v1", AgentVersionStatus.PUBLISHED.getCode());
+        source.setGraphConfig("{\"startNode\":\"copy\"}");
+        source.setCanvasConfig("{\"zoom\":2}");
+        when(repository.selectVersionById(ACTOR.tenantId(), 40L)).thenReturn(source);
+        service.createVersion(ACTOR, "math", request);
+        verify(repository).createVersion(eq(ACTOR.tenantId()), argThat(created ->
+                "{\"startNode\":\"copy\"}".equals(created.getGraphConfig())
+                        && "{\"zoom\":2}".equals(created.getCanvasConfig())));
+    }
+
+    @Test
+    void deletingByVersionIdCannotDeleteAnotherAgentsDraft() {
+        AgentVersionBO foreign = version(41L, "other", "v1",
+                AgentVersionStatus.DRAFT.getCode());
+        when(repository.selectVersionById(ACTOR.tenantId(), 41L)).thenReturn(foreign);
+
+        service.deleteVersion(ACTOR, "math", 41L);
+
+        verify(repository, never()).deleteVersionById(ACTOR.tenantId(), 41L);
+        verify(repository, never()).updateVersion(eq(ACTOR.tenantId()), any());
+    }
+
+    @Test
     void coversVersionQueriesUpdatesDeletionAndLifecycleGuards() {
         AgentVersionBO v = version(4L, "math", "v4", AgentVersionStatus.DRAFT.getCode());
         v.setDescription("draft");
@@ -157,11 +330,20 @@ class AgentVersionServiceImplTest {
         when(repository.selectVersionById(ACTOR.tenantId(), 5L)).thenReturn(v);
         NodeConfigRequest update = new NodeConfigRequest();
         update.setNodeName("new");
+        update.setDescription("updated description");
+        update.setNodeType("DEFAULT");
         update.setEnabled(false);
         update.setTimeout(42L);
         update.setRetryCount(2);
         update.setErrorStrategy("SKIP");
+        update.setConfig(Map.of("prompt", "hello"));
         service.updateNode(ACTOR, "math", 5L, "start", update);
+        Map<String, Object> savedGraph = JSONUtils.parseMap(v.getGraphConfig());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> savedNode = (Map<String, Object>)
+                ((Map<String, Object>) savedGraph.get("nodes")).get("start");
+        assertEquals("updated description", savedNode.get("description"));
+        assertEquals(Map.of("prompt", "hello"), savedNode.get("config"));
         EdgeRequest duplicate = new EdgeRequest();
         duplicate.setSourceNodeId("start");
         duplicate.setTargetNodeId("end");
@@ -178,6 +360,152 @@ class AgentVersionServiceImplTest {
                 () -> service.updateNode(ACTOR, "math", 5L, "missing", update));
         service.deleteNode(ACTOR, "math", 5L, "start");
         verify(repository, atLeast(5)).updateVersion(ACTOR.tenantId(), v);
+    }
+
+    @Test
+    void unknownStoredVersionStatusStillAllowsListingAndDetailInspection() {
+        AgentVersionBO legacy = version(19L, "math", "legacy", 99);
+        when(repository.selectVersionsByAgentId(ACTOR.tenantId(), "math"))
+                .thenReturn(List.of(legacy));
+        when(repository.selectVersionById(ACTOR.tenantId(), 19L))
+                .thenReturn(legacy);
+
+        assertNull(service.getVersions(ACTOR, "math").getFirst().getStatusDesc());
+        assertNull(service.getVersionDetail(ACTOR, "math", 19L).getStatusDesc());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void partialNodeEditPreservesUnmentionedRuntimeSettings() {
+        AgentVersionBO draft = version(17L, "math", "v17", AgentVersionStatus.DRAFT.getCode());
+        draft.setGraphConfig("{\"nodes\":{\"start\":{\"nodeName\":\"old\","
+                + "\"description\":\"keep\",\"nodeType\":\"DEFAULT\",\"enabled\":false,"
+                + "\"timeout\":123,\"retryCount\":2,\"errorStrategy\":\"SKIP\","
+                + "\"config\":{\"prompt\":\"keep\"}}},\"edges\":{},\"conditionalEdges\":{}}");
+        when(repository.selectVersionById(ACTOR.tenantId(), 17L)).thenReturn(draft);
+        NodeConfigRequest change = new NodeConfigRequest();
+        change.setNodeName("new");
+
+        service.updateNode(ACTOR, "math", 17L, "start", change);
+
+        Map<String, Object> graph = JSONUtils.parseMap(draft.getGraphConfig());
+        Map<String, Object> nodes = (Map<String, Object>) graph.get("nodes");
+        Map<String, Object> node = (Map<String, Object>) nodes.get("start");
+        assertEquals("new", node.get("nodeName"));
+        assertEquals("keep", node.get("description"));
+        assertEquals(false, node.get("enabled"));
+        assertEquals(123, ((Number) node.get("timeout")).intValue());
+        assertEquals(2, ((Number) node.get("retryCount")).intValue());
+        assertEquals("SKIP", node.get("errorStrategy"));
+        assertEquals(Map.of("prompt", "keep"), node.get("config"));
+    }
+
+    @Test
+    void deletingNodeRemovesConditionalRoutesThatPointToIt() {
+        AgentVersionBO draft = version(15L, "math", "v15", AgentVersionStatus.DRAFT.getCode());
+        draft.setGraphConfig("{\"startNode\":\"start\",\"endNode\":\"finish\","
+                + "\"nodes\":{\"start\":{\"nodeType\":\"DEFAULT\"},"
+                + "\"choice\":{\"nodeType\":\"DEFAULT\"},"
+                + "\"finish\":{\"nodeType\":\"DEFAULT\"}},"
+                + "\"edges\":{},\"conditionalEdges\":{\"start\":{"
+                + "\"defaultTarget\":\"choice\","
+                + "\"nodeMappings\":{\"yes\":\"finish\",\"no\":\"choice\"}}}}");
+        when(repository.selectVersionById(ACTOR.tenantId(), 15L)).thenReturn(draft);
+
+        service.deleteNode(ACTOR, "math", 15L, "choice");
+
+        GraphConfigRequest remaining = JSONUtils.parseObject(draft.getGraphConfig(),
+                new tools.jackson.core.type.TypeReference<GraphConfigRequest>() {});
+        assertTrue(service.validateGraphConfig(remaining).isValid());
+        assertFalse(draft.getGraphConfig().contains("\"choice\""));
+    }
+
+    @Test
+    void deletingTheSoleConditionalDestinationRemovesTheEmptyRoute() {
+        AgentVersionBO draft = version(23L, "math", "v23", AgentVersionStatus.DRAFT.getCode());
+        draft.setGraphConfig("{\"startNode\":\"start\",\"endNode\":\"start\","
+                + "\"nodes\":{\"start\":{\"nodeType\":\"DEFAULT\"},"
+                + "\"choice\":{\"nodeType\":\"DEFAULT\"}},\"edges\":{},"
+                + "\"conditionalEdges\":{\"start\":{\"defaultTarget\":\"choice\","
+                + "\"nodeMappings\":{\"yes\":\"choice\"}}}} ");
+        when(repository.selectVersionById(ACTOR.tenantId(), 23L)).thenReturn(draft);
+
+        service.deleteNode(ACTOR, "math", 23L, "choice");
+
+        GraphConfigRequest remaining = JSONUtils.parseObject(draft.getGraphConfig(),
+                new tools.jackson.core.type.TypeReference<GraphConfigRequest>() {});
+        assertTrue(remaining.getConditionalEdges().isEmpty());
+        assertTrue(service.validateGraphConfig(remaining).isValid());
+    }
+
+    @Test
+    void deletingTheSoleOrdinaryDestinationRemovesTheEmptyEdge() {
+        AgentVersionBO draft = version(24L, "math", "v24", AgentVersionStatus.DRAFT.getCode());
+        draft.setGraphConfig("{\"startNode\":\"start\",\"endNode\":\"start\","
+                + "\"nodes\":{\"start\":{\"nodeType\":\"DEFAULT\"},"
+                + "\"choice\":{\"nodeType\":\"DEFAULT\"}},"
+                + "\"edges\":{\"start\":[\"choice\"]},\"conditionalEdges\":{}}");
+        when(repository.selectVersionById(ACTOR.tenantId(), 24L)).thenReturn(draft);
+
+        service.deleteNode(ACTOR, "math", 24L, "choice");
+
+        GraphConfigRequest remaining = JSONUtils.parseObject(draft.getGraphConfig(),
+                new tools.jackson.core.type.TypeReference<GraphConfigRequest>() {});
+        assertTrue(remaining.getEdges().isEmpty());
+        assertTrue(service.validateGraphConfig(remaining).isValid());
+    }
+
+    @Test
+    void deletingUnrelatedNodeKeepsConditionalRouteExecutable() {
+        AgentVersionBO draft = version(18L, "math", "v18", AgentVersionStatus.DRAFT.getCode());
+        draft.setGraphConfig("{\"startNode\":\"start\",\"endNode\":\"finish\","
+                + "\"nodes\":{\"start\":{\"nodeType\":\"DEFAULT\"},"
+                + "\"finish\":{\"nodeType\":\"DEFAULT\"},"
+                + "\"orphan\":{\"nodeType\":\"DEFAULT\"}},\"edges\":{},"
+                + "\"conditionalEdges\":{\"start\":{\"defaultTarget\":\"finish\","
+                + "\"nodeMappings\":{\"yes\":\"finish\"}}}}");
+        when(repository.selectVersionById(ACTOR.tenantId(), 18L)).thenReturn(draft);
+
+        service.deleteNode(ACTOR, "math", 18L, "orphan");
+
+        GraphConfigRequest remaining = JSONUtils.parseObject(draft.getGraphConfig(),
+                new tools.jackson.core.type.TypeReference<GraphConfigRequest>() {});
+        assertTrue(service.validateGraphConfig(remaining).isValid());
+        assertEquals("finish", remaining.getConditionalEdges().get("start").getDefaultTarget());
+        assertEquals(Map.of("yes", "finish"),
+                remaining.getConditionalEdges().get("start").getNodeMappings());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void deletingOneEdgePreservesUnrelatedConditionalRoutes() {
+        AgentVersionBO draft = version(16L, "math", "v16", AgentVersionStatus.DRAFT.getCode());
+        draft.setGraphConfig("{\"nodes\":{},\"edges\":{\"start\":[\"finish\"]},"
+                + "\"conditionalEdges\":{\"start\":{\"defaultTarget\":\"right\","
+                + "\"nodeMappings\":{\"yes\":\"left\",\"no\":\"right\"}}}}");
+        when(repository.selectVersionById(ACTOR.tenantId(), 16L)).thenReturn(draft);
+
+        service.deleteEdge(ACTOR, "math", 16L, "start", "finish");
+
+        Map<String, Object> graph = JSONUtils.parseMap(draft.getGraphConfig());
+        Map<String, Object> routes = (Map<String, Object>) graph.get("conditionalEdges");
+        Map<String, Object> route = (Map<String, Object>) routes.get("start");
+        assertEquals("right", route.get("defaultTarget"));
+        assertEquals(Map.of("yes", "left", "no", "right"), route.get("nodeMappings"));
+
+        service.deleteEdge(ACTOR, "math", 16L, "start", "left");
+
+        graph = JSONUtils.parseMap(draft.getGraphConfig());
+        routes = (Map<String, Object>) graph.get("conditionalEdges");
+        route = (Map<String, Object>) routes.get("start");
+        assertEquals("right", route.get("defaultTarget"));
+        assertEquals(Map.of("no", "right"), route.get("nodeMappings"));
+
+        service.deleteEdge(ACTOR, "math", 16L, "start", "right");
+
+        graph = JSONUtils.parseMap(draft.getGraphConfig());
+        routes = (Map<String, Object>) graph.get("conditionalEdges");
+        assertFalse(routes.containsKey("start"));
     }
 
     @Test
@@ -267,7 +595,8 @@ class AgentVersionServiceImplTest {
         copy.setVersionNumber("v9");
         copy.setCopyFromVersionId(999L);
         when(repository.selectVersionById(ACTOR.tenantId(), 999L)).thenReturn(null);
-        assertEquals("v9", service.createVersion(ACTOR, "math", copy).getVersionNumber());
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createVersion(ACTOR, "math", copy));
 
         VersionRequest noDescription = new VersionRequest();
         service.updateVersion(ACTOR, "math", 8L, noDescription);

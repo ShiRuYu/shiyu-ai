@@ -10,7 +10,6 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.TenantDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.TenantMapper;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.annotation.Resource;
 
@@ -35,7 +34,9 @@ public class TenantRoleRepositoryImpl
 
     public TenantBO selectTenantById(TenantId tenantId) {
         return MapstructUtils.convert(
-                tenantMapper.selectOneById(requireTenant(tenantId)), TenantBO.class);
+                TenantQueryExecutor.readAcrossTenants(
+                        () -> tenantMapper.selectOneById(requireTenant(tenantId))),
+                TenantBO.class);
     }
 
     public RoleBO selectRoleById(Long roleId) {
@@ -88,15 +89,16 @@ public class TenantRoleRepositoryImpl
     }
 
     public String selectTenantNameById(TenantId tenantId) {
-        TenantDO tenant = tenantMapper.selectOneById(requireTenant(tenantId));
+        TenantDO tenant =
+                TenantQueryExecutor.readAcrossTenants(
+                        () -> tenantMapper.selectOneById(requireTenant(tenantId)));
         return tenant != null ? tenant.getName() : "Unknown";
     }
 
     private static long requireTenant(TenantId tenantId) {
-        if (tenantId == null) {
+        if (tenantId == null || tenantId.value() <= 0) {
             throw new IllegalArgumentException("tenantId is required for tenant role query");
         }
-        TenantScope.requireMatchesIfBound(tenantId);
         return tenantId.value();
     }
 }

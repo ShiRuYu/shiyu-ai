@@ -26,6 +26,28 @@ public class StudyRecordRepositoryImpl
      */
     @Resource private StudyRecordMapper studyRecordMapper;
 
+    public StudyRecordBO selectById(TenantId tenantId, Long id) {
+        return MapstructUtils.convert(studyRecordMapper.selectOneByQuery(
+                QueryWrapper.create().eq("tenant_id", tenantId.value()).eq("id", id)),
+                StudyRecordBO.class);
+    }
+
+    public int claimAnalysis(TenantId tenantId, Long studentId, Long id) {
+        StudyRecordDO update = new StudyRecordDO();
+        update.setAnalysisApplied(true);
+        return studyRecordMapper.updateByQuery(update, QueryWrapper.create()
+                .eq("tenant_id", tenantId.value()).eq("student_id", studentId)
+                .eq("id", id).eq("record_type", "PRACTICE")
+                .eq("analysis_applied", false));
+    }
+
+    public StudyRecordBO selectBySubmissionKey(TenantId tenantId, Long studentId, String key) {
+        return MapstructUtils.convert(studyRecordMapper.selectOneByQuery(
+                QueryWrapper.create().eq("tenant_id", tenantId.value())
+                        .eq("student_id", studentId).eq("record_type", "PRACTICE")
+                        .eq("submission_key", key)), StudyRecordBO.class);
+    }
+
     public List<StudyRecordBO> selectByStudent(TenantId tenantId, Long studentId) {
         return MapstructUtils.convert(
                 studyRecordMapper.selectListByQuery(

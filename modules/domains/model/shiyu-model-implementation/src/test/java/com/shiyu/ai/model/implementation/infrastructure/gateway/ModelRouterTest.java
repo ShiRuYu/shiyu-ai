@@ -26,6 +26,14 @@ import java.util.concurrent.TimeUnit;
  */
 class ModelRouterTest {
     @Test
+    void registersConfiguredDeepSeekFlashAsTheBuiltInModel() {
+        ModelRouter router = new ModelRouter();
+        assertTrue(router.models().stream().anyMatch(model ->
+                "DEEPSEEK".equals(model.provider())
+                        && "deepseek-flash".equals(model.model())));
+    }
+
+    @Test
     void acceptsDefaultModelAliasAndMatchesCapabilities() {
         ModelRouter router = new ModelRouter();
         ModelRoutePolicy policy =

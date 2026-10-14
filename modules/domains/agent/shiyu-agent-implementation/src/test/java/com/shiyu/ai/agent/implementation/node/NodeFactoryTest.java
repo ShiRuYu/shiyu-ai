@@ -21,6 +21,21 @@ class NodeFactoryTest {
     private final NodeFactory factory = new NodeFactory(List.of(), null);
 
     @Test
+    void invalidNodeTypeRegistrationCannotReplaceAnExistingCreator() {
+        NodeTypeRegistry registry = new NodeTypeRegistry();
+        var existing = registry.get(NodeType.DEFAULT);
+        NodeFactory.NodeCreator<NodeConfig> creator = config -> mock(BaseNode.class);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> registry.register(null, NodeConfig.class, creator));
+        assertThrows(IllegalArgumentException.class,
+                () -> registry.register(NodeType.DEFAULT, null, creator));
+        assertThrows(IllegalArgumentException.class,
+                () -> registry.register(NodeType.DEFAULT, NodeConfig.class, null));
+        assertSame(existing, registry.get(NodeType.DEFAULT));
+    }
+
+    @Test
     void createsRegistersAndRemovesDefaultNodes() {
         NodeConfig config =
                 NodeConfig.builder()
@@ -50,6 +65,19 @@ class NodeFactoryTest {
         assertThrows(IllegalArgumentException.class, () -> factory.createNode(missingType));
         factory.clearNodes();
         assertTrue(factory.getAllRegisteredNodes().isEmpty());
+    }
+
+    @Test
+    void nullBatchEntryReportsItsKeyWithoutPublishingEarlierNodes() {
+        Map<String, NodeConfig> configs = new LinkedHashMap<>();
+        configs.put("ok", NodeConfig.builder().nodeId("ok").nodeType(NodeType.DEFAULT).build());
+        configs.put("missing-config", null);
+
+        RuntimeException failure = assertThrows(RuntimeException.class,
+                () -> factory.createNodes(configs));
+
+        assertTrue(failure.getMessage().contains("missing-config"));
+        assertNull(factory.getNode("ok"));
     }
 
     @Test
@@ -101,6 +129,8 @@ class NodeFactoryTest {
         withBeans.registerServiceToNode("intent-1", "unknown", Integer.valueOf(4));
 
         Map<String, NodeConfig> configs = new LinkedHashMap<>();
+        configs.put("intent-1", NodeConfig.builder()
+                .nodeId("intent-1").nodeType(NodeType.DEFAULT).build());
         configs.put("ok", NodeConfig.builder().nodeId("ok").nodeType(NodeType.DEFAULT).build());
         configs.put(
                 "education",
@@ -111,6 +141,8 @@ class NodeFactoryTest {
         RuntimeException failure =
                 assertThrows(RuntimeException.class, () -> withBeans.createNodes(configs));
         assertTrue(failure.getMessage().contains("education"));
+        assertNull(withBeans.getNode("ok"), "失败的批量创建不得留下部分注册节点");
+        assertSame(supplied, withBeans.getNode("intent-1"), "既有节点应保持不变");
         assertNotNull(
                 withBeans.createNodesWithServices(
                         Map.of(

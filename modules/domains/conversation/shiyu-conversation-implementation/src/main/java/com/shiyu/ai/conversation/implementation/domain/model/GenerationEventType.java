@@ -7,6 +7,7 @@ public enum GenerationEventType {
     STARTED,
     BLOCK_STARTED,
     DELTA,
+    METADATA,
     REASONING_DELTA,
     TOOL_CALL,
     BLOCK_COMPLETED,

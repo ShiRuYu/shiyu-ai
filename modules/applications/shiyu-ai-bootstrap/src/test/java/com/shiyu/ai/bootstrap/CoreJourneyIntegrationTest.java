@@ -1,10 +1,29 @@
 package com.shiyu.ai.bootstrap;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shiyu.ai.runtimeconsole.auth.ConsoleSessionStore;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
+import com.shiyu.ai.education.implementation.application.ExamService;
+import com.shiyu.ai.education.implementation.application.ExamPublishingService;
+import com.shiyu.ai.education.implementation.application.ExamTakingService;
+import com.shiyu.ai.education.implementation.application.CourseService;
+import com.shiyu.ai.education.implementation.application.StudentLearningService;
+import com.shiyu.ai.education.implementation.application.TrustedScoreAnalysisService;
+import com.shiyu.ai.education.implementation.web.request.CourseRequest;
+import com.shiyu.ai.education.implementation.web.request.ExamRequest;
+import com.shiyu.ai.education.implementation.web.request.ExamCompositionRequest;
+import com.shiyu.ai.education.implementation.web.request.SubmitExamRequest;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
+import com.shiyu.ai.kernel.context.UserId;
+import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
+import com.shiyu.ai.model.implementation.persistence.repository.PlatformCredentialCipher;
+import com.sun.net.httpserver.HttpServer;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -15,9 +34,11 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.net.URI;
+import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -28,6 +49,11 @@ import java.util.UUID;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 验证 Core Journey Integration 相关功能、边界条件、异常路径和协作行为。
@@ -62,6 +88,9 @@ class CoreJourneyIntegrationTest {
         registry.add("spring.profiles.active", () -> "dev");
         registry.add("shiyu.modules.education.enabled", () -> "true");
         registry.add("shiyu.console.announce-startup-link", () -> "false");
+        registry.add("shiyu.ai.platform-key-encryption-key", () ->
+                java.util.Base64.getEncoder().encodeToString(
+                        "0123456789abcdef0123456789abcdef".getBytes(StandardCharsets.UTF_8)));
     }
 
     @Autowired @LocalServerPort private int port;
@@ -71,6 +100,440 @@ class CoreJourneyIntegrationTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired private JdbcTemplate jdbcTemplate;
+
+    @Autowired private ModelManager modelManager;
+
+    @Autowired private PlatformCredentialCipher platformCredentialCipher;
+
+    @Test
+    void platformApiCanExplicitlyClearAStoredCredentialWithoutReturningIt() throws Exception {
+        String code = "CLEAR_KEY_" + UUID.randomUUID().toString().replace("-", "")
+                .substring(0, 10).toUpperCase(java.util.Locale.ROOT);
+        String key = "temporary-integration-key";
+        JsonNode platformLogin = body(request("POST", "/api/iam/auth/login", null,
+                "{\"username\":\"admin\",\"password\":\"123456\"}").body());
+        assertThat(platformLogin.path("success").asBoolean())
+                .as("platform test login failed: code=%s, message=%s",
+                        platformLogin.path("code").asText(), platformLogin.path("message").asText())
+                .isTrue();
+        String authorization = "Bearer " + platformLogin.path("data").path("accessToken").asText();
+        long platformId = -1L;
+        try {
+            JsonNode created = body(request("POST", "/api/model/platforms", authorization,
+                    objectMapper.writeValueAsString(Map.of(
+                            "name", "Credential clear test", "code", code,
+                            "adapterType", "OPENAI_COMPATIBLE",
+                            "baseUrl", "http://127.0.0.1:1/v1",
+                            "apiKey", key, "status", "1"))).body());
+            assertThat(created.path("success").asBoolean())
+                    .as("platform create failed: code=%s, message=%s",
+                            created.path("code").asText(), created.path("message").asText())
+                    .isTrue();
+            platformId = created.path("data").path("id").asLong();
+            assertThat(platformId).isPositive();
+            assertThat(created.toString()).doesNotContain(key);
+            assertThat(jdbcTemplate.queryForObject(
+                    "SELECT api_key FROM model_ai_platform WHERE id = ?", String.class,
+                    platformId)).startsWith("enc:v1:").doesNotContain(key);
+
+            JsonNode cleared = body(request("PUT", "/api/model/platforms/" + platformId,
+                    authorization, objectMapper.writeValueAsString(Map.of(
+                            "name", "Credential clear test", "code", code,
+                            "adapterType", "OPENAI_COMPATIBLE",
+                            "baseUrl", "http://127.0.0.1:1/v1",
+                            "clearApiKey", true, "status", "1"))).body());
+            assertSuccess(cleared);
+            assertThat(cleared.toString()).doesNotContain(key);
+            assertThat(jdbcTemplate.queryForObject(
+                    "SELECT api_key FROM model_ai_platform WHERE id = ?", String.class,
+                    platformId)).isEmpty();
+        } finally {
+            if (platformId > 0) {
+                jdbcTemplate.update("DELETE FROM model_ai_platform WHERE id = ?", platformId);
+                modelManager.markDirty();
+            }
+        }
+    }
+
+    @Test
+    void authenticatedTenantsReachOnlyTheirOwnModelEndpoints() throws Exception {
+        AtomicInteger firstCalls = new AtomicInteger();
+        AtomicInteger secondCalls = new AtomicInteger();
+        HttpServer first = tenantModelEndpoint("first", "first-test-key", firstCalls);
+        HttpServer second = tenantModelEndpoint("second", "second-test-key", secondCalls);
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+        String code = "TENANT_HTTP_" + suffix.toUpperCase(java.util.Locale.ROOT);
+        String username = "model_tenant_" + suffix;
+        long secondTenant = -1L;
+        long secondUser = -1L;
+        long secondRole = -1L;
+        try {
+            jdbcTemplate.update("INSERT INTO auth_tenant(code,name,status,del_flag) VALUES (?,?,1,0)",
+                    "model-" + suffix, "Model tenant");
+            secondTenant = jdbcTemplate.queryForObject(
+                    "SELECT id FROM auth_tenant WHERE code = ?", Long.class, "model-" + suffix);
+            String passwordHash = jdbcTemplate.queryForObject(
+                    "SELECT password FROM auth_user WHERE username = 'admin'", String.class);
+            jdbcTemplate.update("INSERT INTO auth_user(username,password,status,del_flag,ext_info) "
+                            + "VALUES (?,?,1,0,?)", username, passwordHash,
+                    "{\"homeTenantId\":" + secondTenant + ",\"currentTenantId\":"
+                            + secondTenant + "}");
+            secondUser = jdbcTemplate.queryForObject(
+                    "SELECT id FROM auth_user WHERE username = ?", Long.class, username);
+            jdbcTemplate.update("INSERT INTO auth_role(code,name,tenant_id,status,del_flag) "
+                    + "VALUES ('user','Model user',?,1,0)", secondTenant);
+            secondRole = jdbcTemplate.queryForObject(
+                    "SELECT id FROM auth_role WHERE tenant_id = ? AND name = 'Model user'",
+                    Long.class, secondTenant);
+            jdbcTemplate.update("INSERT INTO auth_user_scope_role(user_id,role_id,tenant_id,status,del_flag) "
+                    + "VALUES (?,?,?,1,0)", secondUser, secondRole, secondTenant);
+
+            jdbcTemplate.update("INSERT INTO model_ai_platform(name,code,adapter_type,tenant_id,base_url,api_key,status,del_flag) "
+                            + "VALUES (?,?, 'OPENAI_COMPATIBLE',1,?,?,1,0)",
+                    "First model endpoint", code, modelUrl(first),
+                    platformCredentialCipher.protect(1L, "first-test-key"));
+            jdbcTemplate.update("INSERT INTO model_ai_platform(name,code,adapter_type,tenant_id,base_url,api_key,status,del_flag) "
+                            + "VALUES (?,?, 'OPENAI_COMPATIBLE',?,?,?,1,0)",
+                    "Second model endpoint", code, secondTenant, modelUrl(second),
+                    platformCredentialCipher.protect(secondTenant, "second-test-key"));
+            long firstPlatform = jdbcTemplate.queryForObject(
+                    "SELECT id FROM model_ai_platform WHERE code = ? AND tenant_id = 1",
+                    Long.class, code);
+            long secondPlatform = jdbcTemplate.queryForObject(
+                    "SELECT id FROM model_ai_platform WHERE code = ? AND tenant_id = ?",
+                    Long.class, code, secondTenant);
+            jdbcTemplate.update("INSERT INTO model_ai_model(platform_id,model_name,tenant_id,is_default,status,del_flag) "
+                    + "VALUES (?,'first-model',1,'Y',1,0)", firstPlatform);
+            jdbcTemplate.update("INSERT INTO model_ai_model(platform_id,model_name,tenant_id,is_default,status,del_flag) "
+                    + "VALUES (?,'second-model',?,'Y',1,0)", secondPlatform, secondTenant);
+            modelManager.markDirty();
+
+            String firstToken = body(request("POST", "/api/iam/auth/login", null,
+                    "{\"username\":\"admin\",\"password\":\"123456\"}").body())
+                    .path("data").path("accessToken").asText();
+            String secondToken = body(request("POST", "/api/iam/auth/login", null,
+                    "{\"username\":\"" + username + "\",\"password\":\"123456\"}").body())
+                    .path("data").path("accessToken").asText();
+            assertThat(firstToken).isNotBlank();
+            assertThat(secondToken).isNotBlank();
+            assertTenantCompletion("Bearer " + firstToken, code, "first-model", "first");
+            assertTenantCompletion("Bearer " + secondToken, code, "second-model", "second");
+            assertTenantStream("Bearer " + firstToken, code, "first-model", "first");
+            assertTenantStream("Bearer " + secondToken, code, "second-model", "second");
+            assertThat(firstCalls.get()).isEqualTo(2);
+            assertThat(secondCalls.get()).isEqualTo(2);
+        } finally {
+            jdbcTemplate.update("DELETE FROM model_ai_model WHERE platform_id IN "
+                    + "(SELECT id FROM model_ai_platform WHERE code = ?)", code);
+            jdbcTemplate.update("DELETE FROM model_ai_platform WHERE code = ?", code);
+            if (secondUser > 0) {
+                jdbcTemplate.update("DELETE FROM auth_user_scope_role WHERE user_id = ?", secondUser);
+                jdbcTemplate.update("DELETE FROM auth_user WHERE id = ?", secondUser);
+            }
+            if (secondRole > 0) jdbcTemplate.update("DELETE FROM auth_role WHERE id = ?", secondRole);
+            if (secondTenant > 0) jdbcTemplate.update("DELETE FROM auth_tenant WHERE id = ?", secondTenant);
+            modelManager.markDirty();
+            first.stop(0);
+            second.stop(0);
+        }
+    }
+
+    private void assertTenantCompletion(String authorization, String code, String model,
+                                        String expected) throws Exception {
+        HttpResponse<String> response = request("POST", "/api/conversation/chat/completions",
+                authorization, objectMapper.writeValueAsString(Map.of(
+                        "platform", code, "model", model,
+                        "messages", List.of(Map.of("role", "user", "content", "hello")))));
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains(expected);
+    }
+
+    private void assertTenantStream(String authorization, String code, String model,
+                                    String expected) throws Exception {
+        String json = objectMapper.writeValueAsString(Map.of(
+                "platform", code, "model", model, "stream", true,
+                "messages", List.of(Map.of("role", "user", "content", "hello"))));
+        HttpResponse<String> response = httpClient.send(HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/conversation/chat/completions"))
+                .header("Authorization", authorization)
+                .header("Accept", "text/event-stream")
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build(), HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains(expected, "[DONE]");
+    }
+
+    private static String modelUrl(HttpServer server) {
+        return "http://127.0.0.1:" + server.getAddress().getPort() + "/v1";
+    }
+
+    private static HttpServer tenantModelEndpoint(String name, String key, AtomicInteger calls)
+            throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/v1/chat/completions", exchange -> {
+            String authorization = exchange.getRequestHeaders().getFirst("Authorization");
+            if (!("Bearer " + key).equals(authorization)) {
+                exchange.sendResponseHeaders(401, -1);
+                exchange.close();
+                return;
+            }
+            calls.incrementAndGet();
+            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            boolean stream = body.matches("(?s).*\\\"stream\\\"\\s*:\\s*true.*");
+            String response = stream
+                    ? "data: {\"id\":\"req\",\"model\":\"" + name
+                            + "-model\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\""
+                            + name + "\"},\"finish_reason\":null}]}\n\ndata: [DONE]\n\n"
+                    : "{\"id\":\"req\",\"model\":\"" + name
+                            + "-model\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\""
+                            + name + "\"},\"finish_reason\":\"stop\"}]}";
+            byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type",
+                    stream ? "text/event-stream" : "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+        server.start();
+        return server;
+    }
+
+    @Test
+    void loginRejectsOnlyRevokedAndCrossTenantHistoricalRoles() throws Exception {
+        String suffix = UUID.randomUUID().toString().replace("-", "");
+        String username = "stale_scope_" + suffix;
+        String staleCode = "stale_" + suffix;
+        String foreignCode = "foreign_" + suffix;
+        String passwordHash = jdbcTemplate.queryForObject(
+                "SELECT password FROM auth_user WHERE username = 'admin'", String.class);
+        jdbcTemplate.update("INSERT INTO auth_user(username,password,status,del_flag,ext_info) "
+                        + "VALUES (?,?,1,0,?)", username, passwordHash,
+                "{\"currentTenantId\":1}");
+        long userId = jdbcTemplate.queryForObject(
+                "SELECT id FROM auth_user WHERE username = ?", Long.class, username);
+        jdbcTemplate.update("INSERT INTO auth_role(code,name,tenant_id,status,del_flag) "
+                + "VALUES (?,?,1,0,0)", staleCode, "Revoked");
+        jdbcTemplate.update("INSERT INTO auth_role(code,name,tenant_id,status,del_flag) "
+                + "VALUES (?,?,2,1,0)", foreignCode, "Foreign");
+        long staleId = jdbcTemplate.queryForObject(
+                "SELECT id FROM auth_role WHERE code = ?", Long.class, staleCode);
+        long foreignId = jdbcTemplate.queryForObject(
+                "SELECT id FROM auth_role WHERE code = ?", Long.class, foreignCode);
+        try {
+            jdbcTemplate.update("INSERT INTO auth_user_scope_role(user_id,role_id,tenant_id,status,del_flag) "
+                    + "VALUES (?,?,1,1,0)", userId, staleId);
+            jdbcTemplate.update("INSERT INTO auth_user_scope_role(user_id,role_id,tenant_id,status,del_flag) "
+                    + "VALUES (?,?,1,1,0)", userId, foreignId);
+            JsonNode login = body(request("POST", "/api/iam/auth/login", null,
+                    "{\"username\":\"" + username + "\",\"password\":\"123456\"}").body());
+            assertThat(login.path("success").asBoolean()).isFalse();
+            assertThat(login.path("data").path("accessToken").asText()).isEmpty();
+        } finally {
+            jdbcTemplate.update("DELETE FROM auth_user_scope_role WHERE user_id = ?", userId);
+            jdbcTemplate.update("DELETE FROM auth_role WHERE id IN (?,?)", staleId, foreignId);
+            jdbcTemplate.update("DELETE FROM auth_user WHERE id = ?", userId);
+        }
+    }
+
+    @Autowired private ExamService examService;
+
+    @Autowired private ExamPublishingService examPublishing;
+
+    @Autowired private ExamTakingService examTaking;
+
+    @Autowired private CourseService courseService;
+
+    @Autowired private StudentLearningService studentLearning;
+
+    @Autowired private TrustedScoreAnalysisService scoreAnalysis;
+    @MockitoBean private AgentRuntime agentRuntime;
+
+    @Test
+    void agentConversationStreamsAndRestoresPersistedMessages() throws Exception {
+        HttpResponse<String> login = request("POST", "/api/iam/auth/login", null,
+                "{\"username\":\"admin\",\"password\":\"123456\"}");
+        String authorization = "Bearer " + body(login.body()).path("data")
+                .path("accessToken").asText();
+        String appId = body(request("POST", "/api/agent/apps", authorization,
+                "{\"name\":\"agent-conversation-test\"}").body())
+                .path("data").path("id").asText();
+        String versionId = body(request("POST", "/api/agent/apps/" + appId + "/versions",
+                authorization,
+                objectMapper.writeValueAsString(Map.of("version", "1.0.0",
+                        "configJson", objectMapper.writeValueAsString(Map.of(
+                                "agentId", "simple-assistant",
+                                "validation", Map.of("graph", "PASS"))))))
+                .body()).path("data").path("id").asText();
+        assertThat(body(request("POST", "/api/agent/apps/" + appId + "/versions/"
+                + versionId + "/publish", authorization, null).body())
+                .path("success").asBoolean()).isTrue();
+        String conversationId = body(request("POST", "/api/conversation/conversations",
+                authorization, "{\"sceneType\":\"agent\",\"title\":\"Agent test\"}")
+                .body()).path("data").path("id").asText();
+        org.mockito.Mockito.when(agentRuntime.executeStream(
+                org.mockito.ArgumentMatchers.any(ActorContext.class),
+                org.mockito.ArgumentMatchers.eq("simple-assistant"),
+                org.mockito.ArgumentMatchers.nullable(String.class),
+                org.mockito.ArgumentMatchers.anyMap()))
+                .thenReturn(reactor.core.publisher.Flux.just(
+                        Map.of("status", "STARTED", "executionId", "exec-test",
+                                "runtimeRunId", "run-test"),
+                        Map.of("status", "COMPLETED", "executionId", "exec-test",
+                                "output", Map.of("answer", "ok"))));
+
+        HttpResponse<String> stream = httpClient.send(HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/conversation/conversations/"
+                        + conversationId + "/agent-executions"))
+                .header("Authorization", authorization)
+                .header("Accept", "text/event-stream")
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"appId\":\"" + appId
+                        + "\",\"prompt\":\"hello\"}"))
+                .build(), HttpResponse.BodyHandlers.ofString());
+        assertThat(stream.statusCode()).isEqualTo(200);
+        assertThat(stream.body()).contains("STARTED", "COMPLETED", "inputMessageId",
+                "assistantMessageId", "run-test");
+        JsonNode messages = body(request("GET", "/api/conversation/conversations/"
+                + conversationId + "/messages", authorization, null).body()).path("data");
+        assertThat(messages.size()).isEqualTo(2);
+        assertThat(messages.toString()).contains("hello", "answer", "ok", appId);
+    }
+
+    @Test
+    void studentCatalogFiltersBeforePagingAndPracticeRevealsAnswerOnlyAfterCheck() {
+        ActorContext actor = new ActorContext(new TenantId(1L), new UserId(2L), false);
+        TenantScope.withTenant(actor.tenantId(), () -> {
+            String subject = "CATALOG" + UUID.randomUUID().toString().substring(0, 8);
+            for (int index = 0; index < 3; index++) {
+                CourseRequest request = new CourseRequest();
+                request.setName("分页课程 " + index);
+                request.setSubjectCode(subject);
+                request.setGrade(7);
+                request.setStatus(1);
+                courseService.create(actor, request);
+            }
+            var second = studentLearning.courses(actor, subject, 7, 2, 2);
+            assertThat(second.getTotal()).isEqualTo(3);
+            assertThat(second.getItems()).hasSize(1);
+            assertThat(studentLearning.courses(actor, subject, 7, 3, 2).getItems()).isEmpty();
+            assertThat(studentLearning.courses(actor, subject, 8, 1, 2).getTotal()).isZero();
+            assertThatThrownBy(() -> studentLearning.check(actor, 1L, "B"))
+                    .isInstanceOf(com.shiyu.ai.common.foundation.exception.ServiceException.class);
+            var practice = studentLearning.question(actor, 2L);
+            assertThat(practice.toString()).doesNotContain("answer", "移项得");
+            assertThat(studentLearning.check(actor, 2L, "B").correct()).isTrue();
+            return null;
+        });
+    }
+
+    @Test
+    void practiceSubmissionPersistsOnceAndResolvesWrongQuestionAfterTwoCorrectRetries() {
+        ActorContext actor = new ActorContext(new TenantId(1L), new UserId(2L), false);
+        TenantScope.withTenant(actor.tenantId(), () -> {
+            String firstKey = UUID.randomUUID().toString();
+            var first = studentLearning.submit(actor, 2L, "A", firstKey);
+            var retry = studentLearning.submit(actor, 2L, "A", firstKey);
+            assertThat(retry.recordId()).isEqualTo(first.recordId());
+            assertThat(first.correct()).isFalse();
+            assertThat(scoreAnalysis.analyze(actor, first.recordId()).applied()).isTrue();
+            assertThat(scoreAnalysis.analyze(actor, first.recordId()).applied()).isFalse();
+            assertThat(jdbcTemplate.queryForObject(
+                    "SELECT ANALYSIS_APPLIED FROM EDU_STUDY_RECORD WHERE ID=?",
+                    Boolean.class, first.recordId())).isTrue();
+            assertThat(jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM EDU_STUDY_RECORD WHERE TENANT_ID=1 AND STUDENT_ID=1 AND SUBMISSION_KEY=?",
+                    Integer.class, firstKey)).isEqualTo(1);
+            assertThat(studentLearning.wrongQuestions(actor).stream()
+                    .map(item -> item.questionId())).contains(2L);
+            studentLearning.submit(actor, 2L, "B", UUID.randomUUID().toString());
+            studentLearning.submit(actor, 2L, "B", UUID.randomUUID().toString());
+            assertThat(studentLearning.wrongQuestions(actor).stream()
+                    .map(item -> item.questionId())).doesNotContain(2L);
+            assertThat(jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM EDU_STUDY_RECORD WHERE TENANT_ID=1 AND STUDENT_ID=1 AND QUESTION_ID=2 AND SUBMISSION_KEY IS NOT NULL",
+                    Integer.class)).isEqualTo(3);
+            return null;
+        });
+    }
+
+    @Test
+    void studentExamPersistsAnAnswerFreePaperAndAnOwnedScoredResult() {
+        ActorContext actor = new ActorContext(new TenantId(1L), new UserId(2L), false);
+        TenantScope.withTenant(actor.tenantId(), () -> {
+        ExamRequest request = new ExamRequest();
+        request.setName("集成测验 " + UUID.randomUUID());
+        request.setType("UNIT_TEST");
+        request.setSubjectCode("MATH");
+        request.setGrade(7);
+        request.setDurationMin(20);
+        request.setTotalScore(100);
+        request.setStartTime(LocalDateTime.now().minusMinutes(1));
+        request.setEndTime(LocalDateTime.now().plusMinutes(30));
+        Long examId = examService.create(actor, request).id();
+        examPublishing.replaceComposition(actor, examId, new ExamCompositionRequest(
+                List.of(new ExamCompositionRequest.Section("选择题", List.of(
+                        new ExamCompositionRequest.Question(1L, BigDecimal.valueOf(100)))))));
+        examPublishing.publish(actor, examId);
+
+        var paper = examTaking.start(actor, examId);
+        assertThat(paper.attemptId()).isNotNull();
+        assertThat(paper.sections().getFirst().questions().getFirst().title()).isNotBlank();
+        assertThat(paper.toString()).doesNotContain("移项得", "correctAnswer", "analysis");
+        var resumed = examTaking.start(actor, examId);
+        assertThat(resumed.attemptId()).isEqualTo(paper.attemptId());
+
+        var scored = examTaking.submit(actor, paper.attemptId(), new SubmitExamRequest(
+                List.of(new SubmitExamRequest.Answer(1L, "B"))));
+        assertThat(scored.score()).isEqualByComparingTo("100");
+        assertThat(examTaking.result(actor, paper.attemptId()).score())
+                .isEqualByComparingTo("100");
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM EDU_EXAM_ATTEMPT_QUESTION WHERE ATTEMPT_ID=? AND ANSWER='B'",
+                Integer.class, paper.attemptId())).isEqualTo(1);
+        ActorContext other = new ActorContext(new TenantId(2L), new UserId(2L), false);
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class,
+                () -> examTaking.result(other, paper.attemptId()));
+        return null;
+        });
+    }
+
+    @Test
+    void closedPageExamIsSettledByBackgroundWorkerWithoutReadingHistory() throws Exception {
+        Long attemptId = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(MAX(ID), 0) + 1000 FROM EDU_EXAM_ATTEMPT", Long.class);
+        jdbcTemplate.update(
+                "INSERT INTO EDU_EXAM_ATTEMPT_QUESTION "
+                        + "(TENANT_ID, ATTEMPT_ID, EXAM_QUESTION_ID, QUESTION_ID, SECTION_ID, "
+                        + "SECTION_NAME, SECTION_ORDER_NO, ORDER_NO, TITLE, TYPE, OPTIONS_JSON, "
+                        + "CORRECT_ANSWER, MAX_SCORE, ANSWER) VALUES (1, ?, ?, 1, 1, "
+                        + "'选择题', 1, 1, '2 + 2?', 'CHOICE', '[\"A. 3\",\"B. 4\"]', "
+                        + "'B', 10, 'B')",
+                attemptId, attemptId);
+        jdbcTemplate.update(
+                "INSERT INTO EDU_EXAM_ATTEMPT "
+                        + "(ID, TENANT_ID, EXAM_ID, STUDENT_ID, STATUS, STARTED_AT, "
+                        + "DEADLINE_AT, TOTAL_SCORE) VALUES (?, 1, ?, ?, 'STARTED', ?, ?, 10)",
+                attemptId, attemptId, attemptId,
+                LocalDateTime.now().minusMinutes(2), LocalDateTime.now().minusSeconds(1));
+
+        long timeout = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+        String status;
+        do {
+            status = jdbcTemplate.queryForObject(
+                    "SELECT STATUS FROM EDU_EXAM_ATTEMPT WHERE ID=?", String.class, attemptId);
+            if ("EXPIRED".equals(status)) break;
+            Thread.sleep(200);
+        } while (System.nanoTime() < timeout);
+
+        assertThat(status).isEqualTo("EXPIRED");
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT SCORE FROM EDU_EXAM_ATTEMPT WHERE ID=?", BigDecimal.class, attemptId))
+                .isEqualByComparingTo("10");
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT AWARDED_SCORE FROM EDU_EXAM_ATTEMPT_QUESTION WHERE ATTEMPT_ID=?",
+                BigDecimal.class, attemptId)).isEqualByComparingTo("10");
+    }
 
     @Autowired private ConsoleSessionStore consoleSessions;
 
@@ -112,7 +575,10 @@ class CoreJourneyIntegrationTest {
         for (var group : groups.entrySet()) {
             Set<String> routes = new TreeSet<>();
             handlerMapping.getHandlerMethods().forEach((mapping, handler) -> {
-                if (handler.getBeanType().getPackageName().startsWith(group.getValue())) {
+                if (handler.getBeanType().getPackageName().startsWith(group.getValue())
+                        || (group.getKey().equals("conversation")
+                        && handler.getBeanType().getPackageName()
+                                .startsWith("com.shiyu.ai.composition.integration.agent"))) {
                     mapping.getPatternValues().stream()
                             .filter(path -> path.startsWith("/api/"))
                             .forEach(path ->

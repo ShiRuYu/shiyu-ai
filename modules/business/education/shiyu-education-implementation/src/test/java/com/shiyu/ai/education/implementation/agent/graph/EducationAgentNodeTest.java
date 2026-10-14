@@ -9,6 +9,7 @@ import com.shiyu.ai.agent.contract.node.NodeInput;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.education.implementation.application.AbilityService;
 import com.shiyu.ai.education.implementation.application.ReviewService;
+import com.shiyu.ai.education.implementation.application.TrustedScoreAnalysisService;
 import com.shiyu.ai.education.implementation.domain.AbilityValue;
 import com.shiyu.ai.education.implementation.domain.ReviewScheduler;
 import com.shiyu.ai.education.implementation.domain.model.QuestionBO;
@@ -291,13 +292,14 @@ class EducationAgentNodeTest {
     }
 
     @Test
-    void scoreAnalysisCalculatesAnswersAndRequiresActorForMutation() throws Exception {
-        AbilityService abilities = mock(AbilityService.class);
-        TestScoreAnalysisNode node = new TestScoreAnalysisNode(abilities);
+    void scoreAnalysisDoesNotTrustMissingOrClientSuppliedResults() throws Exception {
+        TrustedScoreAnalysisService analysis = mock(TrustedScoreAnalysisService.class);
+        TestScoreAnalysisNode node = new TestScoreAnalysisNode(analysis);
         QuestionBO question = new QuestionBO();
         NodeOutput defaults =
                 node.execute(NodeInput.fromMap(Map.of("practiceQuestions", List.of(question))));
-        assertEquals(60.0, defaults.getData("practiceScore", 0.0));
+        assertFalse(defaults.getData("scoreAnalysisDone", true));
+        assertFalse(defaults.getData("practiceScore", -1.0) >= 0);
         assertFalse(defaults.getData("reviewNeeded", true));
 
         ActorContext actor = new ActorContext(new TenantId(1L), new UserId(2L), false);
@@ -315,12 +317,19 @@ class EducationAgentNodeTest {
                                         10L,
                                         "__knowledgeAccessContext",
                                         actor)));
-        assertEquals(50.0, analyzed.getData("practiceScore", 0.0));
-        assertTrue(analyzed.getData("reviewNeeded", false));
-        verify(abilities, times(2)).update(eq(actor), eq(2L), eq(10L), any(), anyDouble());
-        assertThrows(
-                IllegalStateException.class,
-                () -> node.execute(NodeInput.fromMap(Map.of("studentId", 2L, "knowledgeId", 10L))));
+        assertFalse(analyzed.getData("scoreAnalysisDone", true));
+        assertFalse(analyzed.getData("practiceScore", -1.0) >= 0);
+        verifyNoInteractions(analysis);
+
+        when(analysis.analyze(actor, 71L)).thenReturn(
+                new TrustedScoreAnalysisService.Analysis(71L, 0D, 10L, true));
+        NodeOutput trusted = node.execute(NodeInput.fromMap(Map.of(
+                "practiceRecordId", 71L, "answerResults", List.of(Map.of("correct", true)),
+                "__knowledgeAccessContext", actor)));
+        assertTrue(trusted.getData("scoreAnalysisDone", false));
+        assertEquals(0D, trusted.getData("practiceScore", -1D));
+        assertTrue(trusted.getData("reviewNeeded", false));
+        verify(analysis).analyze(actor, 71L);
     }
 
     @Test
@@ -448,7 +457,7 @@ class EducationAgentNodeTest {
      * 验证 Test Score Analysis 相关功能、边界条件、异常路径和协作行为。
      */
     private static final class TestScoreAnalysisNode extends ScoreAnalysisNode {
-        private TestScoreAnalysisNode(AbilityService service) {
+        private TestScoreAnalysisNode(TrustedScoreAnalysisService service) {
             super(service);
         }
 

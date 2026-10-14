@@ -1,6 +1,7 @@
 package com.shiyu.ai.education.implementation.domain;
 
 import java.time.LocalDateTime;
+import java.io.Serializable;
 
 /**
  * 封装 Ability Value 相关的不可变数据及其字段约束。
@@ -14,7 +15,7 @@ public record AbilityValue(
         double analyze,
         double evaluate,
         double create,
-        LocalDateTime lastUpdated) {
+        LocalDateTime lastUpdated) implements Serializable {
 
     public double overallScore() {
         return remember * BloomTaxonomy.REMEMBER.getWeight()

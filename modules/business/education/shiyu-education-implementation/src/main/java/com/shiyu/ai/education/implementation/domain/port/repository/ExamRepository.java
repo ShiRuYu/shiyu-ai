@@ -5,6 +5,7 @@ import com.shiyu.ai.education.implementation.domain.model.ExamBO;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * 负责 考试 的持久化查询、保存和删除，并维护数据访问边界。
@@ -28,6 +29,10 @@ public interface ExamRepository {
      * @return 返回 考试 相关操作生成的结果数据。
      */
     PageData<ExamBO> selectPage(TenantId tenantId, int pageNum, int pageSize);
+
+    /** Page currently open published exams for the student's grade. */
+    PageData<ExamBO> selectAvailable(TenantId tenantId, int grade, String subjectCode,
+            LocalDateTime now, int pageNum, int pageSize);
 
     /**
      * 查询 考试 相关业务数据，并返回处理结果。

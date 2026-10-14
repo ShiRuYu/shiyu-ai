@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.model.contract.model.*;
+import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.impl.DeepSeekHttpProvider;
 import com.shiyu.ai.model.implementation.infrastructure.chat.impl.ChatEngineImpl;
@@ -30,6 +32,63 @@ import java.util.List;
  * 验证 对话 Engine Impl 相关功能、边界条件、异常路径和协作行为。
  */
 class ChatEngineImplTest {
+    @Test
+    void defaultAliasUsesTenantDefaultDeepSeekForChatAndStream() {
+        ModelManager manager = mock(ModelManager.class);
+        DeepSeekHttpProvider provider = mock(DeepSeekHttpProvider.class);
+        when(manager.getDefaultPlatform()).thenAnswer(invocation -> {
+            assertEquals(new TenantId(7), TenantScope.current().orElse(null));
+            return "DEEPSEEK";
+        });
+        when(manager.getDeepSeekProvider()).thenReturn(provider);
+        when(provider.isAvailable()).thenReturn(true);
+        when(provider.chat(any())).thenReturn(ChatResponse.builder()
+                .success(true).content("ok").platform("DEEPSEEK")
+                .model("deepseek-flash").build());
+        when(provider.stream(any())).thenReturn(Flux.just(ChatResponse.builder()
+                .eventType("COMPLETED").success(true).content("ok").build()));
+        ChatEngineImpl engine = new ChatEngineImpl(manager,
+                mock(ApplicationEventPublisher.class));
+
+        assertTrue(engine.chat(request("default", null)).isSuccess());
+        assertEquals("COMPLETED", engine.stream(request("default", null))
+                .blockFirst().getEventType());
+        verify(provider).chat(argThat(value -> "DEEPSEEK".equals(value.getPlatform())
+                && value.getUserId() == 8));
+        verify(provider).stream(argThat(value -> "DEEPSEEK".equals(value.getPlatform())
+                && value.getUserId() == 8));
+    }
+
+    @Test
+    void selectsSynchronousAndStreamingAdaptersUnderRequestTenant() {
+        ModelManager manager = mock(ModelManager.class);
+        java.util.concurrent.atomic.AtomicReference<TenantId> selectedTenant =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        ChatModel model = mock(ChatModel.class);
+        when(manager.getChatModel("OPENAI", "gpt")).thenAnswer(invocation -> {
+            selectedTenant.set(TenantScope.current().orElse(null));
+            return model;
+        });
+        when(model.chat(any(dev.langchain4j.model.chat.request.ChatRequest.class)))
+                .thenReturn(dev.langchain4j.model.chat.response.ChatResponse.builder()
+                        .aiMessage(AiMessage.from("ok")).build());
+        ChatEngineImpl engine = new ChatEngineImpl(manager,
+                mock(ApplicationEventPublisher.class));
+
+        assertTrue(engine.chat(request("OPENAI", "gpt")).isSuccess());
+        assertEquals(new TenantId(7L), selectedTenant.get());
+
+        StreamingChatModel streaming = mock(StreamingChatModel.class);
+        when(manager.getStreamingChatModel("OPENAI", "gpt")).thenAnswer(invocation -> {
+            selectedTenant.set(TenantScope.current().orElse(null));
+            return streaming;
+        });
+        selectedTenant.set(null);
+        assertNotNull(engine.stream(request("OPENAI", "gpt")).blockFirst());
+        assertEquals(new TenantId(7L), selectedTenant.get());
+        assertTrue(TenantScope.current().isEmpty());
+    }
+
     @Test
     void chatHandlesNullAiMessageAndPreservesProviderUsageMetadata() {
         ModelManager manager = mock(ModelManager.class);
@@ -806,7 +865,8 @@ class ChatEngineImplTest {
         StreamingChatModel first = mock(StreamingChatModel.class);
         StreamingChatModel second = mock(StreamingChatModel.class);
         when(manager.getStreamingChatModel("OPENAI", "gpt-4o")).thenReturn(first);
-        when(manager.getStreamingChatModel("default", "configured")).thenReturn(second);
+        when(manager.getDefaultPlatform()).thenReturn("OPENAI");
+        when(manager.getStreamingChatModel("OPENAI", "configured")).thenReturn(second);
         doAnswer(
                         invocation -> {
                             var handler =

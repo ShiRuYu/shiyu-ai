@@ -32,14 +32,14 @@ public class AiModelRepositoryImpl
     public Pair<Long, List<AiModelBO>> selectPage(
             TenantId tenantId, Long platformId, Number pageNo, Number pageSize) {
         QueryWrapper countWrapper = new QueryWrapper();
-        countWrapper.eq(AiModelDO::getTenantId, tenantId.value()).eq(AiModelDO::getDelFlag, "0");
+        countWrapper.eq(AiModelDO::getTenantId, tenantId.value()).eq(AiModelDO::getDelFlag, 0);
         if (platformId != null) {
             countWrapper.eq(AiModelDO::getPlatformId, platformId);
         }
         long count = aiModelMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq(AiModelDO::getTenantId, tenantId.value()).eq(AiModelDO::getDelFlag, "0");
+        queryWrapper.eq(AiModelDO::getTenantId, tenantId.value()).eq(AiModelDO::getDelFlag, 0);
         if (platformId != null) {
             queryWrapper.eq(AiModelDO::getPlatformId, platformId);
         }
@@ -59,7 +59,7 @@ public class AiModelRepositoryImpl
         queryWrapper
                 .eq(AiModelDO::getTenantId, tenantId.value())
                 .eq(AiModelDO::getPlatformId, platformId);
-        queryWrapper.eq(AiModelDO::getDelFlag, "0");
+        queryWrapper.eq(AiModelDO::getDelFlag, 0);
         queryWrapper.eq(AiModelDO::getStatus, 1);
         queryWrapper.orderBy(AiModelDO::getIsDefault, true);
         queryWrapper.orderBy(AiModelDO::getSort, true);
@@ -83,7 +83,7 @@ public class AiModelRepositoryImpl
                 .eq(AiModelDO::getTenantId, tenantId.value())
                 .eq(AiModelDO::getPlatformId, platformId);
         queryWrapper.eq(AiModelDO::getIsDefault, "Y");
-        queryWrapper.eq(AiModelDO::getDelFlag, "0");
+        queryWrapper.eq(AiModelDO::getDelFlag, 0);
         queryWrapper.eq(AiModelDO::getStatus, 1);
         AiModelDO modelDO = aiModelMapper.selectOneByQuery(queryWrapper);
         return MapstructUtils.convert(modelDO, AiModelBO.class);
@@ -123,7 +123,7 @@ public class AiModelRepositoryImpl
 
     public List<IdNameOptionVO> selectOptions(TenantId tenantId, Long platformId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq(AiModelDO::getTenantId, tenantId.value()).eq(AiModelDO::getDelFlag, "0");
+        queryWrapper.eq(AiModelDO::getTenantId, tenantId.value()).eq(AiModelDO::getDelFlag, 0);
         queryWrapper.eq(AiModelDO::getStatus, 1);
         if (platformId != null) {
             queryWrapper.eq(AiModelDO::getPlatformId, platformId);

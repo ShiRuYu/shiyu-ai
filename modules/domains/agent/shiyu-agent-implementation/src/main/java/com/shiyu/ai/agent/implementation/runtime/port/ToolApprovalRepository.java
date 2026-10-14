@@ -7,6 +7,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.Instant;
 
 /**
  * 负责 工具 Approval 的持久化查询、保存和删除，并维护数据访问边界。
@@ -65,4 +66,7 @@ public interface ToolApprovalRepository {
      * @return 返回 工具 Approval 相关操作生成的结果数据。
      */
     int expirePending(TenantId tenantId, long ownerUserId);
+
+    /** Returns overdue approvals whose runs still need a terminal outcome. */
+    List<ToolApproval> findOverdueRunning(Instant now, int limit);
 }

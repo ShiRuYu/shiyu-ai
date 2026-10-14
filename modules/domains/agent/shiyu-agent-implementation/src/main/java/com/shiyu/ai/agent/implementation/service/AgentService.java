@@ -35,4 +35,7 @@ public interface AgentService {
 
     /** 清理 Agent 的运行时缓存（本地内存 + AgentCacheManager） */
     void evictRuntimeCache(String agentId);
+
+    /** 清理本租户所有用户的 Agent 运行时缓存。 */
+    void evictRuntimeCache(ActorContext actor, String agentId);
 }

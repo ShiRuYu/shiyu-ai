@@ -36,6 +36,9 @@ class AuthServiceImplTest {
         when(users.selectActiveUserByUsername("scope-check")).thenReturn(account);
         when(users.selectRolesByUserId(20L)).thenReturn(List.of(role(3L, 10L, "editor", "Editor")));
         when(assignments.selectByUserId(20L)).thenReturn(List.of(assignment(20L, 10L, 3L)));
+        when(tenantRoles.selectRoleById(3L)).thenReturn(role(3L, 10L, "editor", "Editor"));
+        when(tenantRoles.selectTenantById(new TenantId(10L)))
+                .thenReturn(tenant(10L, "home", "Home"));
         when(users.update(account)).thenAnswer(invocation -> {
             assertFalse(com.mybatisflex.core.tenant.TenantManager.isIgnoreTenantCondition());
             return false;
@@ -144,6 +147,7 @@ class AuthServiceImplTest {
         when(users.selectById(20L)).thenReturn(user);
         when(assignments.selectByUserId(20L)).thenReturn(List.of(assignment(20L, 10L, 3L)));
         when(users.selectRolesByUserId(20L)).thenReturn(List.of(role));
+        when(tenantRoles.selectRoleById(3L)).thenReturn(role);
         doThrow(new IllegalStateException("write failed")).when(users).update(user);
         assertFalse(service.switchCurrentRole(20L, 3L));
     }
@@ -215,6 +219,7 @@ class AuthServiceImplTest {
         when(users.selectById(20L)).thenReturn(user);
         when(assignments.selectByUserId(20L)).thenReturn(List.of(assignment));
         when(users.selectRolesByUserId(20L)).thenReturn(List.of(role));
+        when(tenantRoles.selectRoleById(3L)).thenReturn(role);
         when(users.update(user)).thenReturn(true);
 
         assertTrue(service.switchCurrentRole(20L, 3L));
@@ -231,6 +236,7 @@ class AuthServiceImplTest {
         when(users.selectById(20L)).thenReturn(user);
         when(assignments.selectByUserId(20L)).thenReturn(List.of(assignment(20L, 10L, 3L)));
         when(users.selectRolesByUserId(20L)).thenReturn(List.of(role));
+        when(tenantRoles.selectRoleById(3L)).thenReturn(role);
         when(users.update(user)).thenReturn(false);
 
         assertFalse(service.switchCurrentRole(20L, 3L));
@@ -313,6 +319,8 @@ class AuthServiceImplTest {
         when(users.selectById(20L)).thenReturn(user);
         when(tenantRoles.selectTenantById(new TenantId(10L)))
                 .thenReturn(tenant(10L, "TENANT", "Tenant"));
+        when(tenantRoles.selectRoleById(3L))
+                .thenReturn(role(3L, 10L, "member", "Member"));
         assertEquals(1, service.getUserTenants(actor, 20L).size());
         assertThrows(
                 IllegalArgumentException.class,
@@ -531,6 +539,8 @@ class AuthServiceImplTest {
         assertFalse((Boolean) invoke(service, "isActiveTenant", disabledTenant));
         assertFalse((Boolean) invoke(service, "isActiveTenant", deletedTenant));
 
+        when(tenantRoles.selectRoleById(3L))
+                .thenReturn(role(3L, 10L, "editor", "Editor"));
         assertEquals(
                 10L,
                 (Long)
@@ -562,6 +572,8 @@ class AuthServiceImplTest {
         RoleBO parentSuper = role(7L, 10L, "tenant_super", "Parent");
         when(tenants.selectDescendantIds(new TenantId(10L))).thenReturn(List.of(11L));
         when(tenantRoles.selectRoleById(7L)).thenReturn(parentSuper);
+        when(tenantRoles.selectTenantSuperRole(new TenantId(11L)))
+                .thenReturn(role(8L, 11L, "tenant_super", "Child Admin"));
         assertTrue(
                 (Boolean)
                         invoke(
@@ -570,6 +582,17 @@ class AuthServiceImplTest {
                                 delegated,
                                 List.of(assignment(20L, 10L, 7L)),
                                 11L));
+        when(tenantRoles.selectRoleById(7L))
+                .thenReturn(role(7L, 99L, "tenant_super", "Foreign Admin"));
+        assertFalse(
+                (Boolean)
+                        invoke(
+                                service,
+                                "isDelegatedTenantContext",
+                                delegated,
+                                List.of(assignment(20L, 10L, 7L)),
+                                11L));
+        when(tenantRoles.selectRoleById(7L)).thenReturn(parentSuper);
         assertFalse(
                 (Boolean)
                         invoke(
@@ -698,6 +721,82 @@ class AuthServiceImplTest {
         when(tenantRoles.selectTenantById(new TenantId(12L))).thenReturn(child);
         when(tenants.selectDescendantIds(new TenantId(10L))).thenReturn(List.of(10L, 12L));
         assertFalse(service.switchCurrentTenant(42L, new TenantId(12L)));
+    }
+
+    @Test
+    void homeSuperRoleCannotDelegateInsideAnUnrelatedAssignedTenant() {
+        UserBO user = user(43L, "outside-member", "secret", 1);
+        user.setExtInfo("{\"homeTenantId\":10,\"currentTenantId\":50}");
+        when(users.selectById(43L)).thenReturn(user);
+        when(assignments.selectByUserId(43L))
+                .thenReturn(List.of(assignment(43L, 10L, 70L), assignment(43L, 50L, 80L)));
+        when(tenantRoles.selectRoleById(70L))
+                .thenReturn(role(70L, 10L, "tenant_super", "Home Admin"));
+        when(tenantRoles.selectRoleById(80L))
+                .thenReturn(role(80L, 50L, "member", "Outside Member"));
+        when(tenantRoles.selectTenantById(new TenantId(51L)))
+                .thenReturn(tenant(51L, "outside-child", "Outside Child"));
+        when(tenants.selectDescendantIds(new TenantId(10L))).thenReturn(List.of(10L, 11L));
+        when(tenants.selectDescendantIds(new TenantId(50L))).thenReturn(List.of(50L, 51L));
+        when(users.update(user)).thenReturn(true);
+
+        assertFalse(service.switchCurrentTenant(43L, new TenantId(51L)));
+        verify(users, never()).update(user);
+    }
+
+    @Test
+    void tenantListDoesNotIncludeDescendantsOfUnrelatedAssignedTenant() {
+        UserBO user = user(44L, "outside-member", "secret", 1);
+        user.setExtInfo("{\"homeTenantId\":10,\"currentTenantId\":50}");
+        when(users.selectById(44L)).thenReturn(user);
+        when(assignments.selectByUserId(44L))
+                .thenReturn(List.of(assignment(44L, 10L, 70L), assignment(44L, 50L, 80L)));
+        when(tenantRoles.selectRoleById(70L))
+                .thenReturn(role(70L, 10L, "tenant_super", "Home Admin"));
+        when(tenantRoles.selectRoleById(80L))
+                .thenReturn(role(80L, 50L, "member", "Outside Member"));
+        when(tenantRoles.selectTenantById(new TenantId(10L)))
+                .thenReturn(tenant(10L, "home", "Home"));
+        when(tenantRoles.selectTenantById(new TenantId(50L)))
+                .thenReturn(tenant(50L, "outside", "Outside"));
+        when(tenants.selectDescendantIds(new TenantId(50L))).thenReturn(List.of(50L, 51L));
+        when(tenants.selectAll())
+                .thenReturn(List.of(
+                        tenant(10L, "home", "Home"),
+                        tenant(50L, "outside", "Outside"),
+                        tenant(51L, "outside-child", "Outside Child")));
+
+        ActorContext actor = new ActorContext(new TenantId(50L), new UserId(44L), false);
+        assertEquals(
+                java.util.Set.of(10L, 50L),
+                service.getUserTenants(actor, 44L).stream()
+                        .map(com.shiyu.ai.iam.implementation.vo.TenantInfoVO::getId)
+                        .collect(java.util.stream.Collectors.toSet()));
+    }
+
+    @Test
+    void foreignTenantSuperRoleCannotAuthorizeHomeTenantDelegation() {
+        UserBO user = user(45L, "mislinked-role", "secret", 1);
+        user.setExtInfo("{\"homeTenantId\":10,\"currentTenantId\":10}");
+        when(users.selectById(45L)).thenReturn(user);
+        when(assignments.selectByUserId(45L))
+                .thenReturn(List.of(assignment(45L, 10L, 70L)));
+        when(tenantRoles.selectRoleById(70L))
+                .thenReturn(role(70L, 99L, "tenant_super", "Foreign Admin"));
+        when(tenantRoles.selectTenantById(new TenantId(11L)))
+                .thenReturn(tenant(11L, "child", "Child"));
+        when(tenantRoles.selectTenantById(new TenantId(10L)))
+                .thenReturn(tenant(10L, "home", "Home"));
+        when(tenants.selectDescendantIds(new TenantId(10L)))
+                .thenReturn(List.of(10L, 11L));
+        when(tenants.selectAll())
+                .thenReturn(List.of(tenant(10L, "home", "Home"), tenant(11L, "child", "Child")));
+        when(users.update(user)).thenReturn(true);
+
+        assertFalse(service.switchCurrentTenant(45L, new TenantId(11L)));
+        verify(users, never()).update(user);
+        ActorContext actor = new ActorContext(new TenantId(10L), new UserId(45L), false);
+        assertTrue(service.getUserTenants(actor, 45L).isEmpty());
     }
 
     @Test

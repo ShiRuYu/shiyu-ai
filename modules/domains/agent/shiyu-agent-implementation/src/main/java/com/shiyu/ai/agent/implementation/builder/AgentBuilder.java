@@ -146,7 +146,11 @@ public class AgentBuilder {
             String from,
             Function<Map<String, Object>, String> condition,
             Map<String, String> mappings) {
-        this.conditionalEdges.add(new ConditionalEdgeConfig(from, condition, mappings));
+        if (condition == null || mappings == null || mappings.isEmpty()) {
+            throw new IllegalArgumentException("条件路由必须包含判断函数和目标映射");
+        }
+        this.conditionalEdges.add(
+                new ConditionalEdgeConfig(from, condition, new HashMap<>(mappings)));
         log.debug(
                 "添加条件边：fromPresent={}, mappingCount={}",
                 from != null,
@@ -166,6 +170,15 @@ public class AgentBuilder {
             String from,
             String defaultTarget,
             Map<Predicate<Map<String, Object>>, String> conditions) {
+        if (conditions == null
+                || (conditions.isEmpty()
+                        && (defaultTarget == null || defaultTarget.isBlank()))) {
+            throw new IllegalArgumentException("条件路由必须包含判断条件或默认目标");
+        }
+        if (conditions.entrySet().stream().anyMatch(entry -> entry.getKey() == null
+                || entry.getValue() == null || entry.getValue().isBlank())) {
+            throw new IllegalArgumentException("条件路由的谓语和目标节点不能为空");
+        }
         List<ConditionEdge.PredicateCondition> conditionList =
                 conditions.entrySet().stream()
                         .map(e -> new ConditionEdge.PredicateCondition(e.getKey(), e.getValue()))

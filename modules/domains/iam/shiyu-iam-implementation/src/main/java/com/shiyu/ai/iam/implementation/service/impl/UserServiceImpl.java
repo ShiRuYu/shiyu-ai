@@ -4,6 +4,7 @@ import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.common.foundation.utils.PasswordUtils;
+import com.shiyu.ai.iam.implementation.application.identity.AuthTenantContextSupport;
 import com.shiyu.ai.iam.implementation.domain.model.RoleBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.domain.model.UserScopeRoleBO;
@@ -61,6 +62,7 @@ public class UserServiceImpl implements UserService {
      * @return 返回 用户 相关操作生成的结果数据。
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Map<String, Object> createUser(
             ActorContext actor, UserRequest request, Long[] roleIds, Long targetTenantId) {
         actor = requireActor(actor);
@@ -80,6 +82,7 @@ public class UserServiceImpl implements UserService {
      * @return 返回本次条件判断是否成立。
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateUser(
             ActorContext actor,
             Long userId,
@@ -147,7 +150,11 @@ public class UserServiceImpl implements UserService {
 
     private UserBO getUserDetail(ActorContext actor, Long userId) {
         log.info("获取用户详情，userIdPresent={}", userId != null);
-        if (userId == null || !userRepository.isUserInScope(userId, actor.tenantId())) {
+        if (userId == null) {
+            return null;
+        }
+        boolean directlyInScope = userRepository.isUserInScope(userId, actor.tenantId());
+        if (!directlyInScope && !Objects.equals(actor.userId().value(), userId)) {
             return null;
         }
         UserBO userBO = userRepository.selectById(userId);
@@ -160,8 +167,19 @@ public class UserServiceImpl implements UserService {
             Long currentTenantId = actor.tenantId().value();
             List<UserScopeRoleBO> assignments = userScopeRoleRepository.selectByUserId(userId);
             boolean parentSuperAdminSwitch =
-                    actor.parentSuperAdminSwitch()
-                            || "PARENT_SUPER_ADMIN".equals(extInfoMap.get("switchMode"));
+                    Objects.equals(actor.userId().value(), userId)
+                            && userBO.getStatus() != null
+                            && userBO.getStatus() == 1
+                            && userBO.getDelFlag() != null
+                            && userBO.getDelFlag() == 0
+                            && extInfoMap.get("currentTenantId") instanceof Number savedTenantId
+                            && Objects.equals(currentTenantId, savedTenantId.longValue())
+                            && new AuthTenantContextSupport(tenantRepository, tenantRoleRepository)
+                                    .isDelegatedTenantContext(
+                                            extInfoMap, assignments, currentTenantId);
+            if (!directlyInScope && !parentSuperAdminSwitch) {
+                return null;
+            }
             Long selectedRoleId = null;
             String selectedRoleCode = null;
             if (extInfoMap.get("currentRole") instanceof Map<?, ?> selectedRole) {
@@ -190,16 +208,16 @@ public class UserServiceImpl implements UserService {
                                                                     item.getRoleId())
                                                             && isActiveAssignment(item));
             if (parentSuperAdminSwitch && !selectedAssignedRole) {
-                RoleBO delegatedRoleBO =
-                        tenantRoleRepository.selectTenantSuperRole(new TenantId(currentTenantId));
                 RoleBO delegatedRole =
-                        delegatedRoleBO == null
-                                ? null
-                                : MapstructUtils.convert(delegatedRoleBO, RoleBO.class);
+                        tenantRoleRepository.selectTenantSuperRole(new TenantId(currentTenantId));
                 if (delegatedRole != null
                         && Objects.equals(currentTenantId, delegatedRole.getTenantId())
                         && ("tenant_super".equals(delegatedRole.getCode())
-                                || "super".equals(delegatedRole.getCode()))) {
+                                || "super".equals(delegatedRole.getCode()))
+                        && delegatedRole.getStatus() != null
+                        && delegatedRole.getStatus() == 1
+                        && (delegatedRole.getDelFlag() == null
+                                || delegatedRole.getDelFlag() == 0)) {
                     userBO.setRoles(List.of(delegatedRole));
                     userBO.setRoleIds(List.of(delegatedRole.getId()));
                     userBO.setCurrentRole(delegatedRole);
@@ -216,7 +234,10 @@ public class UserServiceImpl implements UserService {
                             .toList();
             List<RoleBO> roles =
                     userRepository.selectRolesByUserId(userId).stream()
-                            .filter(role -> currentRoleIds.contains(role.getId()))
+                            .filter(role -> role != null && currentRoleIds.contains(role.getId()))
+                            .filter(role -> Objects.equals(currentTenantId, role.getTenantId()))
+                            .filter(role -> role.getStatus() != null && role.getStatus() == 1)
+                            .filter(role -> role.getDelFlag() == null || role.getDelFlag() == 0)
                             .collect(
                                     Collectors.collectingAndThen(
                                             Collectors.toMap(
@@ -225,15 +246,16 @@ public class UserServiceImpl implements UserService {
                                                     (first, ignored) -> first,
                                                     LinkedHashMap::new),
                                             map -> new ArrayList<>(map.values())));
+            List<Long> authorizedRoleIds = roles.stream().map(RoleBO::getId).toList();
             userBO.setRoles(roles);
-            userBO.setRoleIds(currentRoleIds);
+            userBO.setRoleIds(authorizedRoleIds);
 
             // 当前角色必须以当前租户的授权关系为准，不能直接信任 extInfo 中的历史值。
             RoleBO currentRole = null;
             if (extInfoMap != null && extInfoMap.get("currentRole") instanceof Map<?, ?> roleMap) {
                 Object roleId = roleMap.get("roleId");
                 if (roleId instanceof Number
-                        && currentRoleIds.contains(((Number) roleId).longValue())) {
+                        && authorizedRoleIds.contains(((Number) roleId).longValue())) {
                     currentRole =
                             roles.stream()
                                     .filter(
@@ -325,7 +347,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.deleteById(userId);
     }
 
-    @Transactional(rollbackFor = Exception.class)
     private boolean updateUser(
             ActorContext actor, Long userId, UserBO userBO, Long[] roleIds, Long targetTenantId) {
         actor = requireActor(actor);
@@ -338,6 +359,7 @@ public class UserServiceImpl implements UserService {
         if (existingUser == null) {
             return false;
         }
+        validateRequestedRoles(actor, roleIds, targetTenantId);
 
         // 更新接口允许只提交变更字段，避免 null 覆盖已有资料。
         if (userBO.getUsername() == null) userBO.setUsername(existingUser.getUsername());
@@ -403,10 +425,10 @@ public class UserServiceImpl implements UserService {
         return success ? newPassword : null;
     }
 
-    @Transactional(rollbackFor = Exception.class)
     private Map<String, Object> createUser(
             ActorContext actor, UserBO userBO, Long[] roleIds, Long targetTenantId) {
         actor = requireActor(actor);
+        validateRequestedRoles(actor, roleIds, targetTenantId);
         log.info("新增用户: usernamePresent={}", userBO.getUsername() != null);
         String plainPassword = null;
         if (userBO.getPassword() == null || userBO.getPassword().isBlank()) {
@@ -453,8 +475,10 @@ public class UserServiceImpl implements UserService {
             if (tenant == null
                     || role == null
                     || !isActiveTenant(tenant)
+                    || !Objects.equals(role.getTenantId(), assignment.getTenantId())
                     || role.getStatus() == null
-                    || role.getStatus() != 1) {
+                    || role.getStatus() != 1
+                    || (role.getDelFlag() != null && role.getDelFlag() != 0)) {
                 continue;
             }
             UserTenantAssignmentVO item = new UserTenantAssignmentVO();
@@ -556,7 +580,8 @@ public class UserServiceImpl implements UserService {
                 userId, new com.shiyu.ai.kernel.context.TenantId(currentTenantId))) {
             return true;
         }
-        if (!actor.parentSuperAdminSwitch()) {
+        if (!actor.parentSuperAdminSwitch()
+                || !Objects.equals(actor.userId().value(), userId)) {
             return false;
         }
         return actor.homeTenantId() != null
@@ -581,7 +606,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean isActiveAssignment(UserScopeRoleBO item) {
-        return (item.getStatus() == null || item.getStatus() == 1)
+        return item != null
+                && item.getStatus() != null
+                && item.getStatus() == 1
                 && (item.getDelFlag() == null || item.getDelFlag() == 0);
     }
 
@@ -596,28 +623,10 @@ public class UserServiceImpl implements UserService {
     private void syncUserRoles(
             ActorContext actor, Long userId, Long[] roleIds, Long requestedTenantId) {
         actor = requireActor(actor);
-        Long currentTenantId = actor.tenantId().value();
         Long targetTenantId = requireTargetTenant(requestedTenantId);
-        if (!Objects.equals(currentTenantId, targetTenantId)) {
-            throw new IllegalArgumentException("目标租户不在当前租户可管理范围内");
-        }
+        List<Long> targetRoleIds = validateRequestedRoles(actor, roleIds, targetTenantId);
         if (userRepository.selectById(userId) == null) {
             throw new IllegalArgumentException("用户不属于当前租户作用域");
-        }
-
-        List<Long> targetRoleIds =
-                roleIds == null
-                        ? List.of()
-                        : java.util.Arrays.stream(roleIds)
-                                .filter(java.util.Objects::nonNull)
-                                .distinct()
-                                .toList();
-
-        for (Long roleId : targetRoleIds) {
-            if (!roleRepository.isRoleOwnedByTenant(
-                    roleId, new com.shiyu.ai.kernel.context.TenantId(targetTenantId))) {
-                throw new IllegalArgumentException("角色不属于目标租户: " + roleId);
-            }
         }
 
         userScopeRoleRepository.deleteByUserIdAndTenantId(
@@ -637,6 +646,27 @@ public class UserServiceImpl implements UserService {
                 userId != null,
                 targetTenantId != null,
                 targetRoleIds.size());
+    }
+
+    private List<Long> validateRequestedRoles(
+            ActorContext actor, Long[] roleIds, Long requestedTenantId) {
+        Long targetTenantId = requireTargetTenant(requestedTenantId);
+        if (!Objects.equals(actor.tenantId().value(), targetTenantId)) {
+            throw new IllegalArgumentException("目标租户不在当前租户可管理范围内");
+        }
+        List<Long> targetRoleIds =
+                roleIds == null
+                        ? List.of()
+                        : java.util.Arrays.stream(roleIds)
+                                .filter(Objects::nonNull)
+                                .distinct()
+                                .toList();
+        for (Long roleId : targetRoleIds) {
+            if (!roleRepository.isRoleOwnedByTenant(roleId, new TenantId(targetTenantId))) {
+                throw new IllegalArgumentException("角色不属于目标租户: " + roleId);
+            }
+        }
+        return targetRoleIds;
     }
 
     /**

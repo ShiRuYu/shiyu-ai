@@ -183,17 +183,18 @@ class EducationRepositoryCoverageTest {
 
     private static void invokeRepository(Class<?> repositoryType) throws Exception {
         Object repository = repositoryType.getDeclaredConstructor().newInstance();
-        Field mapperField = findMapperField(repositoryType);
-        Class<?> mapperType = mapperField.getType();
-        Object mapper = mock(mapperType, mapperAnswer());
-        mapperField.setAccessible(true);
-        mapperField.set(repository, mapper);
-        if (repositoryType == QuestionRepositoryImpl.class) {
-            when(((com.shiyu.ai.education.implementation.persistence.mapper.QuestionMapper) mapper)
-                            .selectOneByQuery(any()))
-                    .thenReturn(
-                            new com.shiyu.ai.education.implementation.persistence.dataobject
-                                    .QuestionDO());
+        for (Field mapperField : repositoryType.getDeclaredFields()) {
+            if (!mapperField.getName().toLowerCase().contains("mapper")) continue;
+            Object mapper = mock(mapperField.getType(), mapperAnswer());
+            mapperField.setAccessible(true);
+            mapperField.set(repository, mapper);
+            if (repositoryType == QuestionRepositoryImpl.class
+                    && mapper instanceof com.shiyu.ai.education.implementation.persistence.mapper.QuestionMapper
+                            questionMapper) {
+                when(questionMapper.selectOneByQuery(any()))
+                        .thenReturn(new com.shiyu.ai.education.implementation.persistence.dataobject
+                                .QuestionDO());
+            }
         }
         for (Method method : repositoryType.getDeclaredMethods()) {
             if (!Modifier.isPublic(method.getModifiers())) continue;
@@ -204,13 +205,6 @@ class EducationRepositoryCoverageTest {
             method.setAccessible(true);
             method.invoke(repository, arguments);
         }
-    }
-
-    private static Field findMapperField(Class<?> type) {
-        for (Field field : type.getDeclaredFields()) {
-            if (field.getName().toLowerCase().contains("mapper")) return field;
-        }
-        throw new IllegalStateException("No mapper field in " + type.getName());
     }
 
     private static Answer<Object> mapperAnswer() {

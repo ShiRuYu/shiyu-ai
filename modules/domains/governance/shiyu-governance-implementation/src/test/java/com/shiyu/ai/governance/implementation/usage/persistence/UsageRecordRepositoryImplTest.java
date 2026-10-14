@@ -9,14 +9,17 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.shiyu.ai.common.foundation.utils.MapstructUtils;
+import com.shiyu.ai.common.foundation.jdbc.JdbcDialect;
 import com.shiyu.ai.governance.implementation.usage.domain.model.UsageRecordBO;
 import com.shiyu.ai.governance.implementation.usage.persistence.dataobject.UsageRecordDO;
 import com.shiyu.ai.governance.implementation.usage.persistence.mapper.UsageRecordMapper;
 import com.shiyu.ai.governance.implementation.usage.persistence.repository.UsageRecordRepositoryImpl;
+import com.shiyu.ai.governance.implementation.usage.persistence.repository.PlatformUsageRepositoryImpl;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.model.contract.api.ModelCatalogPort;
@@ -24,6 +27,7 @@ import com.shiyu.ai.model.contract.api.ModelCatalogPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.h2.jdbcx.JdbcDataSource;
 import org.mockito.MockedStatic;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -40,6 +44,21 @@ class UsageRecordRepositoryImplTest {
     private UsageRecordMapper mapper;
     private ModelCatalogPort modelCatalog;
     private UsageRecordRepositoryImpl repository;
+
+    @Test
+    void platformOverviewUsesAllTenantsWithoutTenantScope() {
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setURL("jdbc:h2:mem:platform-usage-test;DB_CLOSE_DELAY=-1");
+        PlatformUsageRepositoryImpl platform =
+                new PlatformUsageRepositoryImpl(mapper, modelCatalog, dataSource);
+        when(mapper.getOverviewAllTenants()).thenReturn(Map.of("total_calls", 3L));
+        when(mapper.selectAllLlmRecords()).thenReturn(List.of());
+
+        TenantScope.clear();
+        assertEquals(3L, platform.getOverview().get("total_calls"));
+        verify(mapper).getOverviewAllTenants();
+        verify(mapper).selectAllLlmRecords();
+    }
 
     @BeforeEach
     void setUp() {
@@ -168,6 +187,24 @@ class UsageRecordRepositoryImplTest {
     }
 
     @Test
+    void rejectsInvalidUserSourceAndCrossTenantUsageBeforePersistence() {
+        UsageRecordBO missingUser = validRecord();
+        missingUser.setUserId(null);
+        UsageRecordBO missingSourceType = validRecord();
+        missingSourceType.setSourceType(" ");
+        UsageRecordBO missingSourceId = validRecord();
+        missingSourceId.setSourceId(null);
+        UsageRecordBO anotherTenant = validRecord();
+        anotherTenant.setTenantId(10L);
+
+        assertThrows(IllegalArgumentException.class, () -> repository.insert(missingUser));
+        assertThrows(IllegalArgumentException.class, () -> repository.insert(missingSourceType));
+        assertThrows(IllegalArgumentException.class, () -> repository.insert(missingSourceId));
+        assertThrows(RuntimeException.class, () -> repository.insert(anotherTenant));
+        verify(mapper, never()).insertSelective(any(UsageRecordDO.class));
+    }
+
+    @Test
     void insertsTenantScopedRecordAndMapsTheGeneratedRow() {
         UsageRecordBO record = new UsageRecordBO();
         record.setTenantId(9L);
@@ -266,6 +303,7 @@ class UsageRecordRepositoryImplTest {
         assertEquals(rows, repository.aggregateByDay(1));
         assertEquals(rows, repository.aggregateByWeek(1));
         assertEquals(rows, repository.aggregateByMonth(1));
+        verify(mapper, never()).selectRecordsSince(any(), anyLong());
 
         when(mapper.getOverview(anyLong())).thenReturn(Map.of("total_calls", "5"));
         when(mapper.selectLlmRecords(anyLong()))
@@ -286,6 +324,111 @@ class UsageRecordRepositoryImplTest {
         assertEquals(0L, repository.sumLlmTodayTokensByTenantId(new TenantId(9L)));
         when(mapper.selectEmbeddingRecords(anyLong())).thenReturn(null);
         assertEquals(0L, repository.getEmbeddingOverview().get("total_calls"));
+    }
+
+    @Test
+    void portableAggregationGroupsUsageTypesAndAveragesOnlyKnownLatency() {
+        UsageRecordRepositoryImpl portable = new PortableRepository(mapper, modelCatalog, false);
+        LocalDateTime today = LocalDateTime.now();
+        UsageRecordDO noLatency = record("LLM", "{}", 0, today);
+        noLatency.setLatencyMs(null);
+        when(mapper.selectRecordsSince(any(), eq(9L))).thenReturn(List.of(
+                record("LLM", "{}", 20, today), noLatency,
+                record("EMBEDDING", "{}", 8, today)));
+
+        List<Map<String, Object>> byDay = portable.aggregateByDay(1);
+        Map<String, Object> llm = byDay.stream()
+                .filter(row -> "LLM".equals(row.get("usage_type"))).findFirst().orElseThrow();
+        Map<String, Object> embedding = byDay.stream()
+                .filter(row -> "EMBEDDING".equals(row.get("usage_type")))
+                .findFirst().orElseThrow();
+        assertEquals(2L, llm.get("call_count"));
+        assertEquals(20.0, llm.get("avg_latency_ms"));
+        assertEquals(1L, embedding.get("call_count"));
+        assertEquals(8.0, embedding.get("avg_latency_ms"));
+        assertEquals(2, portable.aggregateByWeek(1).size());
+        assertEquals(2, portable.aggregateByMonth(1).size());
+        verify(mapper, never()).aggregateByDay(any(Integer.class), anyLong());
+    }
+
+    @Test
+    void platformPortableAggregationIncludesOtherTenantsWithoutARequestScope() {
+        UsageRecordRepositoryImpl platform = new PortableRepository(mapper, modelCatalog, true);
+        LocalDateTime today = LocalDateTime.now();
+        UsageRecordDO first = record("LLM", "{}", 10, today);
+        first.setTenantId(9L);
+        UsageRecordDO second = record("LLM", "{}", 30, today);
+        second.setTenantId(10L);
+        when(mapper.selectAllRecordsSince(any())).thenReturn(List.of(first, second));
+
+        TenantScope.clear();
+        Map<String, Object> allTenants = platform.aggregateByDay(1).getFirst();
+
+        assertEquals(2L, allTenants.get("call_count"));
+        assertEquals(20.0, allTenants.get("avg_latency_ms"));
+        verify(mapper, never()).selectRecordsSince(any(), anyLong());
+    }
+
+    @Test
+    void platformH2ReportsUseAllTenantQueriesWithoutARequestScope() {
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setURL("jdbc:h2:mem:platform-period-usage;DB_CLOSE_DELAY=-1");
+        PlatformUsageRepositoryImpl platform =
+                new PlatformUsageRepositoryImpl(mapper, modelCatalog, dataSource);
+        LocalDateTime today = LocalDateTime.now();
+        List<Map<String, Object>> periodRows = List.of(Map.of("usage_type", "LLM", "call_count", 2L));
+        UsageRecordDO first = record("LLM",
+                "{\"platform\":\"p\",\"model\":\"m\",\"totalTokens\":4,\"cost\":0.1}",
+                10, today);
+        first.setTenantId(9L);
+        UsageRecordDO second = record("LLM",
+                "{\"platform\":\"p\",\"model\":\"m\",\"totalTokens\":6,\"cost\":0.2}",
+                30, today);
+        second.setTenantId(10L);
+        when(mapper.aggregateByDayAllTenants(1)).thenReturn(periodRows);
+        when(mapper.aggregateByWeekAllTenants(1)).thenReturn(periodRows);
+        when(mapper.aggregateByMonthAllTenants(1)).thenReturn(periodRows);
+        when(mapper.selectAllLlmRecords()).thenReturn(List.of(first, second));
+        when(mapper.selectAllLlmRecordsSince(any())).thenReturn(List.of(first, second));
+        when(mapper.selectAllEmbeddingRecords()).thenReturn(List.of(
+                record("EMBEDDING", "{\"estimatedTokens\":3,\"vectorCount\":2}", 12, today)));
+
+        TenantScope.clear();
+        assertEquals(periodRows, platform.aggregateByDay(1));
+        assertEquals(periodRows, platform.aggregateByWeek(1));
+        assertEquals(periodRows, platform.aggregateByMonth(1));
+        assertEquals(10L, platform.aggregateByModel().getFirst().get("total_tokens"));
+        assertEquals(10L, platform.aggregateLlmByDay(1).getFirst().get("total_tokens"));
+        assertEquals(10L, platform.aggregateLlmByWeek(1).getFirst().get("total_tokens"));
+        assertEquals(10L, platform.aggregateLlmByMonth(1).getFirst().get("total_tokens"));
+        assertEquals(3L, platform.getEmbeddingOverview().get("total_estimated_tokens"));
+        verify(mapper, never()).selectRecordsSince(any(), anyLong());
+        verify(mapper, never()).selectLlmRecords(anyLong());
+    }
+
+    @Test
+    void portableAggregationFallsBackToSqlWhenRawRecordsAreUnavailable() {
+        UsageRecordRepositoryImpl portable = new PortableRepository(mapper, modelCatalog, false);
+        List<Map<String, Object>> fallback = List.of(Map.of("usage_type", "LLM", "call_count", 3L));
+        when(mapper.selectRecordsSince(any(), eq(9L))).thenReturn(null);
+        when(mapper.aggregateByDay(eq(1), eq(9L))).thenReturn(fallback);
+        when(mapper.aggregateByWeek(eq(1), eq(9L))).thenReturn(fallback);
+        when(mapper.aggregateByMonth(eq(1), eq(9L))).thenReturn(fallback);
+
+        assertEquals(fallback, portable.aggregateByDay(1));
+        assertEquals(fallback, portable.aggregateByWeek(1));
+        assertEquals(fallback, portable.aggregateByMonth(1));
+        verify(mapper).aggregateByDay(1, 9L);
+        verify(mapper).aggregateByWeek(1, 9L);
+        verify(mapper).aggregateByMonth(1, 9L);
+    }
+
+    /** Exercises the portable SQL aggregation path without a live PostgreSQL connection. */
+    private static final class PortableRepository extends UsageRecordRepositoryImpl {
+        private PortableRepository(UsageRecordMapper mapper, ModelCatalogPort catalog,
+                boolean allTenants) {
+            super(mapper, catalog, JdbcDialect.fromProduct("PostgreSQL"), allTenants);
+        }
     }
 
     private static UsageRecordBO validRecord() {

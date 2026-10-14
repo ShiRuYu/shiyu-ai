@@ -53,8 +53,11 @@ class AuthServiceDefaultRoleTest {
         user.setId(42L);
         RoleBO userRole = new RoleBO();
         userRole.setId(3L);
+        userRole.setTenantId(1L);
         userRole.setCode("user");
         userRole.setName("User");
+        userRole.setStatus(1);
+        userRole.setDelFlag(0);
         when(userRepository.selectById(42L)).thenReturn(user);
         when(tenantRoleRepository.selectEnabledRoleByCode(new TenantId(1L), "user"))
                 .thenReturn(userRole);
@@ -102,7 +105,10 @@ class AuthServiceDefaultRoleTest {
         user.setId(43L);
         RoleBO userRole = new RoleBO();
         userRole.setId(3L);
+        userRole.setTenantId(1L);
         userRole.setCode("user");
+        userRole.setStatus(1);
+        userRole.setDelFlag(0);
         when(userRepository.selectById(43L)).thenReturn(user);
         when(tenantRoleRepository.selectEnabledRoleByCode(new TenantId(1L), "user"))
                 .thenReturn(userRole);

@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.io.Serial;
 
@@ -53,7 +54,8 @@ public class AiPlatformBO extends BaseEntity {
     private String baseUrl;
 
     /** 访问平台所需的 API 密钥。 */
-    @Size(max = 500, message = "API Key 长度不能超过{max}个字符")
+    @ToString.Exclude
+    @Size(max = 340, message = "API Key 长度不能超过{max}个字符")
     private String apiKey;
 
     /** 默认温度参数。 */

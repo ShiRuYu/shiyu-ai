@@ -9,11 +9,13 @@ import com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepositor
 import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.error.DomainAccessDeniedException;
 
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -50,9 +52,9 @@ public final class AgentRuntimeStateStore {
         bo.setExecutionId(execution.getExecutionId());
         bo.setAgentId(execution.getAgentId());
         bo.setVersion(execution.getVersion());
-        bo.setUserId(actor.userId().value());
         bo.setTenantId(actor.tenantId().value());
         bo.setSessionId(execution.getSessionId());
+        bo.setLastCheckpointId(execution.getLastCheckpointId());
         bo.setInputData(JSONUtils.toJsonString(execution.getInput()));
         bo.setOutputData(JSONUtils.toJsonString(execution.getOutput()));
         bo.setStatus(toStoredStatus(execution.getStatus()));
@@ -65,9 +67,11 @@ public final class AgentRuntimeStateStore {
                 executionRepository.selectByExecutionId(
                         actor.tenantId(), execution.getExecutionId());
         if (existing != null) {
+            bo.setUserId(existing.getUserId());
             bo.setId(existing.getId());
             executionRepository.update(actor.tenantId(), bo);
         } else {
+            bo.setUserId(actor.userId().value());
             executionRepository.insert(actor.tenantId(), bo);
         }
     }
@@ -78,7 +82,7 @@ public final class AgentRuntimeStateStore {
             input = input == null ? new HashMap<>() : new HashMap<>(input);
             input.put("tenantId", bo.getTenantId());
         }
-        return Execution.restore(
+        Execution execution = Execution.restore(
                 bo.getExecutionId(),
                 bo.getAgentId(),
                 bo.getVersion(),
@@ -91,6 +95,8 @@ public final class AgentRuntimeStateStore {
                 bo.getStartTime(),
                 bo.getEndTime(),
                 bo.getDurationMs());
+        execution.setLastCheckpointId(bo.getLastCheckpointId());
+        return execution;
     }
 
     public AgentExecutionBO persisted(ActorContext actor, String executionId) {
@@ -104,6 +110,11 @@ public final class AgentRuntimeStateStore {
             throw new IllegalStateException("执行实例不存在");
         }
         actor.requireTenant(new TenantId(executionTenant));
+        if (!actor.platformAdmin()
+                && (actor.userId() == null
+                        || !Objects.equals(actor.userId().value(), execution.getUserId()))) {
+            throw new DomainAccessDeniedException("AGENT_EXECUTION_ACCESS_DENIED", "执行实例不存在");
+        }
     }
 
     public void cleanup(ActorContext actor, Execution execution) {

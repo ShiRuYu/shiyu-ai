@@ -19,11 +19,40 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * 验证 工具 Approval Service 相关功能、边界条件、异常路径和协作行为。
  */
 class ToolApprovalServiceTest {
+    @Test
+    void concurrentClaimsAllowOnlyOneExecution() throws Exception {
+        ToolApprovalService service = new ToolApprovalService(new InMemoryToolApprovalRepository());
+        ToolApproval pending = service.request("run-1", new TenantId(1), 2, "tool", "hash");
+        service.decide(pending.id(), new TenantId(1), 2, ToolApprovalStatus.APPROVED);
+        CountDownLatch start = new CountDownLatch(1);
+        try (var pool = Executors.newFixedThreadPool(2)) {
+            java.util.concurrent.Callable<Boolean> claim = () -> {
+                start.await();
+                try {
+                    service.claimForExecution(pending.id(), new TenantId(1), 2,
+                            "run-1", "tool", "hash");
+                    return true;
+                } catch (IllegalStateException expected) {
+                    return false;
+                }
+            };
+            Future<Boolean> first = pool.submit(claim);
+            Future<Boolean> second = pool.submit(claim);
+            start.countDown();
+            assertEquals(1, (first.get() ? 1 : 0) + (second.get() ? 1 : 0));
+        }
+        assertEquals(ToolApprovalStatus.CLAIMED,
+                service.require(pending.id(), new TenantId(1), 2).status());
+    }
+
     @Test
     void repositoryRequiresTypedTenantIdentity() {
         InMemoryToolApprovalRepository repository = new InMemoryToolApprovalRepository();

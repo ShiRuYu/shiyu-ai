@@ -342,8 +342,26 @@ public class AiRuntimeController {
      */
     @PostMapping("/runs/{id}/cancel")
     public Result<AiRun> cancel(@PathVariable String id) {
-        return Result.success(
-                runtime.finish(id, tenant(), user(), AiRunStatus.CANCELLED, "CLIENT_CANCELLED"));
+        AiRun run = runtime.requireRun(id, tenant(), user());
+        if (run.status() == AiRunStatus.COMPLETED || run.status() == AiRunStatus.FAILED
+                || run.status() == AiRunStatus.CANCELLED) {
+            return Result.success(run);
+        }
+        if (run.executionId() != null && !run.executionId().isBlank()) {
+            try {
+                agents.cancel(actor(), run.executionId());
+            } catch (IllegalStateException alreadyFinished) {
+                var status = agents.getStatus(actor(), run.executionId());
+                if (status == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.COMPLETED
+                        || status == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.FAILED
+                        || status == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.CANCELLED) {
+                    return Result.success(runtime.requireRun(id, tenant(), user()));
+                }
+                throw alreadyFinished;
+            }
+        }
+        return Result.success(runtime.finish(id, tenant(), user(), AiRunStatus.CANCELLED,
+                "CLIENT_CANCELLED"));
     }
 
     private Flux<org.springframework.http.codec.ServerSentEvent<AiRunEvent>> eventStream(

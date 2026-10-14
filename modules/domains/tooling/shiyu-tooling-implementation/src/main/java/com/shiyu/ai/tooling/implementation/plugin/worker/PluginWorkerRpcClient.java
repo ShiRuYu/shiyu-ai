@@ -24,14 +24,14 @@ public final class PluginWorkerRpcClient {
      */
     public static String call(Process process, String request, PluginWorkerSpec spec)
             throws IOException, TimeoutException {
-        if (process == null || !process.isAlive())
-            throw new IOException("plugin worker is not running");
         if (request == null
                 || request.isBlank()
                 || request.indexOf('\n') >= 0
                 || request.getBytes(StandardCharsets.UTF_8).length > 1_048_576) {
             throw new SecurityException("invalid worker RPC request");
         }
+        if (process == null || !process.isAlive())
+            throw new IOException("plugin worker is not running");
         try {
             BufferedWriter writer =
                     new BufferedWriter(

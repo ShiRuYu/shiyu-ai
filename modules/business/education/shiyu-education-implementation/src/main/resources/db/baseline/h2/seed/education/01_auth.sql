@@ -24,6 +24,7 @@ INSERT INTO "PUBLIC"."AUTH_AUTH_CODE" VALUES(74, 'edu:exam:create', '创建考�
 INSERT INTO "PUBLIC"."AUTH_AUTH_CODE" VALUES(75, 'edu:exam:edit', '编辑考试', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "PUBLIC"."AUTH_AUTH_CODE" VALUES(76, 'edu:exam:delete', '删除考试', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "PUBLIC"."AUTH_AUTH_CODE" VALUES(77, 'edu:exam:publish', '发布考试', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO "PUBLIC"."AUTH_AUTH_CODE" VALUES(214, 'edu:exam:take', '参加考试', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "PUBLIC"."AUTH_AUTH_CODE" VALUES(78, 'edu:student:list', '查看学生', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "PUBLIC"."AUTH_AUTH_CODE" VALUES(211, 'edu:student:create', '创建学生', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "PUBLIC"."AUTH_AUTH_CODE" VALUES(212, 'edu:student:update', '编辑学生', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);

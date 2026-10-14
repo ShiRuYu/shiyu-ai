@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -154,6 +155,18 @@ public class JdbcToolApprovalRepository implements ToolApprovalRepository {
                         + " EXPIRES_AT<CURRENT_TIMESTAMP",
                 tenantId.value(),
                 ownerUserId);
+    }
+
+    @Override
+    public List<ToolApproval> findOverdueRunning(Instant now, int limit) {
+        return jdbc.query(
+                "SELECT a.* FROM AI_TOOL_APPROVAL a JOIN AI_RUN r"
+                        + " ON r.ID=a.RUN_ID AND r.TENANT_ID=a.TENANT_ID"
+                        + " AND r.OWNER_USER_ID=a.OWNER_USER_ID"
+                        + " WHERE a.STATUS IN ('PENDING','EXPIRED')"
+                        + " AND a.EXPIRES_AT<? AND r.STATUS='RUNNING'"
+                        + " ORDER BY a.EXPIRES_AT,a.ID LIMIT ?",
+                (rs, row) -> map(rs), Timestamp.from(now), Math.max(1, Math.min(limit, 100)));
     }
 
     private ToolApproval map(java.sql.ResultSet rs) throws java.sql.SQLException {

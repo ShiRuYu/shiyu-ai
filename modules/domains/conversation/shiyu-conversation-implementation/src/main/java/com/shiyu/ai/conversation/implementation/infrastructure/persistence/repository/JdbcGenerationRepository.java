@@ -512,6 +512,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
             case STARTED -> AiRunEventType.RUN_STARTED;
             case BLOCK_STARTED -> AiRunEventType.MODEL_BLOCK_STARTED;
             case DELTA -> AiRunEventType.MODEL_DELTA;
+            case METADATA -> AiRunEventType.TURN_STARTED;
             case REASONING_DELTA -> AiRunEventType.MODEL_REASONING_DELTA;
             case TOOL_CALL -> AiRunEventType.MODEL_TOOL_CALL_DELTA;
             case BLOCK_COMPLETED -> AiRunEventType.MODEL_BLOCK_COMPLETED;
@@ -534,7 +535,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
             case RUN_COMPLETED -> GenerationEventType.COMPLETED;
             case RUN_FAILED -> GenerationEventType.FAILED;
             case RUN_CANCELLED -> GenerationEventType.CANCELLED;
-            default -> GenerationEventType.DELTA;
+            default -> GenerationEventType.METADATA;
         };
     }
 

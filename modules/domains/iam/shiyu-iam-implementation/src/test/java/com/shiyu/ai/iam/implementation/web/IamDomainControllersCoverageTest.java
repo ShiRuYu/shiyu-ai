@@ -13,6 +13,7 @@ import com.shiyu.ai.iam.implementation.vo.TenantVO;
 import com.shiyu.ai.iam.implementation.vo.UserVO;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.contract.KnowledgeTenantProvisioning;
 
 import org.junit.jupiter.api.AfterEach;
@@ -174,6 +175,29 @@ class IamDomainControllersCoverageTest {
         when(tenants.allTenantsView(any())).thenReturn(List.of(tenant));
         assertTrue(controller.createTenant(withoutCode).isSuccess());
         verify(knowledge, times(1)).initializeTenantDefaults(new TenantId(11L));
+    }
+
+    @Test
+    void provisionsNewTenantKnowledgeUnderNewTenantScope() {
+        TenantController controller = new TenantController(tenants, auth, knowledge);
+        TenantRequest request = new TenantRequest();
+        request.setCode("child-scope");
+        TenantVO tenant = new TenantVO();
+        tenant.setId(11L);
+        tenant.setCode("child-scope");
+        when(tenants.createTenant(any(), same(request))).thenReturn(true);
+        when(tenants.allTenantsView(any())).thenReturn(List.of(tenant));
+        doAnswer(invocation -> {
+            assertEquals(new TenantId(11L), TenantScope.require());
+            return null;
+        }).when(knowledge).initializeTenantDefaults(new TenantId(11L));
+
+        TenantScope.withTenant(new TenantId(7L), () -> {
+            assertTrue(controller.createTenant(request).isSuccess());
+            assertEquals(new TenantId(7L), TenantScope.require());
+            return null;
+        });
+        verify(knowledge).initializeTenantDefaults(new TenantId(11L));
     }
 
     @Test

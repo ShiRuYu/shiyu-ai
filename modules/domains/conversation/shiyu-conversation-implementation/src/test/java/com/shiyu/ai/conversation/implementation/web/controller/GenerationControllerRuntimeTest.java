@@ -266,6 +266,13 @@ class GenerationControllerRuntimeTest {
                             now);
             GenerationEvent projected = (GenerationEvent) mapper.invoke(controller, event);
             assertNotNull(projected);
+            if (type == AiRunEventType.MODEL_DELTA) {
+                assertEquals(GenerationEventType.DELTA, projected.type());
+            } else if (type == AiRunEventType.TURN_STARTED
+                    || type == AiRunEventType.PROMPT_ASSEMBLED
+                    || type == AiRunEventType.MODEL_STARTED) {
+                assertEquals(GenerationEventType.METADATA, projected.type());
+            }
             assertEquals(
                     type == AiRunEventType.RUN_STARTED ? "r1" : "g1", projected.generationRunId());
         }

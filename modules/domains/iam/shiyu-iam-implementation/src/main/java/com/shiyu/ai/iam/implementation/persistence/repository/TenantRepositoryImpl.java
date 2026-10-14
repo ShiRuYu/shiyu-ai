@@ -131,7 +131,10 @@ public class TenantRepositoryImpl
                                         TenantDO::getId, item -> item, (first, ignored) -> first));
         TenantDO current = tenantMap.get(tenantValue);
         Set<Long> visited = new HashSet<>();
-        while (current != null && current.getParentId() != null && visited.add(current.getId())) {
+        while (current != null && current.getParentId() != null) {
+            if (!visited.add(current.getId())) {
+                return null;
+            }
             current = tenantMap.get(current.getParentId());
         }
         return current == null ? null : current.getId();
@@ -278,13 +281,13 @@ public class TenantRepositoryImpl
     private List<Long> resolveSourceAuthCodeIds(
             Long sourceTenantId, List<Long> requestedAuthCodeIds) {
         List<Long> availableIds =
-                tenantAuthCodeMapper
-                        .selectListByQuery(
-                                QueryWrapper.create()
-                                        .where(TenantAuthCodeDO::getTenantId)
-                                        .eq(sourceTenantId)
-                                        .and(TenantAuthCodeDO::getStatus)
-                                        .eq(1))
+                TenantQueryExecutor.readAcrossTenants(
+                                () -> tenantAuthCodeMapper.selectListByQuery(
+                                        QueryWrapper.create()
+                                                .where(TenantAuthCodeDO::getTenantId)
+                                                .eq(sourceTenantId)
+                                                .and(TenantAuthCodeDO::getStatus)
+                                                .eq(1)))
                         .stream()
                         .map(TenantAuthCodeDO::getAuthCodeId)
                         .filter(Objects::nonNull)
@@ -499,7 +502,10 @@ public class TenantRepositoryImpl
 
     /** 查询指定租户的所有后代租户 ID（包含自身） */
     public List<Long> selectDescendantIds(TenantId rootId) {
-        long rootValue = requireTenant(rootId);
+        if (rootId == null || rootId.value() <= 0) {
+            throw new IllegalArgumentException("root tenantId is required for tenant tree query");
+        }
+        long rootValue = rootId.value();
         // 租户树查询用于校验父子关系，不能被当前业务租户的自动过滤截断。
         List<TenantDO> all = TenantQueryExecutor.readAcrossTenants(tenantMapper::selectAll);
         // parentId → childrenId 映射

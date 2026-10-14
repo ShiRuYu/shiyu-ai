@@ -254,9 +254,9 @@ public class DatabaseInitializer {
             if (existingTables.contains(BASELINE_TABLE)) {
                 BaselineMarker marker = readBaselineMarker(connection);
                 if (BASELINE_VERSION.equals(marker.version())) {
+                    installPermissionUpdates(connection);
                     assertExpectedTables(loadPublicTables(connection));
                     assertExpectedColumns(connection);
-                    installPermissionUpdates(connection);
                     log.info(
                             "Database baseline {} ({}) is already installed; initialization"
                                     + " skipped; permission updates checked",
@@ -275,6 +275,9 @@ public class DatabaseInitializer {
             }
 
             installFreshBaseline(connection);
+            installPermissionUpdates(connection);
+            assertExpectedTables(loadPublicTables(connection));
+            assertExpectedColumns(connection);
             log.info(
                     "Database baseline {} ({}) installed successfully: {} application tables",
                     BASELINE_VERSION,
@@ -412,7 +415,15 @@ public class DatabaseInitializer {
                     List.of(
                             "classpath:db/updates/iam/20260914_platform_usage.sql",
                             "classpath:db/updates/iam/20260916_tenant_module_access.sql",
-                            "classpath:db/updates/iam/20260923_permission_alignment.sql"),
+                            "classpath:db/updates/iam/20260923_permission_alignment.sql",
+                            "classpath:db/updates/education/20261005_exam_attempt.sql",
+                            "classpath:db/updates/education/20261006_question_purpose.sql",
+                            "classpath:db/updates/knowledge/20261007_demo_education_access.sql",
+                            "classpath:db/updates/education/20261007_practice_submission.sql",
+                            "classpath:db/updates/model/20261011_deepseek_flash.sql",
+                            "classpath:db/updates/agent/20261012_checkpoint_pointer.sql",
+                            "classpath:db/updates/agent/20261013_sample_apps.sql",
+                            "classpath:db/updates/agent/20261014_seed_deepseek_graphs.sql"),
                     "permission update");
             connection.commit();
         } catch (Exception failure) {

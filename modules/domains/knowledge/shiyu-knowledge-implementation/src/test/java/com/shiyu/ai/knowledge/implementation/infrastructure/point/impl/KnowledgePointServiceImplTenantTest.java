@@ -19,6 +19,8 @@ import com.shiyu.ai.knowledge.implementation.application.KnowledgeRelationServic
 import com.shiyu.ai.knowledge.implementation.application.KnowledgeSpaceService;
 import com.shiyu.ai.knowledge.implementation.application.service.graph.KnowledgeGraph;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeRepository;
 import com.shiyu.ai.knowledge.implementation.infrastructure.point.KnowledgePointService;
 
@@ -60,7 +62,7 @@ class KnowledgePointServiceImplTenantTest {
         KnowledgeRelationService relations = mock(KnowledgeRelationService.class);
         KnowledgeDocumentRelationService documents = mock(KnowledgeDocumentRelationService.class);
         KnowledgePointServiceImpl service =
-                new KnowledgePointServiceImpl(repository, spaces, graph, relations, documents);
+                new KnowledgePointServiceImpl(mock(KnowledgeEnterpriseRepository.class), repository, spaces, graph, relations, documents);
         ActorContext actor = new ActorContext(new TenantId(17L), new UserId(2L), false);
         KnowledgeBO point = new KnowledgeBO();
         point.setId(41L);
@@ -114,6 +116,7 @@ class KnowledgePointServiceImplTenantTest {
 
         KnowledgePointServiceImpl service =
                 new KnowledgePointServiceImpl(
+                        mock(KnowledgeEnterpriseRepository.class),
                         repository,
                         spaces,
                         mock(KnowledgeGraph.class),
@@ -133,10 +136,51 @@ class KnowledgePointServiceImplTenantTest {
 
     private KnowledgePointServiceImpl service(KnowledgeRepository repository) {
         return new KnowledgePointServiceImpl(
+                mock(KnowledgeEnterpriseRepository.class),
                 repository,
                 mock(KnowledgeSpaceService.class),
                 mock(KnowledgeGraph.class),
                 mock(KnowledgeRelationService.class),
                 mock(KnowledgeDocumentRelationService.class));
+    }
+
+    @Test
+    void studentCatalogOnlyIncludesTenantVisibleEducationSpaces() {
+        KnowledgeEnterpriseRepository enterprise = mock(KnowledgeEnterpriseRepository.class);
+        KnowledgeRepository repository = mock(KnowledgeRepository.class);
+        KnowledgePointServiceImpl service = new KnowledgePointServiceImpl(
+                enterprise, repository, mock(KnowledgeSpaceService.class),
+                mock(KnowledgeGraph.class), mock(KnowledgeRelationService.class),
+                mock(KnowledgeDocumentRelationService.class));
+        ActorContext actor = new ActorContext(new TenantId(17L), new UserId(2L), false);
+        KnowledgeSpaceBO visible = space(5L, "EDUCATION", "TENANT");
+        KnowledgeSpaceBO privateSpace = space(6L, "EDUCATION", "PRIVATE");
+        KnowledgeSpaceBO otherDomain = space(7L, "GENERAL", "TENANT");
+        when(enterprise.findActiveSpacesByTenant(actor.tenantId()))
+                .thenReturn(List.of(visible, privateSpace, otherDomain));
+        when(repository.findAll(actor.tenantId()))
+                .thenReturn(List.of(point(41L, 5L), point(42L, 6L), point(43L, 7L)));
+
+        assertEquals(List.of(41L), service.listStudentEducationPoints(actor).stream()
+                .map(response -> response.id()).toList());
+        assertEquals(41L, service.getStudentEducationPoint(actor, 41L).id());
+        assertThrows(ServiceException.class, () -> service.getStudentEducationPoint(actor, 42L));
+        assertThrows(ServiceException.class, () -> service.getStudentEducationPoint(actor, 43L));
+    }
+
+    private static KnowledgeSpaceBO space(Long id, String domain, String access) {
+        KnowledgeSpaceBO space = new KnowledgeSpaceBO();
+        space.setId(id);
+        space.setDomainCode(domain);
+        space.setAccessMode(access);
+        return space;
+    }
+
+    private static KnowledgeBO point(Long id, Long spaceId) {
+        KnowledgeBO point = new KnowledgeBO();
+        point.setId(id);
+        point.setSpaceId(spaceId);
+        point.setName("Math " + id);
+        return point;
     }
 }

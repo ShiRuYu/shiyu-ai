@@ -333,10 +333,12 @@ public class AuthCodeServiceImpl implements AuthCodeService {
                                         AuthCodeBO::getId, Comparator.nullsLast(Long::compareTo)))
                         .map(this::toOption)
                         .toList();
-        int page = request.getPageNum() == null ? 1 : request.getPageNum();
-        int size = request.getPageSize() == null ? 10 : request.getPageSize();
-        int from = Math.min(Math.max(0, (page - 1) * size), items.size());
-        int to = Math.min(from + size, items.size());
+        int page = request.getPageNum() == null || request.getPageNum() < 1
+                ? 1 : request.getPageNum();
+        int size = request.getPageSize() == null || request.getPageSize() < 1
+                ? 10 : request.getPageSize();
+        int from = (int) Math.min(((long) page - 1) * size, items.size());
+        int to = (int) Math.min((long) from + size, items.size());
         return new PageData<>(items.subList(from, to), items.size());
     }
 

@@ -29,6 +29,156 @@ import javax.sql.DataSource;
 class DatabaseInitializerTest {
 
     @Test
+    void upgradesLegacyModelRouteWhilePreservingOtherGraphCustomization() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        String deepSeek = "\"platform\":\"DEEPSEEK\",\"modelName\":\"deepseek-flash\"";
+        String silicon = "\"platform\":\"SILICON_FLOW\",\"modelName\":\"Qwen/Qwen3-8B\"";
+        assertEquals(9, scalar(dataSource,
+                "SELECT COUNT(*) FROM AGENT_VERSION WHERE ID BETWEEN 3 AND 11 "
+                        + "AND GRAPH_CONFIG LIKE '%" + deepSeek + "%'"));
+        assertEquals(11, scalar(dataSource,
+                "SELECT COUNT(*) FROM AGENT_DEF WHERE ID BETWEEN 1 AND 11 "
+                        + "AND DESCRIPTION LIKE '%DeepSeek deepseek-flash%'"));
+        execute(dataSource, "UPDATE AGENT_VERSION SET GRAPH_CONFIG=REPLACE(GRAPH_CONFIG, '"
+                + deepSeek + "', '" + silicon + "') WHERE ID IN (3, 4)");
+        execute(dataSource, "UPDATE AGENT_VERSION SET GRAPH_CONFIG=GRAPH_CONFIG || ' ' WHERE ID=4");
+        execute(dataSource, "UPDATE AGENT_VERSION SET GRAPH_CONFIG=REPLACE(GRAPH_CONFIG, '"
+                + deepSeek + "', '" + silicon + "'), CREATE_BY='team' WHERE ID=5");
+
+        initializer.initialize();
+        initializer.initialize();
+
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AGENT_VERSION WHERE ID=3 "
+                        + "AND GRAPH_CONFIG LIKE '%" + deepSeek + "%'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AGENT_VERSION WHERE ID=4 "
+                        + "AND GRAPH_CONFIG LIKE '%" + deepSeek + "%' "
+                        + "AND RIGHT(GRAPH_CONFIG, 1)=' '"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AGENT_VERSION WHERE ID=5 "
+                        + "AND CREATE_BY='team' AND GRAPH_CONFIG LIKE '%" + silicon + "%'"));
+    }
+
+    @Test
+    void backfillsMissingPublishedSampleAppsWithoutReplacingExistingVersions() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        execute(dataSource, "DELETE FROM AI_APP_VERSION WHERE ID='edu-tutor-v1'");
+        execute(dataSource, "DELETE FROM AI_APP WHERE ID='edu-tutor-app'");
+        execute(dataSource, "UPDATE AI_APP_VERSION "
+                + "SET CONFIG_JSON='{\"agentId\":\"custom-agent\"}' "
+                + "WHERE ID='knowledge-qa-v1'");
+        execute(dataSource, "UPDATE AI_APP SET OWNER_USER_ID=1 "
+                + "WHERE ID='knowledge-qa-app'");
+
+        initializer.initialize();
+        initializer.initialize();
+
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AI_APP WHERE ID='edu-tutor-app' "
+                        + "AND PUBLISHED_VERSION_ID='edu-tutor-v1' AND OWNER_USER_ID=2"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AI_APP WHERE ID='knowledge-qa-app' "
+                        + "AND PUBLISHED_VERSION_ID='knowledge-qa-v1' AND OWNER_USER_ID=2"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AI_APP_VERSION WHERE ID='edu-tutor-v1' "
+                        + "AND CONFIG_JSON LIKE '%deepseek-flash%'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AI_APP_VERSION WHERE ID='knowledge-qa-v1' "
+                        + "AND CONFIG_JSON='{\"agentId\":\"custom-agent\"}'"));
+    }
+
+    @Test
+    void upgradesOnlyUnmodifiedSeededDeepSeekModels() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        try (Connection connection = dataSource.getConnection();
+                Statement sql = connection.createStatement()) {
+            sql.executeUpdate("UPDATE MODEL_AI_MODEL SET MODEL_NAME='deepseek-v4-flash', "
+                    + "DISPLAY_NAME='DeepSeek V4 Flash' WHERE ID=4");
+            sql.executeUpdate("UPDATE MODEL_AI_MODEL SET MODEL_NAME='deepseek-reasoner', "
+                    + "DISPLAY_NAME='DeepSeek Reasoner' WHERE ID=5");
+            sql.executeUpdate("UPDATE MODEL_AI_PLATFORM SET AVAILABLE_MODELS="
+                    + "'[\"deepseek-v4-flash\",\"deepseek-reasoner\"]' WHERE ID=2");
+            sql.executeUpdate("UPDATE MODEL_AI_MODEL SET MODEL_NAME='team-custom' WHERE ID=6");
+        }
+
+        initializer.initialize();
+        initializer.initialize();
+
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM MODEL_AI_MODEL WHERE ID=4 AND MODEL_NAME='deepseek-flash'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM MODEL_AI_MODEL WHERE ID=5 AND MODEL_NAME='deepseek-v4-pro'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM MODEL_AI_PLATFORM WHERE ID=2 AND "
+                        + "AVAILABLE_MODELS='[\"deepseek-flash\",\"deepseek-v4-pro\"]'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM MODEL_AI_MODEL WHERE ID=6 AND MODEL_NAME='team-custom'"));
+    }
+
+    @Test
+    void freshBaselineCanServeModuleProtectedRequestsWithoutRestart() throws Exception {
+        DataSource dataSource = newDataSource();
+        newInitializer(dataSource).initialize();
+
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                        + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME='AUTH_TENANT_MODULE'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_TENANT_MODULE "
+                        + "WHERE TENANT_ID=1 AND MODULE_ID='education' AND STATUS=1"));
+    }
+
+    @Test
+    void upgradesExistingBaselineWithExamAttemptTables() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        try (Connection connection = dataSource.getConnection();
+                Statement sql = connection.createStatement()) {
+            sql.executeUpdate("DROP TABLE EDU_EXAM_ATTEMPT_QUESTION");
+            sql.executeUpdate("DROP TABLE EDU_EXAM_ATTEMPT");
+        }
+        initializer.initialize();
+        initializer.initialize();
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                        + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME='EDU_EXAM_ATTEMPT'"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                        + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME='EDU_EXAM_ATTEMPT_QUESTION'"));
+        assertEquals(3, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G "
+                        + "JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                        + "WHERE C.CODE='edu:exam:take' AND G.TENANT_ID=1"));
+    }
+
+    @Test
+    void upgradesExistingAgentExecutionTableWithCheckpointPointer() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        try (Connection connection = dataSource.getConnection();
+                Statement sql = connection.createStatement()) {
+            sql.executeUpdate("ALTER TABLE AGENT_EXECUTION DROP COLUMN LAST_CHECKPOINT_ID");
+        }
+
+        initializer.initialize();
+        initializer.initialize();
+
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
+                        + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME='AGENT_EXECUTION' "
+                        + "AND COLUMN_NAME='LAST_CHECKPOINT_ID'"));
+    }
+
+    @Test
     void upgradesExistingBaselineWithPlatformPermissionWithoutOverwritingDisabledGrants() throws Exception {
         DataSource dataSource = newDataSource();
         DatabaseInitializer initializer = newInitializer(dataSource);
@@ -116,6 +266,7 @@ class DatabaseInitializerTest {
                     "AUTH_ROLE_SCOPE_AUTH_CODE",
                     "AUTH_ROLE_SCOPE_MENU",
                     "AUTH_TENANT",
+                    "AUTH_TENANT_MODULE",
                     "AUTH_TENANT_AUTH_CODE",
                     "AUTH_TENANT_MENU",
                     "AUTH_USER",
@@ -181,7 +332,7 @@ class DatabaseInitializerTest {
         initializer.initialize();
 
         assertEquals(
-                90,
+                93,
                 scalar(
                         dataSource,
                         "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
@@ -202,11 +353,11 @@ class DatabaseInitializerTest {
                 1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
         assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
-        assertEquals(114, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
+        assertEquals(115, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
         assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
-        assertEquals(114, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
+        assertEquals(115, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
         assertTrue(scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU") >= 99);
-        assertEquals(227, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
+        assertEquals(230, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
         assertEquals(
                 1,
                 scalar(
@@ -348,7 +499,7 @@ class DatabaseInitializerTest {
                         dataSource,
                         "SELECT COUNT(*) FROM AI_APP_VERSION WHERE ID='edu-tutor-v1' AND"
                                 + " APP_ID='edu-tutor-app' AND CONFIG_JSON LIKE"
-                                + " '%deepseek-v4-flash%'"));
+                                + " '%deepseek-flash%'"));
         assertEquals(2, scalar(dataSource, "SELECT COUNT(*) FROM AI_APP WHERE STATUS='PUBLISHED'"));
         assertEquals(
                 1,
@@ -414,7 +565,7 @@ class DatabaseInitializerTest {
                 scalar(
                         dataSource,
                         "SELECT COUNT(*) FROM GOVERNANCE_USAGE_RECORD WHERE INPUT_TOKENS=842 AND"
-                                + " EXT_INFO LIKE '%deepseek-v4-flash%'"));
+                                + " EXT_INFO LIKE '%deepseek-flash%'"));
         assertEquals(
                 1,
                 scalar(

@@ -5,6 +5,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.List;
 
 /**
  * 管理 Checkpoint 相关的运行时状态、注册信息或临时数据。
@@ -30,13 +31,33 @@ public class CheckpointManager {
     public Checkpoint createCheckpoint(
             TenantId tenantId, String executionId, String nodeId, Map<String, Object> state) {
         Checkpoint checkpoint = new Checkpoint(tenantId, executionId, nodeId, state);
-        checkpointStore.save(tenantId, checkpoint);
+        saveCheckpoint(checkpoint);
         log.debug(
                 "检查点已创建: executionIdPresent={}, nodeIdPresent={}, checkpointIdPresent={}",
                 executionId != null,
                 nodeId != null,
                 checkpoint.getCheckpointId() != null);
         return checkpoint;
+    }
+
+    /**
+     * 保存图引擎生成的检查点及其稳定标识和下一节点。
+     *
+     * @param checkpoint 已完成节点后的检查点
+     */
+    public void saveCheckpoint(Checkpoint checkpoint) {
+        checkpointStore.save(checkpoint.getTenantId(), checkpoint);
+    }
+
+    /**
+     * 查询某次执行的检查点历史。
+     *
+     * @param tenantId 执行所属租户
+     * @param executionId 执行标识
+     * @return 已持久化检查点列表
+     */
+    public List<Checkpoint> listCheckpoints(TenantId tenantId, String executionId) {
+        return checkpointStore.listByExecutionId(tenantId, executionId);
     }
 
     /** 获取最新的检查点 */

@@ -77,17 +77,4 @@ public interface ExamService {
      */
     void deleteById(ActorContext actor, Long id);
 
-    /**
-     * 处理submit。
-     *
-     * @param actor 调用方上下文。
-     * @param id 目标对象标识。
-     * @param request 请求对象。
-     *
-     * @return 处理结果。
-     */
-    ExamResponse submit(
-            ActorContext actor,
-            Long id,
-            com.shiyu.ai.education.implementation.web.dto.SubmitAnswerRequest request);
 }

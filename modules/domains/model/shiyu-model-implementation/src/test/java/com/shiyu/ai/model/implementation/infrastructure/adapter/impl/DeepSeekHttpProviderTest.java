@@ -22,6 +22,60 @@ import java.util.concurrent.atomic.AtomicReference;
 class DeepSeekHttpProviderTest {
     private HttpServer server;
 
+    @Test
+    void usesDeepSeekFlashWhenNeitherProviderNorRequestNamesAModel() {
+        AtomicReference<String> submittedModel = new AtomicReference<>();
+        server.createContext("/v1/chat/completions", exchange -> {
+            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            submittedModel.set(String.valueOf(
+                    com.shiyu.ai.common.foundation.utils.JSONUtils.parseMap(body).get("model")));
+            byte[] response = ("{\"choices\":[{\"message\":{\"content\":\"ok\"},\"finish_reason\":\"stop\"}]}")
+                    .getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        DeepSeekHttpProvider provider = new DeepSeekHttpProvider(
+                "http://127.0.0.1:" + server.getAddress().getPort(), "test-key", null);
+        ChatRequest request = ChatRequest.builder()
+                .platform("DEEPSEEK")
+                .messages(List.of(ChatMessage.text("user", "hello")))
+                .build();
+
+        ChatResponse result = provider.chat(request);
+        assertTrue(result.isSuccess());
+        assertEquals("deepseek-flash", result.getModel());
+        assertEquals("deepseek-flash", submittedModel.get());
+        DeepSeekHttpProvider blankDefault = new DeepSeekHttpProvider(
+                "http://127.0.0.1:" + server.getAddress().getPort(), "test-key", "  ");
+        assertTrue(blankDefault.chat(request).isSuccess());
+        assertEquals("deepseek-flash", submittedModel.get());
+    }
+
+    @Test
+    void streamingEventsNameTheDefaultModelWhenFramesOmitIt() {
+        server.createContext("/v1/chat/completions", exchange -> {
+            byte[] response = ("data: {\"choices\":[{\"delta\":{\"content\":\"ok\"},\"finish_reason\":\"stop\"}]}\n\n"
+                    + "data: [DONE]\n\n").getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "text/event-stream");
+            exchange.sendResponseHeaders(200, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        DeepSeekHttpProvider provider = new DeepSeekHttpProvider(
+                "http://127.0.0.1:" + server.getAddress().getPort(), "test-key", null);
+        ChatRequest request = ChatRequest.builder()
+                .platform("DEEPSEEK")
+                .messages(List.of(ChatMessage.text("user", "hello")))
+                .build();
+
+        List<ChatResponse> events = provider.stream(request).collectList().block();
+        assertNotNull(events);
+        assertTrue(events.stream().anyMatch(event -> "DELTA".equals(event.getEventType())
+                && "deepseek-flash".equals(event.getModel())));
+        assertEquals("deepseek-flash", events.get(events.size() - 1).getModel());
+    }
+
     @BeforeEach
     void setUp() throws Exception {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);

@@ -2,10 +2,12 @@ package com.shiyu.ai.iam.implementation.persistence.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.iam.implementation.persistence.dataobject.AuthCodeDO;
+import com.mybatisflex.core.query.QueryWrapper;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.RoleDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.AuthCodeMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleMapper;
@@ -14,6 +16,7 @@ import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -22,6 +25,21 @@ import java.util.List;
  * 验证 认证 Repository Impl 相关功能、边界条件、异常路径和协作行为。
  */
 class AuthRepositoryImplTest {
+    @Test
+    void usernamePermissionLookupRechecksRoleTenantAndLiveStatus() {
+        when(authCodes.selectListByQuery(any())).thenReturn(List.of());
+
+        repository.selectCodesByUsername("alice", new TenantId(10L));
+
+        ArgumentCaptor<QueryWrapper> query = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(authCodes).selectListByQuery(query.capture());
+        String sql = query.getValue().toSQL().toLowerCase().replace("`", "").replace("\"", "");
+        assertTrue(sql.contains("auth_role"));
+        assertTrue(sql.contains("auth_role.tenant_id"));
+        assertTrue(sql.contains("auth_role.status"));
+        assertTrue(sql.contains("auth_role.del_flag"));
+    }
+
     private AuthCodeMapper authCodes;
     private RoleMapper roles;
     private AuthRepositoryImpl repository;

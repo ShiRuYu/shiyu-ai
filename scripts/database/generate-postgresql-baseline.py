@@ -44,20 +44,59 @@ SEED = [
     "modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/seed/memory/12_memory.sql",
     "modules/domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2/seed/tooling/15_plugin_market.sql",
 ]
+UPDATES = [
+    "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260914_platform_usage.sql",
+    "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260916_tenant_module_access.sql",
+    "modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260923_permission_alignment.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261005_exam_attempt.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261006_question_purpose.sql",
+    "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/updates/knowledge/20261007_demo_education_access.sql",
+    "modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261007_practice_submission.sql",
+    "modules/domains/model/shiyu-model-implementation/src/main/resources/db/updates/model/20261011_deepseek_flash.sql",
+    "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261012_checkpoint_pointer.sql",
+    "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261013_sample_apps.sql",
+    "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261014_seed_deepseek_graphs.sql",
+]
 
 
 def convert(text: str) -> str:
-    text = re.sub(r'"([A-Za-z_][A-Za-z0-9_]*)"', lambda m: m.group(1).lower(), text)
-    text = re.sub(r"\bpublic\.", "", text, flags=re.I)
+    text = re.sub(
+        r"'(?:''|[^'])*'|\"([A-Za-z_][A-Za-z0-9_]*)\"",
+        lambda match: match.group(0) if match.group(1) is None else f'"{match.group(1).lower()}"',
+        text,
+    )
+    text = re.sub(r'"public"\.|\bpublic\.', "", text, flags=re.I)
     text = re.sub(r"\bCREATE\s+CACHED\s+TABLE\b", "CREATE TABLE", text, flags=re.I)
     text = re.sub(r"\bDEFAULT\s+ON\s+NULL\b", "", text, flags=re.I)
     text = re.sub(r"\bCHARACTER\s+LARGE\s+OBJECT\b", "TEXT", text, flags=re.I)
+    text = re.sub(r"\bBINARY\s+LARGE\s+OBJECT\b", "BYTEA", text, flags=re.I)
     text = re.sub(r"\bCLOB\b", "TEXT", text, flags=re.I)
     text = re.sub(r"\bBLOB\b", "BYTEA", text, flags=re.I)
     text = re.sub(r"\bTINYINT\b", "SMALLINT", text, flags=re.I)
+    text = re.sub(r"\bDOUBLE\b(?!\s+PRECISION\b)", "DOUBLE PRECISION", text, flags=re.I)
     text = re.sub(r"\bNULLS\s+DISTINCT\b", "", text, flags=re.I)
     text = re.sub(r"\s+NULLS\s+(?:FIRST|LAST)\b", "", text, flags=re.I)
+    text = re.sub(r"\s+ON\s+UPDATE\s+CURRENT_TIMESTAMP\b", "", text, flags=re.I)
     return re.sub(r"\s+COMMENT\s+'(?:''|[^'])*'", "", text, flags=re.I)
+
+
+def auto_update_columns(text: str) -> list[tuple[str, str]]:
+    """Locate H2-managed update timestamps that need PostgreSQL triggers."""
+    table = None
+    columns = []
+    for line in text.splitlines():
+        declaration = re.match(
+            r'\s*CREATE\s+(?:CACHED\s+)?TABLE\s+(?:"PUBLIC"\.)?"([A-Za-z_][A-Za-z0-9_]*)"',
+            line,
+            flags=re.I,
+        )
+        if declaration:
+            table = declaration.group(1).lower()
+        if table and re.search(r'\bON\s+UPDATE\s+CURRENT_TIMESTAMP\b', line, flags=re.I):
+            column = re.match(r'\s*"([A-Za-z_][A-Za-z0-9_]*)"', line)
+            if column:
+                columns.append((table, column.group(1).lower()))
+    return columns
 
 
 def write(name: str, paths: list[str], marker: bool = False) -> None:
@@ -66,9 +105,51 @@ def write(name: str, paths: list[str], marker: bool = False) -> None:
         "-- 不要直接编辑生成区，请修改源基线后重新生成。",
         "",
     ]
+    update_columns = []
     for path in paths:
-        chunks += [f"-- 来源：{path}", convert((ROOT / path).read_text(encoding="utf-8")).rstrip(), ""]
+        source = (ROOT / path).read_text(encoding="utf-8")
+        chunks += [f"-- 来源：{path}", convert(source).rstrip(), ""]
+        if name == "baseline-schema.sql":
+            update_columns.extend(auto_update_columns(source))
+    if update_columns:
+        chunks += ["-- H2 ON UPDATE CURRENT_TIMESTAMP 的 PostgreSQL 等价触发器。"]
+        for column in sorted({column for _, column in update_columns}):
+            chunks += [
+                f'CREATE FUNCTION shiyu_touch_{column}() RETURNS trigger LANGUAGE plpgsql AS $$',
+                "BEGIN",
+                f'    NEW."{column}" = CURRENT_TIMESTAMP;',
+                "    RETURN NEW;",
+                "END;",
+                "$$;",
+                "",
+            ]
+        for table, column in update_columns:
+            chunks += [
+                f'CREATE TRIGGER shiyu_touch_{table}_{column} BEFORE UPDATE ON "{table}"',
+                f'FOR EACH ROW EXECUTE FUNCTION shiyu_touch_{column}();',
+                "",
+            ]
     if marker:
+        for path in UPDATES:
+            chunks += [f"-- 来源：{path}", convert((ROOT / path).read_text(encoding="utf-8")).rstrip(), ""]
+        chunks += [
+            "-- H2 在显式 seed ID 后自动推进序列；PostgreSQL 需要显式同步。",
+            "DO $$",
+            "DECLARE identity_column record;",
+            "BEGIN",
+            "  FOR identity_column IN",
+            "    SELECT table_name, column_name FROM information_schema.columns",
+            "    WHERE table_schema = 'public' AND is_identity = 'YES'",
+            "  LOOP",
+            "    EXECUTE format(",
+            "      'SELECT setval(pg_get_serial_sequence(%L, %L), COALESCE((SELECT MAX(%I) FROM %I), 1), EXISTS(SELECT 1 FROM %I))',",
+            "      identity_column.table_name, identity_column.column_name,",
+            "      identity_column.column_name, identity_column.table_name, identity_column.table_name);",
+            "  END LOOP;",
+            "END;",
+            "$$;",
+            "",
+        ]
         chunks += [
             "-- 校验器要求在全部 schema 和 seed 语句之后存在此标记。",
             "INSERT INTO common_schema_baseline (id, baseline_version, seed_profile) VALUES (1, '4', 'system-ai');",

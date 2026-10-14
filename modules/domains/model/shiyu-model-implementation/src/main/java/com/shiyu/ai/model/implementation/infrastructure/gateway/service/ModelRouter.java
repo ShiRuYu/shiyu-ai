@@ -38,10 +38,10 @@ public class ModelRouter {
                         java.util.Set.of("chat", "stream", "tool_calls", "structured"),
                         128000);
         register(configured);
-        register(
+        ModelProviderCapabilities deepSeekFlash =
                 new ModelProviderCapabilities(
                         "DEEPSEEK",
-                        "deepseek-v4-flash",
+                        "deepseek-flash",
                         java.util.Set.of(
                                 "chat",
                                 "stream",
@@ -61,7 +61,16 @@ public class ModelRouter {
                         8192,
                         true,
                         true,
-                        true));
+                        true);
+        register(deepSeekFlash);
+        // Preserve routes saved with the historical model name.
+        register(new ModelProviderCapabilities(
+                deepSeekFlash.provider(), "deepseek-v4-flash", deepSeekFlash.features(),
+                deepSeekFlash.contextWindow(), deepSeekFlash.streaming(), deepSeekFlash.tools(),
+                deepSeekFlash.parallelTools(), deepSeekFlash.multimodal(),
+                deepSeekFlash.jsonSchema(), deepSeekFlash.reasoningLevels(),
+                deepSeekFlash.maxOutputTokens(), deepSeekFlash.streamUsage(),
+                deepSeekFlash.cacheUsage(), deepSeekFlash.cancellation()));
         register(
                 new ModelProviderCapabilities(
                         "OPENAI",

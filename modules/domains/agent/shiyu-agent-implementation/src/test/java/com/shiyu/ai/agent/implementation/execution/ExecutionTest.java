@@ -2,7 +2,9 @@ package com.shiyu.ai.agent.implementation.execution;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -75,5 +77,25 @@ class ExecutionTest {
         } finally {
             executor.shutdownNow();
         }
+    }
+
+    @Test
+    void firstTerminalResultWinsWhenCompletionAndCancellationRace() {
+        Execution cancelled = new Execution("agent-1", "v1", Map.of());
+        cancelled.start();
+        assertTrue(cancelled.cancel());
+        assertFalse(cancelled.complete(Map.of("answer", "too late")));
+        assertFalse(cancelled.fail("too late"));
+        assertEquals(ExecutionStatus.CANCELLED, cancelled.getStatus());
+        assertNull(cancelled.getOutput());
+        assertThrows(IllegalStateException.class, cancelled::resume);
+
+        Execution completed = new Execution("agent-1", "v1", Map.of());
+        completed.start();
+        assertTrue(completed.complete(Map.of("answer", "done")));
+        assertFalse(completed.cancel());
+        assertEquals(ExecutionStatus.COMPLETED, completed.getStatus());
+        assertEquals("done", completed.getOutput().get("answer"));
+        assertThrows(IllegalStateException.class, completed::pause);
     }
 }

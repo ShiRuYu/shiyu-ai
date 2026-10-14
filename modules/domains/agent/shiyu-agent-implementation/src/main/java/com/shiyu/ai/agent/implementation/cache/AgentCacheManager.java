@@ -6,12 +6,14 @@ import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
 import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.TenantId;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ public class AgentCacheManager {
      * cache 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final Cache<String, AgentDefinition> cache;
+    private final Cache<String, Boolean> systemFallbacks;
 
     /**
      * agentAdminRepository 属性，保存当前对象中的业务数据或协作依赖。
@@ -37,6 +40,7 @@ public class AgentCacheManager {
      * agentLoader 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final AgentLoader agentLoader;
+    private final Object[] tenantAgentLocks = new Object[64];
 
     /**
      * 执行 智能体 Cache 相关业务操作，并维护必要的状态和协作关系。
@@ -47,12 +51,17 @@ public class AgentCacheManager {
     public AgentCacheManager(AgentAdminRepository agentAdminRepository, AgentLoader agentLoader) {
         this.agentAdminRepository = agentAdminRepository;
         this.agentLoader = agentLoader;
+        Arrays.setAll(tenantAgentLocks, ignored -> new Object());
         this.cache =
                 Caffeine.newBuilder()
                         .maximumSize(1000)
                         .expireAfterWrite(30, TimeUnit.MINUTES)
                         .recordStats()
                         .build();
+        this.systemFallbacks = Caffeine.newBuilder()
+                .maximumSize(1000)
+                .expireAfterWrite(30, TimeUnit.MINUTES)
+                .build();
     }
 
     private String key(ActorContext actor, String agentId) {
@@ -67,6 +76,15 @@ public class AgentCacheManager {
 
     private String systemKey(String agentId) {
         return "system:" + agentId;
+    }
+
+    private String tenantAgentKey(TenantId tenantId, String agentId) {
+        return "tenant:" + tenantId.value() + ":agent:" + agentId;
+    }
+
+    private Object lockFor(TenantId tenantId, String agentId) {
+        return tenantAgentLocks[Math.floorMod(
+                Objects.hash(tenantId.value(), agentId), tenantAgentLocks.length)];
     }
 
     /**
@@ -92,7 +110,10 @@ public class AgentCacheManager {
      * @param agent 用于完成本次业务处理的 agent 参数。
      */
     public void put(ActorContext actor, String agentId, AgentDefinition agent) {
-        cache.put(key(actor, agentId), agent);
+        synchronized (lockFor(actor.tenantId(), agentId)) {
+            cache.put(key(actor, agentId), agent);
+            systemFallbacks.invalidate(tenantAgentKey(actor.tenantId(), agentId));
+        }
         log.debug(
                 "租户 Agent 缓存已写入: tenantSelected={}, userPresent={}, agentIdPresent={}",
                 actor.tenantId() != null,
@@ -119,30 +140,42 @@ public class AgentCacheManager {
      * @return 返回 智能体 Cache 相关操作生成的结果数据。
      */
     public AgentDefinition getOrLoad(ActorContext actor, String agentId, AgentLoader loader) {
-        String k = key(actor, agentId);
-        AgentDefinition cached = cache.getIfPresent(k);
-        if (cached != null) {
-            log.debug(
-                    "缓存命中: tenantSelected={}, userPresent={}, agentIdPresent={}",
-                    actor.tenantId() != null,
-                    actor.userId() != null,
-                    agentId != null);
-            return cached;
+        synchronized (lockFor(actor.tenantId(), agentId)) {
+            String k = key(actor, agentId);
+            AgentDefinition cached = cache.getIfPresent(k);
+            if (cached != null) {
+                log.debug(
+                        "缓存命中: tenantSelected={}, userPresent={}, agentIdPresent={}",
+                        actor.tenantId() != null,
+                        actor.userId() != null,
+                        agentId != null);
+                return cached;
+            }
+            AgentDefinition system = cache.getIfPresent(systemKey(agentId));
+            String fallbackKey = tenantAgentKey(actor.tenantId(), agentId);
+            Boolean fallbackAllowed = systemFallbacks.getIfPresent(fallbackKey);
+            if (system != null && fallbackAllowed != null) {
+                return fallbackAllowed ? system : null;
+            }
+            AgentDefinition loaded = loader.loadFromDb(actor, agentId);
+            if (loaded != null) {
+                cache.put(k, loaded);
+                systemFallbacks.invalidate(fallbackKey);
+                log.info(
+                        "缓存加载: tenantSelected={}, userPresent={}, agentIdPresent={}",
+                        actor.tenantId() != null,
+                        actor.userId() != null,
+                        agentId != null);
+                return loaded;
+            }
+            if (system != null) {
+                boolean noTenantDefinition =
+                        agentAdminRepository.selectByAgentId(actor.tenantId(), agentId) == null;
+                systemFallbacks.put(fallbackKey, noTenantDefinition);
+                return noTenantDefinition ? system : null;
+            }
+            return null;
         }
-        AgentDefinition system = cache.getIfPresent(systemKey(agentId));
-        if (system != null) {
-            return system;
-        }
-        AgentDefinition loaded = loader.loadFromDb(actor, agentId);
-        if (loaded != null) {
-            cache.put(k, loaded);
-            log.info(
-                    "缓存加载: tenantSelected={}, userPresent={}, agentIdPresent={}",
-                    actor.tenantId() != null,
-                    actor.userId() != null,
-                    agentId != null);
-        }
-        return loaded;
     }
 
     /**
@@ -152,7 +185,19 @@ public class AgentCacheManager {
      */
     public void evict(String agentId) {
         cache.asMap().keySet().removeIf(k -> k.endsWith(":" + agentId));
+        systemFallbacks.asMap().keySet().removeIf(k -> k.endsWith(":" + agentId));
         log.info("缓存已清除: agentIdPresent={}", agentId != null);
+    }
+
+    /** 清除本租户所有用户的指定 Agent 缓存，保留其他租户和系统定义。 */
+    public void evictTenant(TenantId tenantId, String agentId) {
+        synchronized (lockFor(tenantId, agentId)) {
+            String tenantPrefix = "tenant:" + tenantId.value() + ":user:";
+            String agentSuffix = ":" + agentId;
+            cache.asMap().keySet().removeIf(
+                    key -> key.startsWith(tenantPrefix) && key.endsWith(agentSuffix));
+            systemFallbacks.invalidate(tenantAgentKey(tenantId, agentId));
+        }
     }
 
     /**
@@ -162,7 +207,10 @@ public class AgentCacheManager {
      * @param agentId 用于定位agent的标识。
      */
     public void evict(ActorContext actor, String agentId) {
-        cache.invalidate(key(actor, agentId));
+        synchronized (lockFor(actor.tenantId(), agentId)) {
+            cache.invalidate(key(actor, agentId));
+            systemFallbacks.invalidate(tenantAgentKey(actor.tenantId(), agentId));
+        }
         log.debug(
                 "缓存已清除: tenantSelected={}, userPresent={}, agentIdPresent={}",
                 actor.tenantId() != null,
@@ -175,6 +223,7 @@ public class AgentCacheManager {
      */
     public void evictAll() {
         cache.invalidateAll();
+        systemFallbacks.invalidateAll();
         log.info("全部缓存已清除");
     }
 
@@ -201,8 +250,6 @@ public class AgentCacheManager {
                 .map(
                         def -> {
                             String agentId = def.getAgentId();
-                            AgentDefinition cached = get(actor, agentId);
-                            if (cached != null) return cached;
                             return getOrLoad(actor, agentId, agentLoader);
                         })
                 .filter(Objects::nonNull)

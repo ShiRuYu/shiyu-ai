@@ -2,6 +2,8 @@ package com.shiyu.ai.education.implementation.web.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import lombok.Data;
 
@@ -35,6 +37,11 @@ public class QuestionRequest implements Serializable {
      */
     @NotBlank(message = "题目类型不能为空")
     private String type;
+
+    /** PRACTICE or EXAM_PRIVATE. A missing value creates a public practice question. */
+    @Pattern(regexp = "PRACTICE|EXAM_PRIVATE", message = "题目用途无效")
+    @Schema(allowableValues = {"PRACTICE", "EXAM_PRIVATE"})
+    private String purpose;
 
     /**
      * 编码，表示当前对象中的对应属性。

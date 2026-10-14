@@ -18,6 +18,7 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.UserScopeRoleDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.*;
 import com.shiyu.ai.iam.implementation.persistence.mapper.TenantMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,58 @@ import java.util.List;
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 class TenantRepositorySecurityTest {
+    @Test
+    void rootLookupRejectsBrokenOrCyclicParentChains() throws Exception {
+        TenantMapper mapper = mock(TenantMapper.class);
+        TenantRepositoryImpl repository = new TenantRepositoryImpl();
+        inject(repository, "tenantMapper", mapper);
+        when(mapper.selectAll()).thenReturn(List.of(
+                tenant(1L, 2L), tenant(2L, 1L), tenant(3L, 99L)));
+
+        assertNull(repository.selectRootTenantId(new TenantId(1L)));
+        assertNull(repository.selectRootTenantId(new TenantId(3L)));
+        assertNull(repository.selectRootTenantId(new TenantId(88L)));
+    }
+
+    @Test
+    void descendantLookupStopsAtCyclesAndExcludesSiblingTrees() throws Exception {
+        TenantMapper mapper = mock(TenantMapper.class);
+        TenantRepositoryImpl repository = new TenantRepositoryImpl();
+        inject(repository, "tenantMapper", mapper);
+        when(mapper.selectAll()).thenReturn(List.of(
+                tenant(1L, 3L), tenant(2L, 1L), tenant(3L, 2L),
+                tenant(4L, null), tenant(5L, 4L)));
+
+        assertEquals(java.util.Set.of(1L, 2L, 3L),
+                new java.util.HashSet<>(repository.selectDescendantIds(new TenantId(1L))));
+        assertEquals(java.util.Set.of(4L, 5L),
+                new java.util.HashSet<>(repository.selectDescendantIds(new TenantId(4L))));
+    }
+
+    @Test
+    void tenantTemplateCopiesOnlyLiveNonPlatformPermissionCodes() throws Exception {
+        TenantRepositoryImpl repository = new TenantRepositoryImpl();
+        TenantAuthCodeMapper links = mock(TenantAuthCodeMapper.class);
+        AuthCodeMapper codes = mock(AuthCodeMapper.class);
+        inject(repository, "tenantAuthCodeMapper", links);
+        inject(repository, "authCodeMapper", codes);
+        when(links.selectListByQuery(any(QueryWrapper.class))).thenReturn(List.of(
+                tenantCode(11L), tenantCode(11L), tenantCode(12L),
+                tenantCode(13L), tenantCode(14L), tenantCode(15L), tenantCode(16L),
+                tenantCode(null)));
+        when(codes.selectOneById(11L)).thenReturn(authCode("course:read", 1, 0));
+        when(codes.selectOneById(12L)).thenReturn(authCode("platform:usage:read", 1, 0));
+        when(codes.selectOneById(13L)).thenReturn(authCode("course:write", 0, 0));
+        when(codes.selectOneById(14L)).thenReturn(authCode("course:delete", 1, 1));
+        when(codes.selectOneById(16L)).thenReturn(authCode("course:publish", null, 0));
+
+        assertEquals(List.of(11L), org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                repository, "resolveSourceAuthCodeIds", 1L,
+                Arrays.asList(11L, 12L, 13L, 14L, 15L, 16L, 999L, null, 11L)));
+        assertEquals(List.of(11L), org.springframework.test.util.ReflectionTestUtils.invokeMethod(
+                repository, "resolveSourceAuthCodeIds", 1L, null));
+    }
+
     @Test
     void excludesPlatformUsagePermissionFromChildTenantTemplates() throws Exception {
         var repository = new TenantRepositoryImpl();
@@ -65,6 +118,14 @@ class TenantRepositorySecurityTest {
         assertEquals(
                 List.of(1L, 2L, 3L).size(),
                 repository.selectDescendantIds(new TenantId(1L)).size());
+        TenantScope.set(new TenantId(1L));
+        try {
+            assertEquals(
+                    java.util.Set.of(2L, 3L),
+                    new java.util.HashSet<>(repository.selectDescendantIds(new TenantId(2L))));
+        } finally {
+            TenantScope.clear();
+        }
         assertEquals(1L, repository.selectRootTenantId(new TenantId(3L)));
         assertThrows(IllegalArgumentException.class, () -> repository.selectRootTenantId(null));
         try (MockedStatic<MapstructUtils> conversions = mockStatic(MapstructUtils.class)) {
@@ -237,7 +298,11 @@ class TenantRepositorySecurityTest {
         com.shiyu.ai.iam.implementation.persistence.dataobject.TenantAuthCodeDO relation =
                 new com.shiyu.ai.iam.implementation.persistence.dataobject.TenantAuthCodeDO();
         relation.setAuthCodeId(9L);
-        when(tenantCodes.selectListByQuery(any(QueryWrapper.class))).thenReturn(List.of(relation));
+        when(tenantCodes.selectListByQuery(any(QueryWrapper.class))).thenAnswer(invocation -> {
+            assertTrue(com.mybatisflex.core.tenant.TenantManager.isIgnoreTenantCondition(),
+                    "source tenant permissions must be read outside the new tenant filter");
+            return List.of(relation);
+        });
         com.shiyu.ai.iam.implementation.persistence.dataobject.AuthCodeDO code =
                 new com.shiyu.ai.iam.implementation.persistence.dataobject.AuthCodeDO();
         code.setId(9L);
@@ -340,6 +405,20 @@ class TenantRepositorySecurityTest {
         TenantDO value = new TenantDO();
         value.setId(id);
         value.setParentId(parentId);
+        return value;
+    }
+
+    private static TenantAuthCodeDO tenantCode(Long authCodeId) {
+        TenantAuthCodeDO value = new TenantAuthCodeDO();
+        value.setAuthCodeId(authCodeId);
+        return value;
+    }
+
+    private static AuthCodeDO authCode(String code, Integer status, Integer delFlag) {
+        AuthCodeDO value = new AuthCodeDO();
+        value.setCode(code);
+        value.setStatus(status);
+        value.setDelFlag(delFlag);
         return value;
     }
 

@@ -12,6 +12,7 @@ import com.shiyu.ai.iam.implementation.persistence.dataobject.TenantDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.RoleMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.TenantMapper;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,30 @@ import org.springframework.test.util.ReflectionTestUtils;
  * 验证 租户 角色 Repository Impl 相关功能、边界条件、异常路径和协作行为。
  */
 class TenantRoleRepositoryImplTest {
+
+    @Test
+    void readsAnExplicitChildTenantWhileParentTenantIsBound() {
+        TenantDO childRow = new TenantDO();
+        childRow.setId(7L);
+        TenantBO child = new TenantBO();
+        child.setId(7L);
+        RoleDO superRow = new RoleDO();
+        superRow.setId(9L);
+        RoleBO superRole = new RoleBO();
+        superRole.setId(9L);
+        when(tenants.selectOneById(7L)).thenReturn(childRow);
+        when(roles.selectOneByQuery(any())).thenReturn(superRow);
+        TenantScope.set(new TenantId(1L));
+        try (MockedStatic<MapstructUtils> mapped = mockStatic(MapstructUtils.class)) {
+            mapped.when(() -> MapstructUtils.convert(childRow, TenantBO.class)).thenReturn(child);
+            mapped.when(() -> MapstructUtils.convert(superRow, RoleBO.class)).thenReturn(superRole);
+            assertSame(child, repository.selectTenantById(new TenantId(7L)));
+            assertSame(superRole, repository.selectTenantSuperRole(new TenantId(7L)));
+        } finally {
+            TenantScope.clear();
+        }
+    }
+
     private TenantMapper tenants;
     private RoleMapper roles;
     private TenantRoleRepositoryImpl repository;

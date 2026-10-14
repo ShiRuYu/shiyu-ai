@@ -187,6 +187,31 @@ public class ConversationService {
             List<ContentPart> parts,
             java.util.Map<String, Object> toolCall,
             String sourceMessageId) {
+        return appendMessageInternal(conversation, parentMessageId, role, content,
+                parts, toolCall, sourceMessageId, true);
+    }
+
+    /** Saves a reply on an earlier branch without changing the selected active turn. */
+    public ConversationMessage appendMessagePreservingLeaf(
+            Conversation conversation,
+            String parentMessageId,
+            MessageRole role,
+            String content,
+            List<ContentPart> parts,
+            java.util.Map<String, Object> toolCall) {
+        return appendMessageInternal(conversation, parentMessageId, role, content,
+                parts, toolCall, null, false);
+    }
+
+    private ConversationMessage appendMessageInternal(
+            Conversation conversation,
+            String parentMessageId,
+            MessageRole role,
+            String content,
+            List<ContentPart> parts,
+            java.util.Map<String, Object> toolCall,
+            String sourceMessageId,
+            boolean advanceLeaf) {
         if (conversation.status() != ConversationStatus.ACTIVE) {
             throw new IllegalStateException("conversation is not active");
         }
@@ -225,7 +250,7 @@ public class ConversationService {
                                 conversation.status(),
                                 conversation.parentConversationId(),
                                 conversation.branchFromMessageId(),
-                                message.id(),
+                                advanceLeaf ? message.id() : conversation.activeLeafMessageId(),
                                 conversation.rollingSummary(),
                                 conversation.platform(),
                                 conversation.model(),

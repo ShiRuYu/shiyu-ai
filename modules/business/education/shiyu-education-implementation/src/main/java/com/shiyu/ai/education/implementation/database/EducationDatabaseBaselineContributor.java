@@ -24,6 +24,8 @@ public final class EducationDatabaseBaselineContributor
                     "EDU_COURSE_KNOWLEDGE",
                     "EDU_COURSE_SECTION",
                     "EDU_EXAM",
+                    "EDU_EXAM_ATTEMPT",
+                    "EDU_EXAM_ATTEMPT_QUESTION",
                     "EDU_EXAM_QUESTION",
                     "EDU_EXAM_SECTION",
                     "EDU_KNOWLEDGE_TEXTBOOK",

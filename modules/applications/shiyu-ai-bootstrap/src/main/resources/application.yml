@@ -11,6 +11,8 @@ shiyu:
   name: "shiyu-ai"
   # ModelManager/PlatformProperties 的统一 OpenAI-compatible 配置
   ai:
+    tenant-id: ${SHIYU_AI_TENANT_ID:1}
+    platform-key-encryption-key: ${SHIYU_AI_PLATFORM_KEY_ENCRYPTION_KEY:}
     openai:
       base-url: ${AI_OPENAI_BASE_URL:https://api.openai.com/v1}
       api-key: ${AI_OPENAI_API_KEY:}
@@ -18,7 +20,7 @@ shiyu:
     deepseek:
       base-url: ${AI_DEEPSEEK_BASE_URL:https://api.deepseek.com}
       api-key: ${AI_DEEPSEEK_API_KEY:}
-      model: ${AI_DEEPSEEK_MODEL:deepseek-v4-flash}
+      model: ${AI_DEEPSEEK_MODEL:deepseek-flash}
   tx:
     enabled: true
   modules:
@@ -158,6 +160,7 @@ springdoc:
         - com.shiyu.ai.iam.implementation.web
         - com.shiyu.ai.agent.implementation.web
         - com.shiyu.ai.conversation.implementation.web.controller
+        - com.shiyu.ai.composition.integration.agent
         - com.shiyu.ai.education.implementation.web.controller
         - com.shiyu.ai.knowledge.implementation.web.controller
         - com.shiyu.ai.model.implementation.web
@@ -174,6 +177,7 @@ springdoc:
     - group: 'conversation'
       packages-to-scan:
         - com.shiyu.ai.conversation.implementation.web.controller
+        - com.shiyu.ai.composition.integration.agent
     - group: 'education'
       packages-to-scan:
         - com.shiyu.ai.education.implementation.web.controller

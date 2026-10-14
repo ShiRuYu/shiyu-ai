@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -29,6 +30,12 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @RestControllerAdvice
 @Slf4j
 public class ShiYuDefaultExceptionHandler {
+
+    /** A disconnected SSE client has no usable response to write an error into. */
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void clientDisconnected(AsyncRequestNotUsableException e) {
+        log.debug("客户端已断开流式响应: errorType={}", e.getClass().getSimpleName());
+    }
 
     /**
      * 执行 Shi Yu Default Exception 相关业务操作，并维护必要的状态和协作关系。

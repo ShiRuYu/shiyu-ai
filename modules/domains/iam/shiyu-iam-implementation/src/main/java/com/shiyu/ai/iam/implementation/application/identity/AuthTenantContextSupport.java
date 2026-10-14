@@ -129,8 +129,9 @@ public final class AuthTenantContextSupport {
                 && assignments.stream()
                         .anyMatch(
                                 item ->
-                                        tenantId.equals(item.getTenantId())
-                                                && isActiveAssignment(item));
+                                        isActiveAssignment(item)
+                                                && tenantId.equals(item.getTenantId())
+                                                && hasLiveTenantRole(item));
     }
 
     /**
@@ -147,20 +148,44 @@ public final class AuthTenantContextSupport {
             return false;
         }
         Long homeTenantId = numberValue(extInfo.get("homeTenantId"));
-        return homeTenantId != null
-                && targetTenantId != null
-                && tenantRepository
-                        .selectDescendantIds(new TenantId(homeTenantId))
-                        .contains(targetTenantId)
-                && assignments != null
-                && assignments.stream()
+        if (homeTenantId == null
+                || targetTenantId == null
+                || homeTenantId.equals(targetTenantId)
+                || !isTenantInHomeScope(homeTenantId, targetTenantId)
+                || assignments == null
+                || assignments.stream()
                         .filter(
                                 item ->
                                         homeTenantId.equals(item.getTenantId())
                                                 && isActiveAssignment(item))
                         .map(UserScopeRoleBO::getRoleId)
                         .map(tenantRoleRepository::selectRoleById)
-                        .anyMatch(this::isTenantSuperRole);
+                        .noneMatch(
+                                role ->
+                                        role != null
+                                                && homeTenantId.equals(role.getTenantId())
+                                                && isTenantSuperRole(role))) {
+            return false;
+        }
+        RoleBO childSuperRole = findTenantSuperRole(targetTenantId);
+        return childSuperRole != null
+                && targetTenantId.equals(childSuperRole.getTenantId())
+                && isTenantSuperRole(childSuperRole);
+    }
+
+    /**
+     * 判断目标租户是否属于主租户的后代范围。
+     *
+     * @param homeTenantId 主租户标识。
+     * @param targetTenantId 目标租户标识。
+     * @return 目标租户位于主租户后代范围内时返回 true。
+     */
+    public boolean isTenantInHomeScope(Long homeTenantId, Long targetTenantId) {
+        return homeTenantId != null
+                && targetTenantId != null
+                && tenantRepository
+                        .selectDescendantIds(new TenantId(homeTenantId))
+                        .contains(targetTenantId);
     }
 
     /**
@@ -189,6 +214,7 @@ public final class AuthTenantContextSupport {
         }
         return assignments.stream()
                 .filter(this::isActiveAssignment)
+                .filter(this::hasLiveTenantRole)
                 .map(UserScopeRoleBO::getTenantId)
                 .filter(Objects::nonNull)
                 .findFirst()
@@ -252,24 +278,27 @@ public final class AuthTenantContextSupport {
             return new ArrayList<>();
         }
         List<UserScopeRoleBO> filtered =
-                currentTenantId == null
-                        ? assignments
-                        : assignments.stream()
-                                .filter(
-                                        item ->
-                                                currentTenantId.equals(item.getTenantId())
-                                                        && isActiveAssignment(item))
-                                .toList();
+                assignments.stream()
+                        .filter(this::isActiveAssignment)
+                        .filter(
+                                item ->
+                                        currentTenantId == null
+                                                || currentTenantId.equals(item.getTenantId()))
+                        .toList();
         List<TenantContextVO> result = new ArrayList<>();
         Set<Long> seen = new HashSet<>();
         for (UserScopeRoleBO assignment : filtered) {
-            if (!seen.add(assignment.getTenantId())) {
+            if (seen.contains(assignment.getTenantId())) {
                 continue;
             }
             TenantBO tenant =
                     tenantRoleRepository.selectTenantById(new TenantId(assignment.getTenantId()));
             RoleBO role = tenantRoleRepository.selectRoleById(assignment.getRoleId());
-            if (isActiveTenant(tenant) && isActiveRole(role)) {
+            if (isActiveTenant(tenant)
+                    && assignment.getTenantId().equals(tenant.getId())
+                    && isActiveRole(role)
+                    && assignment.getTenantId().equals(role.getTenantId())) {
+                seen.add(assignment.getTenantId());
                 result.add(
                         TenantContextVO.builder()
                                 .tenantId(assignment.getTenantId())
@@ -294,6 +323,7 @@ public final class AuthTenantContextSupport {
         Set<Long> tenantIds =
                 assignments.stream()
                         .filter(this::isActiveAssignment)
+                        .filter(this::hasLiveTenantRole)
                         .map(UserScopeRoleBO::getTenantId)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toSet());
@@ -390,6 +420,7 @@ public final class AuthTenantContextSupport {
                         .collect(Collectors.toSet());
         return roles.stream()
                 .filter(role -> allowedRoleIds.contains(role.getId()))
+                .filter(role -> tenantId.equals(role.getTenantId()))
                 .filter(this::isActiveRole)
                 .filter(role -> roleId == null || roleId.equals(role.getId()))
                 .findFirst()
@@ -397,6 +428,7 @@ public final class AuthTenantContextSupport {
                         () ->
                                 roles.stream()
                                         .filter(role -> allowedRoleIds.contains(role.getId()))
+                                        .filter(role -> tenantId.equals(role.getTenantId()))
                                         .filter(this::isActiveRole)
                                         .findFirst()
                                         .orElse(null));
@@ -407,5 +439,10 @@ public final class AuthTenantContextSupport {
                 && role.getStatus() != null
                 && role.getStatus() == 1
                 && (role.getDelFlag() == null || role.getDelFlag() == 0);
+    }
+
+    private boolean hasLiveTenantRole(UserScopeRoleBO assignment) {
+        RoleBO role = tenantRoleRepository.selectRoleById(assignment.getRoleId());
+        return isActiveRole(role) && assignment.getTenantId().equals(role.getTenantId());
     }
 }

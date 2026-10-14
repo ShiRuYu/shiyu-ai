@@ -69,4 +69,28 @@ public class AgentExecutionRepositoryImpl
         List<AgentExecutionDO> doList = agentExecutionMapper.selectListByQuery(qw);
         return MapstructUtils.convert(doList, AgentExecutionBO.class);
     }
+
+    @Override
+    public List<AgentExecutionBO> selectByUserId(TenantId tenantId, long userId, int limit) {
+        QueryWrapper qw = new QueryWrapper();
+        qw.eq(AgentExecutionDO::getTenantId, tenantId.value());
+        qw.eq(AgentExecutionDO::getUserId, userId);
+        qw.orderBy(AgentExecutionDO::getStartTime, false);
+        qw.limit(Math.max(1, Math.min(limit, 100)));
+        return MapstructUtils.convert(
+                agentExecutionMapper.selectListByQuery(qw), AgentExecutionBO.class);
+    }
+
+    @Override
+    public List<AgentExecutionBO> selectByAgentIdAndUserId(
+            TenantId tenantId, String agentId, long userId, int limit) {
+        QueryWrapper qw = new QueryWrapper();
+        qw.eq(AgentExecutionDO::getTenantId, tenantId.value());
+        qw.eq(AgentExecutionDO::getAgentId, agentId);
+        qw.eq(AgentExecutionDO::getUserId, userId);
+        qw.orderBy(AgentExecutionDO::getStartTime, false);
+        qw.limit(Math.max(1, Math.min(limit, 100)));
+        return MapstructUtils.convert(
+                agentExecutionMapper.selectListByQuery(qw), AgentExecutionBO.class);
+    }
 }

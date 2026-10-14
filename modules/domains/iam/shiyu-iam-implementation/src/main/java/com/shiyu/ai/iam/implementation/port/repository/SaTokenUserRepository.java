@@ -15,6 +15,14 @@ public interface SaTokenUserRepository {
     UserBO selectById(Long userId);
 
     /**
+     * Finds the owner of a persisted random token after the in-memory reverse index is lost.
+     *
+     * @param tokenValue opaque token value, without the Sa-Token key prefix
+     * @return user ID containing this exact token, or null
+     */
+    Long findUserIdByToken(String tokenValue);
+
+    /**
      * 更新或设置 Sa Token 用户 相关业务操作，并维护必要的状态和协作关系。
      *
      * @param user 当前操作涉及的用户标识。

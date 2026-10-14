@@ -13,6 +13,7 @@ import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * 负责 考试 的持久化查询、保存和删除，并维护数据访问边界。
@@ -29,7 +30,10 @@ public class ExamRepositoryImpl
     public ExamBO selectById(TenantId tenantId, Long id) {
         return MapstructUtils.convert(
                 examMapper.selectOneByQuery(
-                        QueryWrapper.create().eq("tenant_id", tenantId.value()).eq("id", id)),
+                        QueryWrapper.create()
+                                .eq("tenant_id", tenantId.value())
+                                .eq("id", id)
+                                .eq("del_flag", 0)),
                 ExamBO.class);
     }
 
@@ -43,6 +47,25 @@ public class ExamRepositoryImpl
                                 .orderBy("id", false));
         return new PageData<>(
                 MapstructUtils.convert(page.getRecords(), ExamBO.class), page.getTotalRow());
+    }
+
+    @Override
+    public PageData<ExamBO> selectAvailable(TenantId tenantId, int grade,
+            String subjectCode, LocalDateTime now, int pageNum, int pageSize) {
+        QueryWrapper query = QueryWrapper.create()
+                .eq("tenant_id", tenantId.value())
+                .eq("grade", grade)
+                .eq("status", 1)
+                .eq("del_flag", 0)
+                .le("start_time", now)
+                .gt("end_time", now)
+                .orderBy("start_time", true);
+        if (subjectCode != null && !subjectCode.isBlank()) {
+            query.eq("subject_code", subjectCode);
+        }
+        var page = examMapper.paginate(pageNum, pageSize, query);
+        return new PageData<>(MapstructUtils.convert(page.getRecords(), ExamBO.class),
+                page.getTotalRow());
     }
 
     public List<ExamBO> selectBySubjectCode(TenantId tenantId, String subjectCode) {
@@ -73,6 +96,7 @@ public class ExamRepositoryImpl
     public int insert(TenantId tenantId, ExamBO entity) {
         ExamDO dataObj = MapstructUtils.convert(entity, ExamDO.class);
         dataObj.setTenantId(tenantId.value());
+        dataObj.setDelFlag(0);
         int rows = EducationWriteGuard.require(examMapper.insert(dataObj), "insert exam");
         entity.setId(dataObj.getId());
         return rows;

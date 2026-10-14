@@ -11,6 +11,7 @@ import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatRequest;
 import com.shiyu.ai.model.contract.model.ChatResponse;
 import com.shiyu.ai.model.contract.model.ChatType;
+import com.shiyu.ai.kernel.context.ActorContext;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -123,6 +124,7 @@ public class LlmCallNode extends BaseNode {
                 config.isStream());
 
         try {
+            ActorContext actor = NodeActorContext.require(input.toMap());
             String prompt = buildPrompt(input);
             String platform = getPlatform(input);
             String modelName = getModelName(input, platform);
@@ -132,12 +134,8 @@ public class LlmCallNode extends BaseNode {
                     ChatRequest.builder()
                             .platform(platform)
                             .model(modelName)
-                            .tenantId(
-                                    requiredPositiveLong(
-                                            input.getParameter("tenantId", null), "tenantId"))
-                            .userId(
-                                    requiredPositiveLong(
-                                            input.getParameter("userId", null), "userId"))
+                            .tenantId(actor.tenantId().value())
+                            .userId(actor.userId().value())
                             .messages(buildMessages(input, prompt))
                             .chatType(chatType)
                             .build();
@@ -152,18 +150,9 @@ public class LlmCallNode extends BaseNode {
             log.error("LLM 调用节点执行失败", e);
             NodeOutput output = new NodeOutput();
             output.setSuccess(false);
-            output.setMsg(isInputValidationFailure(e) ? e.getMessage() : "LLM 调用节点执行失败，请稍后重试");
+            output.setMsg("LLM 调用节点执行失败，请稍后重试");
             return output;
         }
-    }
-
-    private boolean isInputValidationFailure(Exception exception) {
-        if (!(exception instanceof IllegalStateException) || exception.getMessage() == null)
-            return false;
-        String message = exception.getMessage();
-        return message.endsWith(" is required")
-                || message.endsWith(" must be positive")
-                || message.endsWith(" must be a positive number");
     }
 
     private NodeOutput executeSync(ChatRequest request) {
@@ -189,25 +178,6 @@ public class LlmCallNode extends BaseNode {
 
     private NodeOutput executeStream(ChatRequest request) {
         return executeStructuredStream(request);
-    }
-
-    private long requiredPositiveLong(Object value, String field) {
-        long parsed;
-        if (value instanceof Number number) {
-            parsed = number.longValue();
-        } else if (value != null) {
-            try {
-                parsed = Long.parseLong(String.valueOf(value));
-            } catch (NumberFormatException exception) {
-                throw new IllegalStateException(field + " must be a positive number", exception);
-            }
-        } else {
-            throw new IllegalStateException(field + " is required");
-        }
-        if (parsed <= 0) {
-            throw new IllegalStateException(field + " must be positive");
-        }
-        return parsed;
     }
 
     private NodeOutput executeStructuredStream(ChatRequest request) {

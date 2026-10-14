@@ -3,11 +3,15 @@ package com.shiyu.ai.agent.implementation.runtime.service;
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.AgentVersion;
 import com.shiyu.ai.agent.contract.runtime.*;
+import com.shiyu.ai.agent.contract.node.NodeActorContext;
+import com.shiyu.ai.agent.contract.node.NodeApprovalRequiredException;
 import com.shiyu.ai.agent.implementation.checkpoint.Checkpoint;
 import com.shiyu.ai.agent.implementation.checkpoint.CheckpointManager;
+import com.shiyu.ai.agent.implementation.checkpoint.AgentGraphCheckpointSaver;
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.NodeExecution;
 import com.shiyu.ai.agent.implementation.graph.Graph;
+import com.shiyu.ai.agent.implementation.graph.StateGraphBuilder;
 import com.shiyu.ai.agent.implementation.retry.RetryConfig;
 import com.shiyu.ai.agent.implementation.retry.RetryPolicy;
 import com.shiyu.ai.agent.implementation.retry.RetryPolicyImpl;
@@ -15,11 +19,16 @@ import com.shiyu.ai.agent.implementation.timeout.TimeoutConfig;
 import com.shiyu.ai.agent.implementation.timeout.TimeoutPolicy;
 import com.shiyu.ai.agent.implementation.timeout.TimeoutPolicyImpl;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.ActorContext;
 
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.concurrent.Callable;
+import org.bsc.langgraph4j.CompileConfig;
+import org.bsc.langgraph4j.GraphInput;
+import org.bsc.langgraph4j.RunnableConfig;
 
 /**
  * 实现 智能体 Executor 相关的业务处理、协作逻辑或基础设施能力。
@@ -76,6 +85,18 @@ public class AgentExecutor implements AutoCloseable {
             AgentVersion agentVersion,
             Map<String, Object> input,
             Execution execution) {
+        return executeAgent(tenantId, definition, agentVersion, input, execution,
+                ignored -> {});
+    }
+
+    /** Execute while recording each durable checkpoint on the owning execution. */
+    public Execution executeAgent(
+            TenantId tenantId,
+            AgentDefinition definition,
+            AgentVersion agentVersion,
+            Map<String, Object> input,
+            Execution execution,
+            Consumer<String> checkpointRecorded) {
         if (execution.getStatus()
                 == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.PENDING) {
             execution.start();
@@ -95,7 +116,15 @@ public class AgentExecutor implements AutoCloseable {
             }
 
             // 编译并执行图
-            Map<String, Object> result = agentVersion.getGraph().execute(input);
+            var compiled = StateGraphBuilder.fromGraph(graph).build(CompileConfig.builder()
+                    .checkpointSaver(new AgentGraphCheckpointSaver(tenantId,
+                            execution.getExecutionId(), checkpointManager,
+                            checkpointRecorded)).build());
+            RunnableConfig config = RunnableConfig.builder()
+                    .threadId(execution.getExecutionId()).build();
+            Map<String, Object> result = NodeActorContext.publicData(compiled
+                    .invoke(GraphInput.args(input), config).orElseThrow(() ->
+                            new IllegalStateException("Graph执行返回空结果")).data());
 
             if (!execution.awaitResumeOrCancellation()) {
                 return execution;
@@ -103,14 +132,15 @@ public class AgentExecutor implements AutoCloseable {
 
             // 记录节点执行（从结果中提取）
             NodeExecution nodeExec = new NodeExecution("graph_exec", "COMPILED_GRAPH");
-            nodeExec.setInput(input);
+            nodeExec.setInput(NodeActorContext.publicData(input));
             nodeExec.start();
             nodeExec.complete(result);
             execution.addNodeExecution(nodeExec);
 
             // 保存检查点
-            checkpointManager.createCheckpoint(
+            Checkpoint finalCheckpoint = checkpointManager.createCheckpoint(
                     tenantId, execution.getExecutionId(), "graph_final", result);
+            checkpointRecorded.accept(finalCheckpoint.getCheckpointId());
 
             execution.complete(result);
             log.info(
@@ -122,6 +152,10 @@ public class AgentExecutor implements AutoCloseable {
         } catch (Exception e) {
             if (execution.getStatus()
                     == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.CANCELLED) {
+                return execution;
+            }
+            if (approvalRequired(e) != null) {
+                execution.pause();
                 return execution;
             }
             execution.fail("执行异常: " + e.getMessage());
@@ -139,38 +173,95 @@ public class AgentExecutor implements AutoCloseable {
 
     /** 从检查点恢复执行 */
     public Execution resumeFromCheckpoint(
-            TenantId tenantId,
+            ActorContext actor,
             Execution execution,
             AgentDefinition definition,
             AgentVersion agentVersion,
             Checkpoint checkpoint) {
-        execution.resume();
+        return resumeFromCheckpoint(actor, execution, definition, agentVersion, checkpoint,
+                ignored -> {});
+    }
+
+    /** Resume while recording checkpoints produced by subsequent nodes. */
+    public Execution resumeFromCheckpoint(
+            ActorContext actor,
+            Execution execution,
+            AgentDefinition definition,
+            AgentVersion agentVersion,
+            Checkpoint checkpoint,
+            Consumer<String> checkpointRecorded) {
+        return resumeFromCheckpoint(actor, execution, definition, agentVersion, checkpoint,
+                checkpointRecorded, null);
+    }
+
+    public Execution resumeFromCheckpoint(
+            ActorContext actor,
+            Execution execution,
+            AgentDefinition definition,
+            AgentVersion agentVersion,
+            Checkpoint checkpoint,
+            Consumer<String> checkpointRecorded,
+            AiRun runtimeRun) {
         log.info("从检查点恢复执行: executionIdPresent={}", execution.getExecutionId() != null);
+        if (execution.getStatus()
+                == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.CANCELLED) {
+            return execution;
+        }
 
         try {
-            Map<String, Object> state = checkpoint.getState();
-            Map<String, Object> result = agentVersion.getGraph().execute(state);
+            if (checkpoint == null
+                    || !actor.tenantId().equals(checkpoint.getTenantId())
+                    || !execution.getExecutionId().equals(checkpoint.getExecutionId())) {
+                throw new IllegalStateException("检查点与当前执行不匹配");
+            }
+            execution.resume();
+            Map<String, Object> result;
+            if ("graph_final".equals(checkpoint.getNodeId())) {
+                result = NodeActorContext.publicData(checkpoint.getState());
+            } else {
+                if (checkpoint.getNextNodeId() == null || agentVersion.getGraph() == null) {
+                    throw new IllegalStateException("检查点缺少下一节点或 Agent 图");
+                }
+                var compiled = StateGraphBuilder.fromGraph(agentVersion.getGraph()).build(
+                        CompileConfig.builder().checkpointSaver(new AgentGraphCheckpointSaver(
+                                actor.tenantId(), execution.getExecutionId(),
+                                checkpointManager, checkpointRecorded)).build());
+                RunnableConfig config = RunnableConfig.builder()
+                        .threadId(execution.getExecutionId())
+                        .checkPointId(checkpoint.getCheckpointId()).build();
+                result = NodeActorContext.publicData(compiled.invoke(
+                        GraphInput.resume(NodeActorContext.bind(actor,
+                                AgentExecutionLifecycle.withRuntime(
+                                        AgentExecutionLifecycle.withExecution(Map.of(), execution),
+                                        runtimeRun))), config)
+                        .orElseThrow(() -> new IllegalStateException("图续跑返回空结果"))
+                        .data());
+            }
 
             if (!execution.awaitResumeOrCancellation()) {
                 return execution;
             }
-
-            NodeExecution nodeExec = new NodeExecution("graph_resume", "COMPILED_GRAPH");
-            nodeExec.setInput(state);
-            nodeExec.start();
-            nodeExec.complete(result);
-            execution.addNodeExecution(nodeExec);
-
             execution.complete(result);
         } catch (Exception e) {
             if (execution.getStatus()
                     == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.CANCELLED) {
                 return execution;
             }
+            if (approvalRequired(e) != null) {
+                execution.pause();
+                return execution;
+            }
             execution.fail("恢复执行异常: " + e.getMessage());
         }
 
         return execution;
+    }
+
+    static NodeApprovalRequiredException approvalRequired(Throwable error) {
+        for (Throwable current = error; current != null; current = current.getCause()) {
+            if (current instanceof NodeApprovalRequiredException pending) return pending;
+        }
+        return null;
     }
 
     /** 带重试和超时的图执行 */

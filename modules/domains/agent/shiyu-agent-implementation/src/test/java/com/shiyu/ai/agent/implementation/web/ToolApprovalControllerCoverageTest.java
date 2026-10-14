@@ -3,16 +3,24 @@ import com.shiyu.ai.agent.implementation.runtime.model.ToolApproval;
 import com.shiyu.ai.agent.implementation.runtime.model.ToolApprovalStatus;
 import com.shiyu.ai.agent.implementation.runtime.service.AiRuntimeService;
 import com.shiyu.ai.agent.implementation.runtime.service.ToolApprovalService;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentConversationCompletionPort;
+import com.shiyu.ai.agent.implementation.execution.Execution;
+import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.time.Instant;
 import java.util.List;
@@ -21,6 +29,268 @@ import java.util.List;
  * 验证 工具 Approval Controller Coverage 相关功能、边界条件、异常路径和协作行为。
  */
 class ToolApprovalControllerCoverageTest {
+    @Test
+    void approvedApprovalResumesPausedExecutionAndWritesItsResult() {
+        ToolApprovalService approvals = mock(ToolApprovalService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agents = mock(AgentRuntime.class);
+        AgentConversationCompletionPort completion = mock(AgentConversationCompletionPort.class);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<AgentConversationCompletionPort> provider = mock(ObjectProvider.class);
+        when(provider.getIfAvailable()).thenReturn(completion);
+        ToolApprovalController controller = new ToolApprovalController(
+                approvals, runtime, agents, provider);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        ToolApproval pending = approval("a1", "run-1", ToolApprovalStatus.PENDING);
+        ToolApproval approved = approval("a1", "run-1", ToolApprovalStatus.APPROVED);
+        AiRun run = mock(AiRun.class);
+        Execution finished = mock(Execution.class);
+        when(approvals.require("a1", actor.tenantId(), 9)).thenReturn(pending);
+        when(approvals.decide("a1", actor.tenantId(), 9, ToolApprovalStatus.APPROVED))
+                .thenReturn(approved);
+        when(runtime.requireRun("run-1", actor.tenantId(), 9)).thenReturn(run);
+        when(run.executionId()).thenReturn("exec-1");
+        when(run.conversationId()).thenReturn("conversation-1");
+        when(agents.getStatus(actor, "exec-1")).thenReturn(ExecutionStatus.PAUSED);
+        when(agents.resume(actor, "exec-1")).thenReturn(finished);
+        when(finished.getStatus()).thenReturn(ExecutionStatus.COMPLETED);
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            assertTrue(controller.approveAndResume("a1").isSuccess());
+        }
+        verify(agents).resume(actor, "exec-1");
+        verify(completion).completeApprovedRun(actor, run, finished);
+    }
+
+    @Test
+    void rejectedApprovalCancelsPausedExecutionAndWritesItsResult() {
+        ToolApprovalService approvals = mock(ToolApprovalService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agents = mock(AgentRuntime.class);
+        AgentConversationCompletionPort completion = mock(AgentConversationCompletionPort.class);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<AgentConversationCompletionPort> provider = mock(ObjectProvider.class);
+        when(provider.getIfAvailable()).thenReturn(completion);
+        ToolApprovalController controller = new ToolApprovalController(
+                approvals, runtime, agents, provider);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        ToolApproval pending = approval("a1", "run-1", ToolApprovalStatus.PENDING);
+        ToolApproval rejected = approval("a1", "run-1", ToolApprovalStatus.REJECTED);
+        AiRun run = mock(AiRun.class);
+        Execution cancelled = mock(Execution.class);
+        when(approvals.require("a1", actor.tenantId(), 9)).thenReturn(pending);
+        when(approvals.decide("a1", actor.tenantId(), 9, ToolApprovalStatus.REJECTED))
+                .thenReturn(rejected);
+        when(runtime.requireRun("run-1", actor.tenantId(), 9)).thenReturn(run);
+        when(run.executionId()).thenReturn("exec-1");
+        when(run.conversationId()).thenReturn("conversation-1");
+        when(agents.getStatus(actor, "exec-1")).thenReturn(ExecutionStatus.PAUSED);
+        when(agents.getExecution(actor, "exec-1")).thenReturn(cancelled);
+        when(cancelled.getStatus()).thenReturn(ExecutionStatus.CANCELLED);
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            assertTrue(controller.rejectAndCancel("a1").isSuccess());
+        }
+        verify(agents).cancel(actor, "exec-1");
+        verify(completion).completeApprovedRun(actor, run, cancelled);
+    }
+
+    @Test
+    void incompatibleApprovalStateCannotResumeOrCancelAnExecution() {
+        ToolApprovalService approvals = mock(ToolApprovalService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agents = mock(AgentRuntime.class);
+        ToolApprovalController controller = new ToolApprovalController(approvals, runtime, agents);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        ToolApproval expired = approval("a1", "run-1", ToolApprovalStatus.EXPIRED);
+        ToolApproval approved = approval("a2", "run-1", ToolApprovalStatus.APPROVED);
+        when(approvals.require("a1", actor.tenantId(), 9)).thenReturn(expired);
+        when(approvals.decide("a1", actor.tenantId(), 9, ToolApprovalStatus.APPROVED))
+                .thenReturn(expired);
+        when(approvals.require("a2", actor.tenantId(), 9)).thenReturn(approved);
+        when(approvals.decide("a2", actor.tenantId(), 9, ToolApprovalStatus.REJECTED))
+                .thenReturn(approved);
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            assertThrows(IllegalStateException.class, () -> controller.approveAndResume("a1"));
+            assertThrows(IllegalStateException.class, () -> controller.rejectAndCancel("a2"));
+        }
+        verifyNoInteractions(agents);
+    }
+
+    @Test
+    void expiredApprovalCanRetryConversationCompletionAfterCancellation() {
+        ToolApprovalService approvals = mock(ToolApprovalService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agentRuntime = mock(AgentRuntime.class);
+        AgentConversationCompletionPort completion = mock(AgentConversationCompletionPort.class);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<AgentConversationCompletionPort> provider = mock(ObjectProvider.class);
+        when(provider.getIfAvailable()).thenReturn(completion);
+        ToolApprovalController controller = new ToolApprovalController(
+                approvals, runtime, agentRuntime, provider);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        AiRun run = mock(AiRun.class);
+        Execution cancelled = mock(Execution.class);
+        ToolApproval expired = approval("a1", "run-1", ToolApprovalStatus.EXPIRED);
+        when(approvals.require("a1", actor.tenantId(), 9)).thenReturn(expired);
+        when(approvals.decide("a1", actor.tenantId(), 9, ToolApprovalStatus.REJECTED))
+                .thenReturn(expired);
+        when(runtime.requireRun("run-1", actor.tenantId(), 9)).thenReturn(run);
+        when(run.executionId()).thenReturn("exec-1");
+        when(run.conversationId()).thenReturn("conversation-1");
+        when(agentRuntime.getStatus(actor, "exec-1")).thenReturn(ExecutionStatus.CANCELLED);
+        when(agentRuntime.getExecution(actor, "exec-1")).thenReturn(cancelled);
+        when(cancelled.getStatus()).thenReturn(ExecutionStatus.CANCELLED);
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            assertTrue(controller.rejectAndCancel("a1").isSuccess());
+        }
+        verify(agentRuntime, never()).cancel(any(), anyString());
+        verify(completion).completeApprovedRun(actor, run, cancelled);
+    }
+
+    @Test
+    void claimedApprovalCanRetryConversationCompletionAfterToolFinished() {
+        ToolApprovalService approvals = mock(ToolApprovalService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agentRuntime = mock(AgentRuntime.class);
+        AgentConversationCompletionPort completion = mock(AgentConversationCompletionPort.class);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<AgentConversationCompletionPort> provider = mock(ObjectProvider.class);
+        when(provider.getIfAvailable()).thenReturn(completion);
+        ToolApprovalController controller = new ToolApprovalController(
+                approvals, runtime, agentRuntime, provider);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        AiRun run = mock(AiRun.class);
+        Execution finished = mock(Execution.class);
+        ToolApproval claimed = approval("a1", "run-1", ToolApprovalStatus.CLAIMED);
+        when(approvals.require("a1", actor.tenantId(), 9)).thenReturn(claimed);
+        when(approvals.decide("a1", actor.tenantId(), 9, ToolApprovalStatus.APPROVED))
+                .thenReturn(claimed);
+        when(runtime.requireRun("run-1", actor.tenantId(), 9)).thenReturn(run);
+        when(run.executionId()).thenReturn("exec-1");
+        when(run.conversationId()).thenReturn("conversation-1");
+        when(agentRuntime.getStatus(actor, "exec-1")).thenReturn(ExecutionStatus.COMPLETED);
+        when(agentRuntime.getExecution(actor, "exec-1")).thenReturn(finished);
+        when(finished.getStatus()).thenReturn(ExecutionStatus.COMPLETED);
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            assertTrue(controller.approveAndResume("a1").isSuccess());
+        }
+        verify(agentRuntime, never()).resume(any(), anyString());
+        verify(completion).completeApprovedRun(actor, run, finished);
+    }
+
+    @Test
+    void approvedApprovalDoesNotStartAnExecutionThatIsAlreadyRunning() {
+        ToolApprovalService approvals = mock(ToolApprovalService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agents = mock(AgentRuntime.class);
+        ToolApprovalController controller = new ToolApprovalController(approvals, runtime, agents);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        ToolApproval approved = approval("a1", "run-1", ToolApprovalStatus.APPROVED);
+        AiRun run = mock(AiRun.class);
+        when(approvals.require("a1", actor.tenantId(), 9)).thenReturn(approved);
+        when(approvals.decide("a1", actor.tenantId(), 9, ToolApprovalStatus.APPROVED))
+                .thenReturn(approved);
+        when(runtime.requireRun("run-1", actor.tenantId(), 9)).thenReturn(run);
+        when(run.executionId()).thenReturn("exec-1");
+        when(agents.getStatus(actor, "exec-1")).thenReturn(ExecutionStatus.RUNNING);
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            assertThrows(IllegalStateException.class, () -> controller.approveAndResume("a1"));
+        }
+        verify(agents, never()).resume(any(), anyString());
+    }
+
+    @Test
+    void pendingApprovalStaysPendingWhenExecutionHasNotPaused() {
+        ToolApprovalService approvals = mock(ToolApprovalService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agents = mock(AgentRuntime.class);
+        ToolApprovalController controller = new ToolApprovalController(approvals, runtime, agents);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        ToolApproval pending = approval("a1", "run-1", ToolApprovalStatus.PENDING);
+        ToolApproval approved = approval("a1", "run-1", ToolApprovalStatus.APPROVED);
+        AiRun run = mock(AiRun.class);
+        when(approvals.require("a1", actor.tenantId(), 9)).thenReturn(pending);
+        when(approvals.decide("a1", actor.tenantId(), 9, ToolApprovalStatus.APPROVED))
+                .thenReturn(approved);
+        when(runtime.requireRun("run-1", actor.tenantId(), 9)).thenReturn(run);
+        when(run.executionId()).thenReturn("exec-1");
+        when(agents.getStatus(actor, "exec-1")).thenReturn(ExecutionStatus.RUNNING);
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            assertThrows(IllegalStateException.class, () -> controller.approveAndResume("a1"));
+        }
+        verify(approvals, never()).decide(anyString(), any(), anyLong(), any());
+        verify(agents, never()).resume(any(), anyString());
+    }
+
+    @Test
+    void pendingRejectionStaysPendingWhenExecutionHasNotPaused() {
+        ToolApprovalService approvals = mock(ToolApprovalService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agents = mock(AgentRuntime.class);
+        ToolApprovalController controller = new ToolApprovalController(approvals, runtime, agents);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        ToolApproval pending = approval("a1", "run-1", ToolApprovalStatus.PENDING);
+        ToolApproval rejected = approval("a1", "run-1", ToolApprovalStatus.REJECTED);
+        AiRun run = mock(AiRun.class);
+        when(approvals.require("a1", actor.tenantId(), 9)).thenReturn(pending);
+        when(approvals.decide("a1", actor.tenantId(), 9, ToolApprovalStatus.REJECTED))
+                .thenReturn(rejected);
+        when(runtime.requireRun("run-1", actor.tenantId(), 9)).thenReturn(run);
+        when(run.executionId()).thenReturn("exec-1");
+        when(agents.getStatus(actor, "exec-1")).thenReturn(ExecutionStatus.RUNNING);
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            assertThrows(IllegalStateException.class, () -> controller.rejectAndCancel("a1"));
+        }
+        verify(approvals, never()).decide(anyString(), any(), anyLong(), any());
+        verify(agents, never()).cancel(any(), anyString());
+    }
+
+    @Test
+    void claimedApprovalCannotRestartPausedExecution() {
+        ToolApprovalService approvals = mock(ToolApprovalService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agents = mock(AgentRuntime.class);
+        ToolApprovalController controller = new ToolApprovalController(approvals, runtime, agents);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        ToolApproval claimed = approval("a1", "run-1", ToolApprovalStatus.CLAIMED);
+        AiRun run = mock(AiRun.class);
+        when(approvals.require("a1", actor.tenantId(), 9)).thenReturn(claimed);
+        when(approvals.decide("a1", actor.tenantId(), 9, ToolApprovalStatus.APPROVED))
+                .thenReturn(claimed);
+        when(runtime.requireRun("run-1", actor.tenantId(), 9)).thenReturn(run);
+        when(run.executionId()).thenReturn("exec-1");
+        when(agents.getStatus(actor, "exec-1")).thenReturn(ExecutionStatus.PAUSED);
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            assertThrows(IllegalStateException.class, () -> controller.approveAndResume("a1"));
+        }
+        verify(agents, never()).resume(any(), anyString());
+    }
+
     @Test
     void mapsApprovalQueriesRequestsAndStateTransitions() {
         ToolApprovalService approvals = mock(ToolApprovalService.class);

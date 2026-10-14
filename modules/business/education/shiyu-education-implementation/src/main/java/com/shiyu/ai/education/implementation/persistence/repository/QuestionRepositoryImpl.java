@@ -6,6 +6,8 @@ import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.education.implementation.domain.model.QuestionBO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.QuestionDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.QuestionMapper;
+import com.shiyu.ai.education.implementation.persistence.mapper.QuestionKnowledgeMapper;
+import com.shiyu.ai.education.implementation.persistence.dataobject.QuestionKnowledgeDO;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import jakarta.annotation.Resource;
@@ -25,11 +27,21 @@ public class QuestionRepositoryImpl
      * 题目映射器，表示当前对象中的对应属性。
      */
     @Resource private QuestionMapper questionMapper;
+    @Resource private QuestionKnowledgeMapper questionKnowledgeMapper;
+
+    public Long primaryKnowledgeId(TenantId tenantId, Long questionId) {
+        return questionKnowledgeMapper.selectListByQuery(QueryWrapper.create()
+                .eq("tenant_id", tenantId.value()).eq("question_id", questionId)
+                .eq("status", 1).eq("del_flag", 0)
+                .orderBy("weight", false).orderBy("knowledge_id", true)).stream()
+                .map(QuestionKnowledgeDO::getKnowledgeId).findFirst().orElse(null);
+    }
 
     public QuestionBO selectById(TenantId tenantId, Long id) {
         return MapstructUtils.convert(
                 questionMapper.selectOneByQuery(
-                        QueryWrapper.create().eq("tenant_id", tenantId.value()).eq("id", id)),
+                        QueryWrapper.create().eq("tenant_id", tenantId.value()).eq("id", id)
+                                .eq("del_flag", 0)),
                 QuestionBO.class);
     }
 
@@ -105,6 +117,7 @@ public class QuestionRepositoryImpl
     public int insert(TenantId tenantId, QuestionBO entity) {
         QuestionDO dataObj = MapstructUtils.convert(entity, QuestionDO.class);
         dataObj.setTenantId(tenantId.value());
+        dataObj.setDelFlag(0);
         int rows = EducationWriteGuard.require(questionMapper.insert(dataObj), "insert question");
         entity.setId(dataObj.getId());
         return rows;

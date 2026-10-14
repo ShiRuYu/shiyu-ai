@@ -128,21 +128,28 @@ public class NodeFactory {
     public Map<String, BaseNode> createNodes(Map<String, NodeConfig> configs) {
         Map<String, BaseNode> nodes = new HashMap<>();
         List<String> errors = new ArrayList<>();
-        for (NodeConfig config : configs.values()) {
+        for (Map.Entry<String, NodeConfig> entry : configs.entrySet()) {
+            NodeConfig config = entry.getValue();
+            String nodeId = config == null ? entry.getKey() : config.getNodeId();
             try {
-                nodes.put(config.getNodeId(), createNode(config));
+                nodes.put(nodeId, instanceFactory.create(config));
             } catch (Exception exception) {
                 log.error(
                         "创建节点失败：nodeIdPresent={}, errorType={}, errorMessageLength={}",
-                        config.getNodeId() != null,
+                        nodeId != null,
                         exception.getClass().getSimpleName(),
                         messageLength(exception));
-                errors.add(config.getNodeId() + ": " + exception.getMessage());
+                errors.add(nodeId + ": " + exception.getMessage());
             }
         }
         if (!errors.isEmpty()) {
             throw new RuntimeException("部分节点创建失败：" + String.join("; ", errors));
         }
+        nodes.forEach((nodeId, node) -> {
+            if (nodeId != null && !nodeId.isEmpty()) {
+                nodeStore.put(nodeId, node);
+            }
+        });
         return nodes;
     }
 

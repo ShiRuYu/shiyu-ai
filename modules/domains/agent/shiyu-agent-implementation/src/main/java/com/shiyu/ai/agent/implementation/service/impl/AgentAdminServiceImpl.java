@@ -123,6 +123,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         def.setDescription(request.getDescription());
         def.setStatus(request.getStatus() != null ? request.getStatus() : 1);
         agentAdminRepository.create(actor.tenantId(), def);
+        evictAgentCache(actor, def.getAgentId());
         return toVO(def);
     }
 
@@ -141,7 +142,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         if (request.getStatus() != null) def.setStatus(request.getStatus());
         def.setUpdateTime(LocalDateTime.now());
         agentAdminRepository.update(actor.tenantId(), def);
-        evictAgentCache(def.getAgentId());
+        evictAgentCache(actor, def.getAgentId());
         return toVO(def);
     }
 
@@ -156,7 +157,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         AgentDefBO def = agentAdminRepository.selectById(actor.tenantId(), id);
         if (def == null) return;
         agentAdminRepository.deleteById(actor.tenantId(), id);
-        evictAgentCache(def.getAgentId());
+        evictAgentCache(actor, def.getAgentId());
     }
 
     /**
@@ -202,8 +203,8 @@ public class AgentAdminServiceImpl implements AgentAdminService {
     }
 
 
-    private void evictAgentCache(String agentId) {
-        agentService.evictRuntimeCache(agentId);
+    private void evictAgentCache(ActorContext actor, String agentId) {
+        agentService.evictRuntimeCache(actor, agentId);
     }
 
     private AgentVO toVO(AgentDefBO def) {

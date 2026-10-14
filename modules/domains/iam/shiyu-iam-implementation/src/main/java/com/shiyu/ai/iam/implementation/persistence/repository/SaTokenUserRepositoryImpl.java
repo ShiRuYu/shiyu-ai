@@ -1,5 +1,7 @@
 package com.shiyu.ai.iam.implementation.persistence.repository;
 
+import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.persistence.dataobject.UserDO;
@@ -8,6 +10,8 @@ import com.shiyu.ai.iam.implementation.persistence.mapper.UserMapper;
 import jakarta.annotation.Resource;
 
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * 负责 Sa Token 用户 的持久化查询、保存和删除，并维护数据访问边界。
@@ -23,6 +27,29 @@ public class SaTokenUserRepositoryImpl
 
     public UserBO selectById(Long userId) {
         return MapstructUtils.convert(userMapper.selectOneById(userId), UserBO.class);
+    }
+
+    @Override
+    public Long findUserIdByToken(String tokenValue) {
+        if (tokenValue == null || tokenValue.length() < 16 || tokenValue.length() > 128
+                || tokenValue.indexOf('%') >= 0 || tokenValue.indexOf('_') >= 0
+                || tokenValue.indexOf('\\') >= 0) {
+            return null;
+        }
+        QueryWrapper candidates = QueryWrapper.create().where(UserDO::getExtInfo).like(tokenValue);
+        for (UserDO user : userMapper.selectListByQuery(candidates)) {
+            if (user == null || user.getId() == null || user.getExtInfo() == null) continue;
+            try {
+                Map<String, Object> ext = JSONUtils.parseMap(user.getExtInfo());
+                if (ext != null && ext.get("tokens") instanceof Map<?, ?> tokens
+                        && tokens.containsKey(tokenValue)) {
+                    return user.getId();
+                }
+            } catch (RuntimeException ignored) {
+                // A damaged legacy extInfo cannot authenticate a token.
+            }
+        }
+        return null;
     }
 
     public void updateExtInfo(UserBO user) {

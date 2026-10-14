@@ -1,14 +1,19 @@
 package com.shiyu.ai.agent.implementation.node.tool;
+import com.shiyu.ai.agent.contract.node.NodeActorContext;
+import com.shiyu.ai.kernel.context.ActorContext;
 
 import com.shiyu.ai.agent.contract.node.*;
 import com.shiyu.ai.agent.contract.node.BaseNode;
 import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
 import com.shiyu.ai.agent.contract.node.NodeInput;
 import com.shiyu.ai.agent.contract.node.NodeInputParam;
+import com.shiyu.ai.agent.contract.node.NodeApprovalRequiredException;
 import com.shiyu.ai.agent.contract.node.NodeOutput;
 import com.shiyu.ai.agent.contract.node.NodeType;
 import com.shiyu.ai.agent.contract.runtime.AiRun;
+import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.agent.implementation.runtime.service.ToolExecutionPipeline;
+import com.shiyu.ai.agent.implementation.checkpoint.AgentGraphCheckpointSaver;
 import com.shiyu.ai.tooling.contract.api.ToolService;
 
 import lombok.Getter;
@@ -162,20 +167,36 @@ public class ToolCallNode extends BaseNode {
             ToolService.ToolExecutionResult result;
             Object runtimeRun = input.getParameter("_aiRun", null);
             Object runtimeRunId = input.getParameter("__aiRunId", null);
+            boolean highRisk =
+                    "HIGH".equalsIgnoreCase(config.getToolType())
+                            || "HIGH_RISK".equalsIgnoreCase(config.getToolType())
+                            || toolService.requiresApproval(toolName);
+            if (highRisk
+                    && (executionPipeline == null
+                            || (!(runtimeRun instanceof AiRun) && runtimeRunId == null))) {
+                NodeOutput unavailable = new NodeOutput();
+                unavailable.setSuccess(false);
+                unavailable.setMsg("高风险工具审批不可用");
+                return unavailable;
+            }
             if (executionPipeline != null
                     && (runtimeRun instanceof AiRun || runtimeRunId != null)) {
-                boolean highRisk =
-                        "HIGH".equalsIgnoreCase(config.getToolType())
-                                || "HIGH_RISK".equalsIgnoreCase(config.getToolType());
+                ActorContext actor = NodeActorContext.require(input.toMap());
                 ToolExecutionPipeline.Request request =
                         new ToolExecutionPipeline.Request(
                                 toolName,
                                 parameters,
                                 "{\"tool\":\"" + toolName.replace("\"", "") + "\"}",
                                 highRisk,
-                                input.getParameter("_toolApprovalId", null));
+                                input.getParameter("_toolApprovalId",
+                                        input.getParameter(AgentGraphCheckpointSaver.APPROVAL_ID_KEY,
+                                                null)));
                 ToolExecutionPipeline.Result pipelineResult;
                 if (runtimeRun instanceof AiRun run) {
+                    if (!actor.tenantId().equals(run.tenantId())
+                            || actor.userId().value() != run.ownerUserId().value()) {
+                        throw new IllegalStateException("runtime run owner does not match authenticated actor");
+                    }
                     pipelineResult =
                             executionPipeline.execute(
                                     run, request, args -> executeTool(toolName, args));
@@ -183,20 +204,14 @@ public class ToolCallNode extends BaseNode {
                     pipelineResult =
                             executionPipeline.executeById(
                                     String.valueOf(runtimeRunId),
-                                    new com.shiyu.ai.kernel.context.TenantId(
-                                            number(input.getParameter("tenantId", null))),
-                                    number(input.getParameter("userId", null)),
+                                    actor.tenantId(),
+                                    actor.userId().value(),
                                     request,
                                     args -> executeTool(toolName, args));
                 }
                 if (pipelineResult.status()
                         == ToolExecutionPipeline.Result.Status.APPROVAL_REQUIRED) {
-                    NodeOutput pending = new NodeOutput();
-                    pending.setSuccess(false);
-                    pending.setMsg("工具等待用户审批: " + pipelineResult.approval().id());
-                    pending.addData(FieldKey.TOOL_NAME, toolName);
-                    pending.addData("approvalId", pipelineResult.approval().id());
-                    return pending;
+                    throw new NodeApprovalRequiredException(pipelineResult.approval().id());
                 }
                 result = new ToolService.ToolExecutionResult(true, pipelineResult.value(), null);
             } else {
@@ -210,7 +225,7 @@ public class ToolCallNode extends BaseNode {
 
             if (result.success()) {
                 output.addData(FieldKey.TOOL_NAME, toolName);
-                output.addData(FieldKey.TOOL_RESULT, result.result());
+                output.addData(FieldKey.TOOL_RESULT, normalizeToolResult(result.result()));
                 log.info("工具调用成功：{}", toolName);
             } else {
                 log.error(
@@ -221,6 +236,8 @@ public class ToolCallNode extends BaseNode {
             log.info("工具调用节点执行完成");
             return output;
 
+        } catch (NodeApprovalRequiredException pending) {
+            throw pending;
         } catch (Exception e) {
             log.error("工具调用节点执行失败", e);
             NodeOutput output = new NodeOutput();
@@ -236,13 +253,15 @@ public class ToolCallNode extends BaseNode {
         return value.result();
     }
 
-    private long number(Object value) {
-        if (value instanceof Number number) return number.longValue();
-        try {
-            return value == null ? 0 : Long.parseLong(String.valueOf(value));
-        } catch (NumberFormatException ignored) {
-            return 0;
-        }
+    /**
+     * 将工具返回值转换为图状态可克隆的 JSON 值，避免任意对象使图检查点失败。
+     *
+     * @param value 工具服务返回的数据
+     * @return 字符串、数值、布尔值、列表或映射组成的图状态值
+     */
+    private Object normalizeToolResult(Object value) {
+        return value == null ? null
+                : JSONUtils.parseObject(JSONUtils.toJsonString(value), Object.class);
     }
 
     /**
@@ -295,6 +314,7 @@ public class ToolCallNode extends BaseNode {
                     || FieldKey.PARAMETER_MAPPING.key().equals(key)
                     || FieldKey.SLOT_DEFAULTS.key().equals(key)
                     || FieldKey.SLOT_DEFINITIONS.key().equals(key)
+                    || AgentGraphCheckpointSaver.APPROVAL_ID_KEY.equals(key)
                     || key.startsWith("_")) {
                 continue;
             }

@@ -25,6 +25,78 @@ import java.util.Map;
  */
 class SaTokenDaoImplCoverageTest {
     @Test
+    void cachedTokenStopsResolvingAfterItsShortLifetime() throws InterruptedException {
+        SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
+        UserBO user = user(7L, "{}");
+        when(repository.selectById(7L)).thenReturn(user);
+        SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
+        String token = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("7".getBytes(StandardCharsets.UTF_8)) + "_short-lived";
+        String key = "Authorization:login:token:" + token;
+        try {
+            dao.set(key, "7", 1);
+            assertEquals("7", dao.get(key));
+
+            Thread.sleep(1250);
+            assertNull(dao.get(key));
+        } finally {
+            dao.destroy();
+        }
+    }
+
+    @Test
+    void cachedLoginAndTokenSessionsStopResolvingAfterExpiry() throws InterruptedException {
+        SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
+        UserBO user = user(7L, "{}");
+        when(repository.selectById(7L)).thenReturn(user);
+        SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
+        String encodedId = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("7".getBytes(StandardCharsets.UTF_8));
+        SaSession login = new SaSession("Authorization:login:session:7");
+        SaSession token = new SaSession(
+                "Authorization:login:token-session:" + encodedId + "_short-lived");
+        try {
+            dao.setSession(login, 1);
+            dao.setSession(token, 1);
+            assertNotNull(dao.getSession(login.getId()));
+            assertNotNull(dao.getSession(token.getId()));
+
+            Thread.sleep(1250);
+            assertNull(dao.getSession(login.getId()));
+            assertNull(dao.getSession(token.getId()));
+        } finally {
+            dao.destroy();
+        }
+    }
+
+    @Test
+    void shorteningPersistedLifetimeInvalidatesCachedTokenAndSession()
+            throws InterruptedException {
+        SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
+        UserBO user = user(7L, "{}");
+        when(repository.selectById(7L)).thenReturn(user);
+        SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
+        String encodedId = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("7".getBytes(StandardCharsets.UTF_8));
+        String tokenKey = "Authorization:login:token:" + encodedId + "_shortened";
+        SaSession session = new SaSession("Authorization:login:session:7");
+        try {
+            dao.set(tokenKey, "7", 60);
+            dao.setSession(session, 60);
+            assertEquals("7", dao.get(tokenKey));
+            assertNotNull(dao.getSession(session.getId()));
+
+            dao.updateTimeout(tokenKey, 1);
+            dao.updateSessionTimeout(session.getId(), 1);
+            Thread.sleep(1250);
+            assertNull(dao.get(tokenKey));
+            assertNull(dao.getSession(session.getId()));
+        } finally {
+            dao.destroy();
+        }
+    }
+
+    @Test
     void persistsTokensSessionsAndObjectsAcrossCacheMisses() {
         SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
         UserBO user = user(7L, "{}");

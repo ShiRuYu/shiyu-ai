@@ -29,12 +29,12 @@ public class DictRepositoryImpl
     /** 分页查询字典列表 */
     public Pair<Long, List<DictBO>> selectPage(TenantId tenantId, Number pageNo, Number pageSize) {
         QueryWrapper countWrapper = new QueryWrapper();
-        countWrapper.eq(DictDO::getDelFlag, "0");
+        countWrapper.eq(DictDO::getDelFlag, 0);
         addTenantFilter(countWrapper, tenantId);
         long count = dictMapper.selectCountByQuery(countWrapper);
 
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq(DictDO::getDelFlag, "0");
+        queryWrapper.eq(DictDO::getDelFlag, 0);
         addTenantFilter(queryWrapper, tenantId);
         queryWrapper.orderBy(DictDO::getDictType, true);
         queryWrapper.orderBy(DictDO::getDictSort, true);
@@ -51,7 +51,7 @@ public class DictRepositoryImpl
     /** 查询所有字典列表 */
     public List<DictBO> selectAll(TenantId tenantId) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.eq(DictDO::getDelFlag, "0");
+        queryWrapper.eq(DictDO::getDelFlag, 0);
         addTenantFilter(queryWrapper, tenantId);
         queryWrapper.orderBy(DictDO::getDictType, true);
         queryWrapper.orderBy(DictDO::getDictSort, true);
@@ -73,7 +73,7 @@ public class DictRepositoryImpl
     public List<DictBO> selectByDictType(TenantId tenantId, String dictType) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq(DictDO::getDictType, dictType);
-        queryWrapper.eq(DictDO::getDelFlag, "0");
+        queryWrapper.eq(DictDO::getDelFlag, 0);
         addTenantFilter(queryWrapper, tenantId);
         queryWrapper.orderBy(DictDO::getDictSort, true);
 

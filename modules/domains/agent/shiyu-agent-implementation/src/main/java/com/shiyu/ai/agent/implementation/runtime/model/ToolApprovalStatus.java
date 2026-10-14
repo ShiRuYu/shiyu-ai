@@ -8,6 +8,7 @@ import com.shiyu.ai.agent.contract.runtime.*;
 public enum ToolApprovalStatus {
     PENDING,
     APPROVED,
+    CLAIMED,
     REJECTED,
     EXPIRED
 }

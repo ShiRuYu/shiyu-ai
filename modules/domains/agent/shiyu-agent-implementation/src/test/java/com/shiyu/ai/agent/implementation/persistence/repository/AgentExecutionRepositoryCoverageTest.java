@@ -109,6 +109,7 @@ class AgentExecutionRepositoryCoverageTest {
             executions.update(TENANT, execution);
             assertSame(executionResult, executions.selectByExecutionId(TENANT, "execution"));
             assertEquals(1, executions.selectBySessionId(TENANT, "session").size());
+            assertEquals(1, executions.selectByUserId(TENANT, 7L, 10).size());
             assertEquals(1, executions.selectByAgentId(TENANT, "agent", 0).size());
 
             nodes.insert(TENANT, node);

@@ -76,7 +76,7 @@ public class Graph {
         this.description = description;
         this.nodes = mutableCopy(nodes);
         this.edges = mutableEdgeCopy(edges);
-        this.conditionalEdges = mutableCopy(conditionalEdges);
+        this.conditionalEdges = mutableConditionalEdgeCopy(conditionalEdges);
         this.channels = mutableCopy(channels);
         this.startNode = startNode;
         this.endNode = endNode;
@@ -113,7 +113,7 @@ public class Graph {
      * @param conditionalEdges 用于完成本次业务处理的 conditionalEdges 参数。
      */
     public void setConditionalEdges(Map<String, ConditionEdge> conditionalEdges) {
-        this.conditionalEdges = mutableCopy(conditionalEdges);
+        this.conditionalEdges = mutableConditionalEdgeCopy(conditionalEdges);
         invalidateCompiledGraph();
     }
 
@@ -159,7 +159,7 @@ public class Graph {
      * @return 返回 Graph 相关操作生成的结果数据。
      */
     public Map<String, ConditionEdge> getConditionalEdges() {
-        return Collections.unmodifiableMap(new HashMap<>(conditionalEdges));
+        return Collections.unmodifiableMap(mutableConditionalEdgeCopy(conditionalEdges));
     }
 
     /**
@@ -211,8 +211,8 @@ public class Graph {
      * @return 当前 Graph 实例
      */
     public Graph addConditionalEdge(String sourceId, ConditionEdge conditionEdge) {
-        this.conditionalEdges = mutableCopy(this.conditionalEdges);
-        this.conditionalEdges.put(sourceId, conditionEdge);
+        this.conditionalEdges = mutableConditionalEdgeCopy(this.conditionalEdges);
+        this.conditionalEdges.put(sourceId, copyConditionalEdge(conditionEdge));
         invalidateCompiledGraph();
         log.debug("添加条件边：sourcePresent={}", sourceId != null);
         return this;
@@ -310,7 +310,7 @@ public class Graph {
                 throw new IllegalStateException("边的源节点 " + sourceId + " 未定义");
             }
             List<String> targets = entry.getValue();
-            if (targets == null) {
+            if (targets == null || targets.isEmpty()) {
                 throw new IllegalStateException("边 " + sourceId + " 的目标列表不能为空");
             }
             for (String targetId : targets) {
@@ -332,8 +332,18 @@ public class Graph {
                 throw new IllegalStateException("条件边 " + sourceId + " 不能为空");
             }
 
-            // 检查条件边的目标节点映射
+            String defaultTarget = conditionEdge.getDefaultTarget();
             Map<String, String> mappings = conditionEdge.getNodeMappings();
+            if ((defaultTarget == null || defaultTarget.isEmpty())
+                    && (mappings == null || mappings.isEmpty())) {
+                throw new IllegalStateException("条件边没有可用的目标节点: " + sourceId);
+            }
+            if (defaultTarget != null && !defaultTarget.isEmpty()
+                    && !nodes.containsKey(defaultTarget)) {
+                throw new IllegalStateException("条件边的默认目标节点 " + defaultTarget + " 未定义");
+            }
+
+            // 检查条件边的目标节点映射
             if (mappings == null) {
                 continue;
             }
@@ -491,23 +501,18 @@ public class Graph {
      * @return 检测到循环时返回路径描述字符串，否则返回 null
      */
     String detectCycle() {
-        Set<String> white = new HashSet<>(nodes.keySet());
         Set<String> gray = new LinkedHashSet<>();
         Set<String> black = new HashSet<>();
 
-        for (String node : new ArrayList<>(white)) {
+        for (String node : nodes.keySet()) {
             if (black.contains(node)) continue;
-            if (hasCycle(node, white, gray, black)) {
-                List<String> path = new ArrayList<>(gray);
-                int start = path.indexOf(node);
-                return String.join(" -> ", path.subList(start, path.size())) + " -> " + node;
-            }
+            String cycle = findCycle(node, gray, black);
+            if (cycle != null) return cycle;
         }
         return null;
     }
 
-    private boolean hasCycle(String node, Set<String> white, Set<String> gray, Set<String> black) {
-        white.remove(node);
+    private String findCycle(String node, Set<String> gray, Set<String> black) {
         gray.add(node);
 
         Set<String> successors = new HashSet<>();
@@ -518,13 +523,19 @@ public class Graph {
 
         for (String successor : successors) {
             if (black.contains(successor)) continue;
-            if (gray.contains(successor)) return true;
-            if (hasCycle(successor, white, gray, black)) return true;
+            if (gray.contains(successor)) {
+                List<String> path = new ArrayList<>(gray);
+                int start = path.indexOf(successor);
+                return String.join(" -> ", path.subList(start, path.size()))
+                        + " -> " + successor;
+            }
+            String cycle = findCycle(successor, gray, black);
+            if (cycle != null) return cycle;
         }
 
         gray.remove(node);
         black.add(node);
-        return false;
+        return null;
     }
 
     /** 查找从起始节点无法到达的节点 */
@@ -545,9 +556,12 @@ public class Graph {
             for (String target : edgeTargets) dfsReachable(target, reachable);
         }
         ConditionEdge condEdge = conditionalEdges.get(node);
-        if (condEdge != null && condEdge.getNodeMappings() != null) {
-            for (String target : condEdge.getNodeMappings().values())
-                dfsReachable(target, reachable);
+        if (condEdge != null) {
+            if (condEdge.getNodeMappings() != null) {
+                for (String target : condEdge.getNodeMappings().values())
+                    dfsReachable(target, reachable);
+            }
+            dfsReachable(condEdge.getDefaultTarget(), reachable);
         }
     }
 
@@ -557,6 +571,27 @@ public class Graph {
 
     private static <K, V> Map<K, V> mutableCopy(Map<K, V> source) {
         return source == null ? new HashMap<>() : new HashMap<>(source);
+    }
+
+    private static Map<String, ConditionEdge> mutableConditionalEdgeCopy(
+            Map<String, ConditionEdge> source) {
+        Map<String, ConditionEdge> copy = new HashMap<>();
+        if (source != null) {
+            source.forEach((nodeId, route) -> copy.put(nodeId, copyConditionalEdge(route)));
+        }
+        return copy;
+    }
+
+    private static ConditionEdge copyConditionalEdge(ConditionEdge source) {
+        if (source == null) return null;
+        return ConditionEdge.builder()
+                .from(source.getFrom())
+                .defaultTarget(source.getDefaultTarget())
+                .functionCondition(source.getFunctionCondition())
+                .nodeMappings(source.getNodeMappings() == null
+                        ? null : new HashMap<>(source.getNodeMappings()))
+                .predicateConditions(new ArrayList<>(source.getPredicateConditions()))
+                .build();
     }
 
     private static Map<String, List<String>> mutableEdgeCopy(Map<String, List<String>> source) {

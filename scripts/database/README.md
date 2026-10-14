@@ -4,7 +4,15 @@
 
 应用通过 `shiyu.infrastructure.database.provider`（`h2`、`mysql`、`postgresql`）选择数据库；连接地址、账号和密码只从环境变量或密钥管理系统注入。向量、文件、Redis 和事件 provider 的切换规则见[外部基础设施切换](../../docs/外部基础设施切换.md)。
 
-`postgresql/baseline-schema.sql` 和 `postgresql/baseline-seed.sql` 是按应用启动器资源顺序生成的 PostgreSQL 脚本。脚本将 H2 的 `CACHED TABLE`、内联 `COMMENT`、`TINYINT`、大对象类型和带引号的大写标识符转换为 PostgreSQL 语法，并保留表名、列名和索引语义。源基线变更后，应重新生成这两个文件并进行人工审阅。
+`postgresql/baseline-schema.sql` 和 `postgresql/baseline-seed.sql` 按应用启动器的 schema、seed、增补资源顺序生成。转换器保留 seed 字符串原文，将 H2 的表、类型和更新时间语法转换为 PostgreSQL 可执行 SQL，并为 `ON UPDATE CURRENT_TIMESTAMP` 生成触发器；seed 最后同步 identity 序列，再写入版本标记。源资源变更后，运行 `python scripts/database/generate-postgresql-baseline.py` 重新生成，并在全新 PostgreSQL 测试库执行完整迁移和应用冒烟。仓库 CI 使用 `scripts/database/verify_postgresql_ci.sh` 做该检查。
+
+`migrate.ps1 -Action baseline` 在一个 PostgreSQL 事务中执行两份脚本；任一语句失败都会回滚，不会留下部分安装的 schema。只在空目标库执行基线安装。
+
+现有外部数据库在升级 Agent 检查点恢复逻辑前，需先增加 `agent_execution.last_checkpoint_id`：PostgreSQL 执行 `postgresql/20261012_checkpoint_pointer.sql`；MySQL 执行一次 `mysql/20261012_checkpoint_pointer.sql`。新建 PostgreSQL 库的基线已包含该列；H2 启动增补脚本会为现有本地库添加该列。迁移前先备份数据库。
+
+在旧库需要使用内置 Agent 应用示例时，PostgreSQL 执行 `postgresql/20261013_sample_apps.sql`，MySQL 执行 `mysql/20261013_sample_apps.sql`。脚本只补缺失的固定 ID；已有同 ID 应用和版本保持原值。H2 在启动时自动执行对应的幂等增补。运行外部数据库脚本前先备份，并在执行后核对 `ai_app` 与 `ai_app_version` 中的 `edu-tutor-app`、`knowledge-qa-app`。
+
+旧版内置 Agent 图仍使用 SILICON_FLOW/Qwen 时，PostgreSQL 执行 `postgresql/20261014_seed_deepseek_graphs.sql`，MySQL 执行 `mysql/20261014_seed_deepseek_graphs.sql`。脚本只替换九个系统图中的旧平台与模型字段，并同步更新 11 条内置 Agent 的旧模型说明；图内其他定制内容及非系统图保持原样。H2 启动时自动执行。执行前备份数据库，执行后核对 `agent_version` 中系统图的模型配置。
 
 ## 使用方式
 

@@ -6,8 +6,10 @@ import io.github.linpeilie.annotations.AutoMapper;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * 封装 AI 平台 操作所需的请求条件和输入数据。
@@ -37,7 +39,12 @@ public class AiPlatformRequest {
     /**
      * apiKey 属性，保存当前对象中的业务数据或协作依赖。
      */
+    @ToString.Exclude
+    @Size(max = 340)
     private String apiKey;
+
+    /** 更新平台时明确清除已保存的密钥；省略或为 false 表示保留旧值。 */
+    private Boolean clearApiKey;
     /**
      * temperature 属性，保存当前对象中的业务数据或协作依赖。
      */

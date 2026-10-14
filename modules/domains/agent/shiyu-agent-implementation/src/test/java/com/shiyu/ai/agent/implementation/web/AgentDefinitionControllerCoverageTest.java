@@ -95,4 +95,32 @@ class AgentDefinitionControllerCoverageTest {
             assertFalse(controller.switchVersion("a", "v").isSuccess());
         }
     }
+
+    @Test
+    void explicitRegistrationVersionIsKeptAndServiceErrorsStayPrivate() {
+        AgentAdminService admin = mock(AgentAdminService.class);
+        AgentService service = mock(AgentService.class);
+        AgentDefinitionController controller = new AgentDefinitionController(admin, service);
+        ActorContext actor = new ActorContext(new TenantId(7), new UserId(9), false);
+        Graph graph = mock(Graph.class);
+        AgentDefinitionController.RegisterAgentRequest request =
+                new AgentDefinitionController.RegisterAgentRequest();
+        request.setAgentId("math");
+        request.setName("Math tutor");
+        request.setGraph(graph);
+        request.setVersionNumber("v2");
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(actor);
+            assertTrue(controller.registerAgent(request).isSuccess());
+            verify(service).registerAgent(eq(actor), argThat(definition ->
+                    "v2".equals(definition.getCurrentVersion())
+                            && definition.getVersion("v2").getGraph() == graph));
+
+            doThrow(new IllegalStateException("private storage failure"))
+                    .when(service).registerAgent(eq(actor), any(AgentDefinition.class));
+            var failed = controller.registerAgent(request);
+            assertFalse(failed.isSuccess());
+            assertFalse(failed.toString().contains("private storage failure"));
+        }
+    }
 }

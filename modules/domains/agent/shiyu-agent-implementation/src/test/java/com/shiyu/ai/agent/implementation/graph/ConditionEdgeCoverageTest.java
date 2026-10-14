@@ -129,7 +129,10 @@ class ConditionEdgeCoverageTest {
                 .addConditionalEdge("start", state -> "next", Map.of("next", "next"));
         assertDoesNotThrow(conditionalReachable::validate);
         assertTrue(conditionalReachable.findUnreachableNodes().isEmpty());
-        conditionalReachable.getConditionalEdges().get("start").setNodeMappings(null);
+        ConditionEdge detached = conditionalReachable.getConditionalEdges().get("start");
+        detached.setNodeMappings(null);
+        assertTrue(conditionalReachable.findUnreachableNodes().isEmpty());
+        conditionalReachable.setConditionalEdges(Map.of("start", detached));
         assertFalse(conditionalReachable.findUnreachableNodes().isEmpty());
 
         Graph noEdges = new Graph();

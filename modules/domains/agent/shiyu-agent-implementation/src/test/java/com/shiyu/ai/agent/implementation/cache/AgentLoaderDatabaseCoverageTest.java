@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,6 +50,7 @@ class AgentLoaderDatabaseCoverageTest {
         definition.setCreateTime(LocalDateTime.now());
         definition.setUpdateTime(LocalDateTime.now());
         AgentVersionBO version = new AgentVersionBO();
+        version.setStatus(1);
         version.setVersionNumber("v1");
         version.setDescription("Version");
         version.setCreateTime(LocalDateTime.now());
@@ -65,12 +67,38 @@ class AgentLoaderDatabaseCoverageTest {
     }
 
     @Test
+    void archivedCurrentVersionCannotBeReloadedAfterCacheEviction() {
+        AgentAdminRepository repository = mock(AgentAdminRepository.class);
+        NodeFactory factory = mock(NodeFactory.class);
+        when(factory.createNode(any())).thenReturn(new RequiredNode());
+        AgentDefBO definition = new AgentDefBO();
+        definition.setAgentId("agent-1");
+        definition.setName("Agent");
+        definition.setStatus(1);
+        definition.setCurrentVersion("v1");
+        definition.setCreateTime(LocalDateTime.now());
+        definition.setUpdateTime(LocalDateTime.now());
+        AgentVersionBO archived = new AgentVersionBO();
+        archived.setStatus(2);
+        archived.setVersionNumber("v1");
+        archived.setCreateTime(LocalDateTime.now());
+        archived.setGraphConfig(
+                "{\"name\":\"graph\",\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\"}}}");
+        when(repository.selectByAgentId(ACTOR.tenantId(), "agent-1")).thenReturn(definition);
+        when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "agent-1", "v1"))
+                .thenReturn(archived);
+
+        assertNull(new AgentLoader(factory, repository).loadFromDb(ACTOR, "agent-1"));
+    }
+
+    @Test
     void returnsNullForMalformedGraphAndNodeConstructionFailure() {
         AgentAdminRepository repository = mock(AgentAdminRepository.class);
         AgentDefBO definition = new AgentDefBO();
         definition.setStatus(1);
         definition.setCurrentVersion("v1");
         AgentVersionBO version = new AgentVersionBO();
+        version.setStatus(1);
         version.setGraphConfig("not-json");
         when(repository.selectByAgentId(ACTOR.tenantId(), "agent-1")).thenReturn(definition);
         when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "agent-1", "v1"))
@@ -93,6 +121,7 @@ class AgentLoaderDatabaseCoverageTest {
         definition.setCreateTime(LocalDateTime.now());
         definition.setUpdateTime(LocalDateTime.now());
         AgentVersionBO version = new AgentVersionBO();
+        version.setStatus(1);
         version.setVersionNumber("v1");
         version.setCreateTime(LocalDateTime.now());
         version.setGraphConfig(
@@ -108,6 +137,36 @@ class AgentLoaderDatabaseCoverageTest {
         assertNotNull(loader.loadFromDb(ACTOR, "agent-1"));
         verify(repository, times(1)).updateVersion(ACTOR.tenantId(), version);
         verify(repository, times(1)).update(ACTOR.tenantId(), definition);
+    }
+
+    @Test
+    void metadataWriteFailureDoesNotPreventPublishedGraphFromLoading() {
+        AgentAdminRepository repository = mock(AgentAdminRepository.class);
+        NodeFactory factory = mock(NodeFactory.class);
+        when(factory.createNode(any())).thenReturn(new RequiredNode());
+        AgentDefBO definition = new AgentDefBO();
+        definition.setAgentId("agent-1");
+        definition.setName("Agent");
+        definition.setStatus(1);
+        definition.setCurrentVersion("v1");
+        definition.setCreateTime(LocalDateTime.now());
+        definition.setUpdateTime(LocalDateTime.now());
+        AgentVersionBO version = new AgentVersionBO();
+        version.setStatus(1);
+        version.setVersionNumber("v1");
+        version.setCreateTime(LocalDateTime.now());
+        version.setGraphConfig(
+                "{\"startNode\":\"n\",\"endNode\":\"n\",\"nodes\":{\"n\":{\"nodeType\":\"DEFAULT\"}}}");
+        when(repository.selectByAgentId(ACTOR.tenantId(), "agent-1")).thenReturn(definition);
+        when(repository.selectVersionByAgentIdAndNumber(ACTOR.tenantId(), "agent-1", "v1"))
+                .thenReturn(version);
+        doThrow(new IllegalStateException("metadata store unavailable"))
+                .when(repository).updateVersion(ACTOR.tenantId(), version);
+
+        AgentDefinition loaded = new AgentLoader(factory, repository).loadFromDb(ACTOR, "agent-1");
+
+        assertNotNull(loaded);
+        assertNotNull(loaded.getVersion("v1").getGraph().getNodes().get("n"));
     }
 
     /**

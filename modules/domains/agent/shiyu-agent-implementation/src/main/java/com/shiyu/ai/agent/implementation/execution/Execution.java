@@ -150,29 +150,35 @@ public class Execution {
      * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      */
     public synchronized void start() {
+        requireNonTerminal();
         this.status = ExecutionStatus.RUNNING;
-        this.startTime = LocalDateTime.now();
+        if (this.startTime == null) this.startTime = LocalDateTime.now();
     }
 
     /**
-     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
+     * 将运行中的执行确定为完成态。其他终态已经先到达时保留原结果。
      *
-     * @param output 用于完成本次业务处理的 output 参数。
+     * @param output 成功执行生成的最终图状态
+     * @return 本次调用成功确定完成终态时返回 true
      */
-    public synchronized void complete(Map<String, Object> output) {
+    public synchronized boolean complete(Map<String, Object> output) {
+        if (isTerminal()) return false;
         this.status = ExecutionStatus.COMPLETED;
         this.output = output;
         this.endTime = LocalDateTime.now();
         this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
         notifyAll();
+        return true;
     }
 
     /**
-     * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
+     * 将执行确定为失败态。其他终态已经先到达时保留原结果。
      *
-     * @param errorMessage 用于完成本次业务处理的 errorMessage 参数。
+     * @param errorMessage 供执行详情展示的失败原因
+     * @return 本次调用成功确定失败终态时返回 true
      */
-    public synchronized void fail(String errorMessage) {
+    public synchronized boolean fail(String errorMessage) {
+        if (isTerminal()) return false;
         this.status = ExecutionStatus.FAILED;
         this.errorMessage = errorMessage;
         this.endTime = LocalDateTime.now();
@@ -180,12 +186,14 @@ public class Execution {
             this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
         }
         notifyAll();
+        return true;
     }
 
     /**
      * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      */
     public synchronized void pause() {
+        requireNonTerminal();
         this.status = ExecutionStatus.PAUSED;
     }
 
@@ -193,20 +201,37 @@ public class Execution {
      * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      */
     public synchronized void resume() {
+        requireNonTerminal();
         this.status = ExecutionStatus.RUNNING;
         notifyAll();
     }
 
     /**
-     * {@code cancel} 校验当前操作的输入或状态是否满足约束。
+     * 确定取消终态；已经结束的执行保持原终态。
+     *
+     * @return 本次调用成功确定取消终态时返回 true
      */
-    public synchronized void cancel() {
+    public synchronized boolean cancel() {
+        if (isTerminal()) return false;
         this.status = ExecutionStatus.CANCELLED;
         this.endTime = LocalDateTime.now();
         if (startTime != null) {
             this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
         }
         notifyAll();
+        return true;
+    }
+
+    private boolean isTerminal() {
+        return status == ExecutionStatus.COMPLETED
+                || status == ExecutionStatus.FAILED
+                || status == ExecutionStatus.CANCELLED;
+    }
+
+    private void requireNonTerminal() {
+        if (isTerminal()) {
+            throw new IllegalStateException("终态执行不能重新启动或暂停");
+        }
     }
 
     /**

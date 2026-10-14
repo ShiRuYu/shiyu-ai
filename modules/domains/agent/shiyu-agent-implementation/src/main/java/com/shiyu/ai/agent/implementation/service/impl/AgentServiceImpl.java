@@ -4,6 +4,10 @@ import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.agent.AgentDefinition;
 import com.shiyu.ai.agent.implementation.cache.AgentCacheManager;
 import com.shiyu.ai.agent.implementation.cache.AgentLoader;
+import com.shiyu.ai.agent.implementation.domain.enums.AgentVersionStatus;
+import com.shiyu.ai.agent.implementation.domain.model.AgentDefBO;
+import com.shiyu.ai.agent.implementation.domain.model.AgentVersionBO;
+import com.shiyu.ai.agent.implementation.graph.AgentGraphConfigValidator;
 import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.implementation.service.AgentService;
 import com.shiyu.ai.kernel.context.ActorContext;
@@ -12,8 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * 提供 智能体 的查询、创建、更新及调用服务，协调业务变更和领域协作。
@@ -101,11 +108,7 @@ public class AgentServiceImpl implements AgentService {
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("AgentId 不能为空");
         }
-        AgentDefinition definition = cacheManager.get(actor, agentId);
-        if (definition == null) {
-            definition = cacheManager.getOrLoad(actor, agentId, agentLoader);
-        }
-        return definition;
+        return cacheManager.getOrLoad(actor, agentId, agentLoader);
     }
 
     /**
@@ -119,8 +122,15 @@ public class AgentServiceImpl implements AgentService {
         if (agentId == null || agentId.trim().isEmpty()) {
             throw new IllegalArgumentException("AgentId 不能为空");
         }
-        agentAdminRepository.deleteByAgentId(actor.tenantId(), agentId);
-        cacheManager.evict(actor, agentId);
+        boolean cachedInTenant = cacheManager.containsKey(actor, agentId);
+        AgentDefBO stored = agentAdminRepository.selectByAgentId(actor.tenantId(), agentId);
+        if (!cachedInTenant && stored == null) {
+            return false;
+        }
+        if (stored != null) {
+            agentAdminRepository.deleteByAgentId(actor.tenantId(), agentId);
+        }
+        evictRuntimeCache(actor, agentId);
         log.info("Agent 已注销（DB 软删除 + 缓存清理）：agentIdPresent={}", agentId != null);
         return true;
     }
@@ -134,24 +144,35 @@ public class AgentServiceImpl implements AgentService {
      * @return 返回本次条件判断是否成立。
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean switchVersion(ActorContext actor, String agentId, String version) {
         log.info(
                 "切换 Agent 版本：agentIdPresent={}, targetVersionPresent={}",
                 agentId != null,
                 version != null);
-        AgentDefinition definition = getOrLoadAgent(actor, agentId);
+        if (agentId == null || agentId.isBlank() || version == null || version.isBlank()) {
+            return false;
+        }
+        AgentDefBO definition = agentAdminRepository.selectByAgentId(actor.tenantId(), agentId);
         if (definition == null) {
             log.warn("Agent 不存在，切换失败：agentIdPresent={}", agentId != null);
             return false;
         }
-        if (definition.getVersion(version) == null) {
+        AgentVersionBO target = agentAdminRepository.selectVersionByAgentIdAndNumber(
+                actor.tenantId(), agentId, version);
+        if (target == null
+                || !AgentVersionStatus.PUBLISHED.getCode().equals(target.getStatus())
+                || !AgentGraphConfigValidator.isValidJson(target.getGraphConfig())) {
             log.warn(
-                    "版本切换失败，版本不存在：agentIdPresent={}, versionPresent={}",
+                    "版本切换失败，版本不存在或未发布：agentIdPresent={}, versionPresent={}",
                     agentId != null,
                     version != null);
             return false;
         }
         definition.setCurrentVersion(version);
+        definition.setUpdateTime(LocalDateTime.now());
+        agentAdminRepository.update(actor.tenantId(), definition);
+        evictRuntimeCache(actor, agentId);
         log.info("版本切换成功：agentIdPresent={}, versionPresent={}", agentId != null, version != null);
         return true;
     }
@@ -180,12 +201,19 @@ public class AgentServiceImpl implements AgentService {
         log.info("运行时缓存已清除: agentIdPresent={}", agentId != null);
     }
 
-    // ==================== 内部方法 ====================
-
-    private AgentDefinition getOrLoadAgent(ActorContext actor, String agentId) {
-        AgentDefinition definition = cacheManager.get(actor, agentId);
-        if (definition != null) return definition;
-        definition = cacheManager.getOrLoad(actor, agentId, agentLoader);
-        return definition;
+    @Override
+    public void evictRuntimeCache(ActorContext actor, String agentId) {
+        cacheManager.evictTenant(actor.tenantId(), agentId);
+        if (TransactionSynchronizationManager.isActualTransactionActive()
+                && TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCompletion(int status) {
+                            cacheManager.evictTenant(actor.tenantId(), agentId);
+                        }
+                    });
+        }
     }
+
 }

@@ -221,6 +221,96 @@ class ChatProductControllerTest {
     }
 
     @Test
+    void promptDiffShowsBothRemovedAndAddedLines() {
+        PromptTemplateVersion first = new PromptTemplateVersion(
+                "v1", "welcome", 1, "DRAFT", "one\ntwo\nthree", Map.of(),
+                List.of(), now, null);
+        PromptTemplateVersion second = new PromptTemplateVersion(
+                "v2", "welcome", 2, "DRAFT", "one\nTHREE", Map.of(),
+                List.of(), now, null);
+        when(repository.listPrompts(new TenantId(7), 8, "welcome"))
+                .thenReturn(List.of(first, second));
+        ChatProductController.DiffRequest request = new ChatProductController.DiffRequest();
+        request.fromVersion = 1;
+        request.toVersion = 2;
+        assertEquals(List.of("- two", "+ THREE", "- three"),
+                controller.diffPrompt("welcome", request).getData().changes());
+        request.fromVersion = 2;
+        request.toVersion = 1;
+        assertEquals(List.of("- THREE", "+ two", "+ three"),
+                controller.diffPrompt("welcome", request).getData().changes());
+    }
+
+    @Test
+    void promptStudioRejectsMissingOrNonDraftSourceVersions() {
+        PromptTemplateVersion published = new PromptTemplateVersion(
+                "v1", "welcome", 1, "PUBLISHED", "ready", Map.of(),
+                List.of("ready"), now, now);
+        when(repository.listPrompts(new TenantId(7), 8, "welcome"))
+                .thenReturn(List.of(published));
+        ChatProductController.PublishRequest publish = new ChatProductController.PublishRequest();
+        publish.version = 1;
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.publishPrompt("welcome", publish));
+        assertThrows(ResponseStatusException.class,
+                () -> controller.publishPrompt("welcome", null));
+
+        ChatProductController.DiffRequest diff = new ChatProductController.DiffRequest();
+        diff.fromVersion = 1;
+        diff.toVersion = 2;
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.diffPrompt("welcome", diff));
+        diff.fromVersion = 2;
+        diff.toVersion = 1;
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.diffPrompt("welcome", diff));
+        diff.fromVersion = 0;
+        assertThrows(ResponseStatusException.class,
+                () -> controller.diffPrompt("welcome", diff));
+    }
+
+    @Test
+    void promptPreviewAndTestHandleEmptyVariablesWithoutInventingContent() {
+        ChatProductController.PromptPreviewRequest preview =
+                new ChatProductController.PromptPreviewRequest();
+        assertEquals("", controller.preview(preview).getData().rendered());
+        assertEquals(List.of(), controller.preview(preview).getData().variables());
+
+        PromptTemplateVersion draft = new PromptTemplateVersion(
+                "v1", "empty", 1, "DRAFT", "plain", Map.of(),
+                List.of("plain"), now, null);
+        when(repository.listPrompts(new TenantId(7), 8, "empty"))
+                .thenReturn(List.of(draft));
+        ChatProductController.PromptTestRequest request =
+                new ChatProductController.PromptTestRequest();
+        request.version = 1;
+        assertEquals(List.of("plain"),
+                controller.testPrompt("empty", request).getData().renderedCases());
+        request.version = 2;
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.testPrompt("empty", request));
+        assertThrows(ResponseStatusException.class,
+                () -> controller.testPrompt("empty", null));
+    }
+
+    @Test
+    void promptCreationRejectsIncompleteInputBeforeSaving() {
+        ChatProductController.PromptRequest request =
+                new ChatProductController.PromptRequest();
+        request.body = "ready";
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.createPrompt(request));
+        request.templateId = " ";
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.createPrompt(request));
+        request.templateId = "ready";
+        request.body = null;
+        assertThrows(IllegalArgumentException.class,
+                () -> controller.createPrompt(request));
+        verify(repository, never()).savePrompt(any(), any(), anyLong());
+    }
+
+    @Test
     void groupEndpointsPlanTurnsAndRejectInvalidRuns() {
         GroupChat.Participant ava = new GroupChat.Participant("ava", "Ava", "ch1");
         GroupChat group = new GroupChat("g1", "Study", List.of(ava), SpeakerPolicy.MANUAL, 2, 100);

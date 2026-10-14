@@ -143,9 +143,11 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     public List<Map<String, Object>> aggregateByDay(int days) {
         if (!allTenants) TenantScope.require();
         if (days <= 0) return List.of();
-        List<UsageRecordDO> portable = selectRecordsSince(daysBefore(days));
-        if (usesPortableAggregation() && portable != null) {
-            return aggregateRecords(portable, "usage_date", time -> time.toLocalDate().toString());
+        if (usesPortableAggregation()) {
+            List<UsageRecordDO> portable = selectRecordsSince(daysBefore(days));
+            if (portable != null) {
+                return aggregateRecords(portable, "usage_date", time -> time.toLocalDate().toString());
+            }
         }
         return safeRows(
                 allTenants
@@ -163,9 +165,11 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     public List<Map<String, Object>> aggregateByWeek(int weeks) {
         if (!allTenants) TenantScope.require();
         if (weeks <= 0) return List.of();
-        List<UsageRecordDO> portable = selectRecordsSince(weeksBefore(weeks));
-        if (usesPortableAggregation() && portable != null) {
-            return aggregateRecords(portable, "usage_week", this::weekKey);
+        if (usesPortableAggregation()) {
+            List<UsageRecordDO> portable = selectRecordsSince(weeksBefore(weeks));
+            if (portable != null) {
+                return aggregateRecords(portable, "usage_week", this::weekKey);
+            }
         }
         return safeRows(
                 allTenants
@@ -183,10 +187,12 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
     public List<Map<String, Object>> aggregateByMonth(int months) {
         if (!allTenants) TenantScope.require();
         if (months <= 0) return List.of();
-        List<UsageRecordDO> portable = selectRecordsSince(monthsBefore(months));
-        if (usesPortableAggregation() && portable != null) {
-            return aggregateRecords(
-                    portable, "usage_month", time -> YearMonth.from(time).toString());
+        if (usesPortableAggregation()) {
+            List<UsageRecordDO> portable = selectRecordsSince(monthsBefore(months));
+            if (portable != null) {
+                return aggregateRecords(
+                        portable, "usage_month", time -> YearMonth.from(time).toString());
+            }
         }
         return safeRows(
                 allTenants

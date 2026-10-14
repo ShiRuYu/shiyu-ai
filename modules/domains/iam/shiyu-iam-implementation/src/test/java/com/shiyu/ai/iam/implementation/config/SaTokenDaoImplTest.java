@@ -52,6 +52,21 @@ class SaTokenDaoImplTest {
     }
 
     @Test
+    void validRandomTokenStillResolvesAfterDaoRestart() {
+        String randomTokenKey = "Authorization:login:token:"
+                + "bcf38261-60f9-4790-83bb-a5e33e917d17";
+        dao.set(randomTokenKey, "42", 3600);
+        dao.destroy();
+        dao = new SaTokenDaoImpl(users);
+        when(users.findUserIdByToken("bcf38261-60f9-4790-83bb-a5e33e917d17"))
+                .thenReturn(42L);
+
+        assertEquals("42", dao.get(randomTokenKey));
+        assertTrue(dao.getTimeout(randomTokenKey) > 0);
+        verify(users, times(1)).findUserIdByToken("bcf38261-60f9-4790-83bb-a5e33e917d17");
+    }
+
+    @Test
     void handlesObjectCacheAndMalformedKeysWithoutThrowing() {
         dao.setObject("object", "value", 10);
         assertEquals("value", dao.getObject("object"));

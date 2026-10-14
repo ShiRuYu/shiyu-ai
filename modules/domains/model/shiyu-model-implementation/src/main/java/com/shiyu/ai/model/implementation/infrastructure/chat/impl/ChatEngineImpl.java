@@ -1,6 +1,7 @@
 package com.shiyu.ai.model.implementation.infrastructure.chat.impl;
 
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatMessage;
@@ -102,6 +103,17 @@ public class ChatEngineImpl implements ChatEngine {
     public ChatResponse chat(com.shiyu.ai.model.contract.model.ChatRequest request) {
         String error = validate(request);
         if (error != null) return error(error, request);
+        return TenantScope.withTenant(new TenantId(request.getTenantId()),
+                () -> chatForTenant(request));
+    }
+
+    /**
+     * Calls a model while the validated request tenant is bound to the current thread.
+     *
+     * @param request validated chat request
+     * @return model response or a sanitized failure
+     */
+    private ChatResponse chatForTenant(ChatRequest request) {
         long started = System.currentTimeMillis();
         if (request.getModelRouteId() != null
                 && !request.getModelRouteId().isBlank()
@@ -257,7 +269,7 @@ public class ChatEngineImpl implements ChatEngine {
             return routedStream(request);
         }
         return Flux.defer(
-                () -> {
+                () -> TenantScope.withTenant(new TenantId(request.getTenantId()), () -> {
                     Sinks.Many<ChatResponse> sink = Sinks.many().unicast().onBackpressureBuffer();
                     long started = System.currentTimeMillis();
                     AtomicBoolean emittedDelta = new AtomicBoolean();
@@ -291,9 +303,9 @@ public class ChatEngineImpl implements ChatEngine {
                                 nativeRequest(resolved),
                                 new StreamingChatResponseHandler() {
                                     /**
-                                     * {@code onPartialResponse} 执行当前类型定义的业务操作。
+                                     * 将模型返回的非空文本片段转成对客户端可见的 DELTA 事件。
                                      *
-                                     * @param text 参数值，用于执行当前操作。
+                                     * @param text 本次收到的文本片段
                                      */
                                     @Override
                                     public void onPartialResponse(String text) {
@@ -310,9 +322,9 @@ public class ChatEngineImpl implements ChatEngine {
                                     }
 
                                     /**
-                                     * {@code onPartialThinking} 执行当前类型定义的业务操作。
+                                     * 将模型的非空思考片段转成 REASONING_DELTA 事件。
                                      *
-                                     * @param thinking 参数值，用于执行当前操作。
+                                     * @param thinking 本次收到的思考片段
                                      */
                                     @Override
                                     public void onPartialThinking(
@@ -332,9 +344,9 @@ public class ChatEngineImpl implements ChatEngine {
                                     }
 
                                     /**
-                                     * {@code onPartialToolCall} 执行当前类型定义的业务操作。
+                                     * 将工具调用片段的标识、名称和参数发给流式订阅方。
                                      *
-                                     * @param call 参数值，用于执行当前操作。
+                                     * @param call 模型返回的工具调用片段
                                      */
                                     @Override
                                     public void onPartialToolCall(PartialToolCall call) {
@@ -351,9 +363,9 @@ public class ChatEngineImpl implements ChatEngine {
                                     }
 
                                     /**
-                                     * {@code onCompleteResponse} 执行当前类型定义的业务操作。
+                                     * 汇总令牌用量和最终回复，并结束本次模型输出流。
                                      *
-                                     * @param response 参数值，用于执行当前操作。
+                                     * @param response 模型返回的完整响应
                                      */
                                     @Override
                                     public void onCompleteResponse(
@@ -449,9 +461,9 @@ public class ChatEngineImpl implements ChatEngine {
                                     }
 
                                     /**
-                                     * {@code onError} 执行当前类型定义的业务操作。
+                                     * 向订阅方发布模型调用失败事件并终止输出流。
                                      *
-                                     * @param throwable 参数值，用于执行当前操作。
+                                     * @param throwable 模型调用产生的异常
                                      */
                                     @Override
                                     public void onError(Throwable throwable) {
@@ -470,7 +482,7 @@ public class ChatEngineImpl implements ChatEngine {
                         sink.tryEmitError(throwable);
                     }
                     return sink.asFlux().subscribeOn(Schedulers.boundedElastic());
-                });
+                }));
     }
 
     private Flux<ChatResponse> routedStream(ChatRequest request) {
@@ -543,6 +555,14 @@ public class ChatEngineImpl implements ChatEngine {
     }
 
     private ChatRequest resolveRequest(ChatRequest request, boolean streaming) {
+        if ("default".equalsIgnoreCase(request.getPlatform())) {
+            String platform = modelManager.getDefaultPlatform();
+            if (platform == null || platform.isBlank()
+                    || "default".equalsIgnoreCase(platform)) {
+                throw new IllegalStateException("default model platform is unavailable");
+            }
+            return copyWithoutRoute(request, platform, request.getModel());
+        }
         return request;
     }
 
@@ -568,6 +588,7 @@ public class ChatEngineImpl implements ChatEngine {
                 .model(model)
                 .generationRunId(request.getGenerationRunId())
                 .tenantId(request.getTenantId())
+                .userId(request.getUserId())
                 .messages(request.getMessages())
                 .chatType(request.getChatType())
                 .temperature(request.getTemperature())

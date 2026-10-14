@@ -75,7 +75,8 @@ public final class DeepSeekHttpProvider {
         this.endpoint =
                 base.endsWith("/v1") ? base + "/chat/completions" : base + "/v1/chat/completions";
         this.apiKey = Objects.toString(apiKey, "");
-        this.defaultModel = Objects.toString(defaultModel, "deepseek-v4-flash");
+        this.defaultModel = defaultModel == null || defaultModel.isBlank()
+                ? "deepseek-flash" : defaultModel;
         this.requestTimeout = requestTimeout == null ? Duration.ofSeconds(60) : requestTimeout;
         this.client = client;
     }
@@ -120,7 +121,7 @@ public final class DeepSeekHttpProvider {
                 .content(content)
                 .reasoningContent(reasoning)
                 .platform("DEEPSEEK")
-                .model(string(body.get("model"), request.getModel()))
+                .model(string(body.get("model"), resolveModel(request)))
                 .toolCalls(calls)
                 .promptTokens(input)
                 .completionTokens(output)
@@ -172,7 +173,7 @@ public final class DeepSeekHttpProvider {
                                 String finishReason = "";
                                 int prompt = 0, output = 0, total = 0;
                                 boolean estimated = true;
-                                String model = request.getModel();
+                                String model = resolveModel(request);
                                 String requestId =
                                         response.headers().firstValue("X-Request-ID").orElse(null);
                                 try (BufferedReader reader =
@@ -333,7 +334,7 @@ public final class DeepSeekHttpProvider {
                                                 .success(false)
                                                 .eventType("CANCELLED")
                                                 .platform("DEEPSEEK")
-                                                .model(request.getModel())
+                                                .model(resolveModel(request))
                                                 .build());
                                 sink.complete();
                             } catch (Throwable ex) {
@@ -343,7 +344,7 @@ public final class DeepSeekHttpProvider {
                                                 .eventType("FAILED")
                                                 .errorMessage("deepseek provider call failed")
                                                 .platform("DEEPSEEK")
-                                                .model(request.getModel())
+                                                .model(resolveModel(request))
                                                 .build());
                                 sink.error(ex);
                             }
@@ -369,13 +370,14 @@ public final class DeepSeekHttpProvider {
         }
     }
 
+    private String resolveModel(ChatRequest request) {
+        String requested = request.getModel();
+        return requested == null || requested.isBlank() ? defaultModel : requested;
+    }
+
     private HttpRequest buildRequest(ChatRequest request, boolean stream) {
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put(
-                "model",
-                request.getModel() == null || request.getModel().isBlank()
-                        ? defaultModel
-                        : request.getModel());
+        body.put("model", resolveModel(request));
         body.put("messages", request.getMessages().stream().map(this::message).toList());
         body.put("stream", stream);
         if (stream) body.put("stream_options", Map.of("include_usage", true));

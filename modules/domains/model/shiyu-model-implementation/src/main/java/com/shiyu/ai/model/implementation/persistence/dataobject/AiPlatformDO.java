@@ -10,6 +10,7 @@ import io.github.linpeilie.annotations.AutoMapper;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.io.Serial;
 
@@ -37,8 +38,15 @@ public class AiPlatformDO extends TenantEntity {
     /** 平台编码（如：OPENAI, DEEPSEEK, OLLAMA, OPENROUTER, SILICON_FLOW） */
     private String code;
 
+    /** 模型接口协议，与 model_ai_platform.adapter_type 对应。 */
+    private String adapterType;
+
     /** 模型平台 API 地址。 */
     private String baseUrl;
+
+    /** 平台调用凭证；仅在服务端持久化和模型调用链使用。 */
+    @ToString.Exclude
+    private String apiKey;
 
     /** 模型调用的默认温度参数。 */
     private Double temperature;

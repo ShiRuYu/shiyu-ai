@@ -38,9 +38,15 @@ class InMemoryAiRunRepositoryCoverageTest {
 
         assertTrue(repository.find(run.id(), new TenantId(1), 2).isPresent());
         assertTrue(repository.find(run.id(), new TenantId(9), 2).isEmpty());
+        assertTrue(repository.find(run.id(), new TenantId(1), 9).isEmpty());
         assertEquals(1, repository.list(new TenantId(1), 2, 0).size());
+        assertTrue(repository.list(new TenantId(1), 9, 10).isEmpty());
         assertEquals(0, repository.findByGeneration("g", new TenantId(9), 2).stream().count());
+        assertTrue(repository.findByGeneration("g", new TenantId(1), 9).isEmpty());
         assertEquals(1, repository.findByExecution(null, new TenantId(1), 2).stream().count());
+        assertTrue(repository.findByExecution(null, new TenantId(1), 9).isEmpty());
+        assertThrows(IllegalArgumentException.class,
+                () -> repository.events(run.id(), new TenantId(1), 9, 0, 10));
         assertEquals(0, repository.update(run, -1));
         assertEquals(
                 0,

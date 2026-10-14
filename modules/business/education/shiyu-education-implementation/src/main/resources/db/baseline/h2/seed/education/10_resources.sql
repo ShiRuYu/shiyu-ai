@@ -8,4 +8,5 @@ VALUES (1, 1001, 1, 1, 1, 0, 'system', 'system');
 
 INSERT INTO "PUBLIC"."EDU_QUESTION_KNOWLEDGE"
     ("QUESTION_ID", "KNOWLEDGE_ID", "WEIGHT", "TENANT_ID", "STATUS", "DEL_FLAG", "CREATE_BY", "UPDATE_BY")
-VALUES (1, 1001, 1.0, 1, 1, 0, 'system', 'system');
+VALUES (1, 1001, 1.0, 1, 1, 0, 'system', 'system'),
+       (2, 1001, 1.0, 1, 1, 0, 'system', 'system');

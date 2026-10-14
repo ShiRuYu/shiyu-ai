@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.agent.contract.node.*;
 import com.shiyu.ai.agent.contract.node.NodeFields.FieldKey;
+import com.shiyu.ai.agent.contract.node.NodeApprovalRequiredException;
 import com.shiyu.ai.agent.contract.runtime.AiRun;
 import com.shiyu.ai.agent.contract.runtime.AiRunContext;
 import com.shiyu.ai.agent.contract.runtime.AiRunSource;
@@ -70,6 +71,54 @@ import java.util.Map;
  */
 class AgentNodeExecutionTest {
 
+    private static final ActorContext TRUSTED_ACTOR =
+            new ActorContext(new TenantId(1L), new UserId(2L), false);
+
+    @Test
+    void llmRequestUsesTrustedActorAfterEarlierNodeChangesScalarIdentity() throws Exception {
+        ChatEngine engine = mock(ChatEngine.class);
+        when(engine.chat(any())).thenReturn(ChatResponse.builder().success(true)
+                .content("ok").platform("p").model("m").build());
+        LlmCallNode node = LlmCallNode.builder().chatEngine(engine).build();
+        Map<String, Object> forged = Map.of(
+                NodeActorContext.KEY, TRUSTED_ACTOR,
+                "tenantId", 99L, "userId", 88L, "query", "hello");
+
+        assertTrue(invoke(node, NodeInput.fromMap(forged)).isSuccess());
+
+        verify(engine).chat(argThat(request -> request.getTenantId() == 1L
+                && request.getUserId() == 2L));
+    }
+
+    @Test
+    void toolPipelineUsesTrustedActorAndRejectsForgedRunOwner() throws Exception {
+        ToolService tools = mock(ToolService.class);
+        ToolExecutionPipeline pipeline = mock(ToolExecutionPipeline.class);
+        ToolCallNode node = ToolCallNode.builder().toolService(tools)
+                .executionPipeline(pipeline)
+                .config(ToolCallConfig.builder().toolName("search").build()).build();
+        when(pipeline.executeById(any(), any(), anyLong(), any(), any()))
+                .thenReturn(new ToolExecutionPipeline.Result(
+                        ToolExecutionPipeline.Result.Status.COMPLETED, "ok", null));
+        Map<String, Object> forged = Map.of(
+                NodeActorContext.KEY, TRUSTED_ACTOR,
+                "tenantId", 99L, "userId", 88L, "__aiRunId", "run-1");
+
+        assertTrue(invoke(node, NodeInput.fromMap(forged)).isSuccess());
+        verify(pipeline).executeById(eq("run-1"), eq(new TenantId(1L)), eq(2L), any(), any());
+
+        assertFalse(invoke(node, NodeInput.fromMap(Map.of(
+                "tenantId", 1L, "userId", 2L, "__aiRunId", "run-2"))).isSuccess());
+        verify(pipeline, never()).executeById(eq("run-2"), any(), anyLong(), any(), any());
+
+        AiRun foreign = new AiRuntimeService().startRun(
+                new AiRunContext(new TenantId(99L), 88L, null, null, null, null, null, null, Map.of()),
+                AiRunSource.AGENT, "agent", "model", "prompt");
+        assertFalse(invoke(node, NodeInput.fromMap(Map.of(
+                NodeActorContext.KEY, TRUSTED_ACTOR, "_aiRun", foreign))).isSuccess());
+        verify(pipeline, never()).execute(eq(foreign), any(), any());
+    }
+
     @Test
     void llmNodeHandlesSyncStreamTemplatesMessagesAndInvalidContext() throws Exception {
         ChatEngine engine = mock(ChatEngine.class);
@@ -93,7 +142,7 @@ class AgentNodeExecutionTest {
         NodeOutput result =
                 invoke(
                         sync,
-                        NodeInput.fromMap(Map.of("name", "world", "tenantId", 1L, "userId", 2L)));
+                        trustedInput(Map.of("name", "world")));
         assertTrue(result.isSuccess());
         assertEquals("answer", result.getData("content", null));
         verify(engine).chat(any());
@@ -101,7 +150,7 @@ class AgentNodeExecutionTest {
         when(engine.chat(any()))
                 .thenReturn(ChatResponse.builder().success(false).errorMessage("down").build());
         NodeOutput failed =
-                invoke(sync, NodeInput.fromMap(Map.of("query", "q", "tenantId", 1L, "userId", 2L)));
+                invoke(sync, trustedInput(Map.of("query", "q")));
         assertFalse(failed.isSuccess());
         assertEquals("LLM 调用失败，请稍后重试", failed.getMsg());
         assertFalse(failed.getMsg().contains("down"));
@@ -125,15 +174,15 @@ class AgentNodeExecutionTest {
         NodeOutput streamed =
                 invoke(
                         stream,
-                        NodeInput.fromMap(
-                                Map.of("chatType", ChatType.STREAM, "tenantId", 1L, "userId", 2L)));
+                        trustedInput(Map.of("chatType", ChatType.STREAM)));
         assertTrue(streamed.isSuccess());
         assertTrue(streamed.getData("stream", false));
         assertNotNull(streamed.getData("_streaming_generator", null));
 
         NodeOutput invalid = invoke(sync, NodeInput.fromMap(Map.of("query", "q")));
         assertFalse(invalid.isSuccess());
-        assertTrue(invalid.getMsg().contains("tenantId"));
+        assertEquals("LLM 调用节点执行失败，请稍后重试", invalid.getMsg());
+        verify(engine, times(2)).chat(any());
     }
 
     @Test
@@ -794,6 +843,8 @@ class AgentNodeExecutionTest {
     @Test
     void agentCallAndIntentNodesMapInputsAndHandleRecognitionBranches() throws Exception {
         AgentRuntime runtime = mock(AgentRuntime.class);
+        ActorContext authenticated =
+                new ActorContext(new TenantId(1L), new UserId(2L), false);
         AgentCallConfig config = new AgentCallConfig();
         config.setTargetAgentId("child");
         config.setTargetVersion("v1");
@@ -807,7 +858,8 @@ class AgentNodeExecutionTest {
         NodeOutput called =
                 invoke(
                         call,
-                        NodeInput.fromMap(Map.of("query", "hello", "tenantId", 1L, "userId", 2L)));
+                        NodeInput.fromMap(Map.of("query", "hello", "tenantId", 1L, "userId", 2L,
+                                "__knowledgeAccessContext", authenticated)));
         assertTrue(called.isSuccess());
         assertEquals(Map.of("answer", "ok"), called.getData("childOutput", Map.of()));
         verify(runtime)
@@ -819,6 +871,9 @@ class AgentNodeExecutionTest {
         assertFalse(
                 invoke(call, NodeInput.fromMap(Map.of("query", "hello", "tenantId", 1L)))
                         .isSuccess());
+        assertFalse(
+                invoke(call, NodeInput.fromMap(Map.of("query", "hello", "tenantId", 1L,
+                        "userId", 2L))).isSuccess());
 
         AgentCallConfig passthroughConfig = new AgentCallConfig();
         passthroughConfig.setTargetAgentId("child");
@@ -832,6 +887,7 @@ class AgentNodeExecutionTest {
         passthroughInput.put("query", "hello");
         passthroughInput.put("tenantId", 1L);
         passthroughInput.put("userId", 2L);
+        passthroughInput.put("__knowledgeAccessContext", authenticated);
         AgentCallConfig sparseConfig = new AgentCallConfig();
         sparseConfig.setTargetAgentId("child");
         sparseConfig.setInputMapping(Map.of("missing", "childMissing", "query", "prompt"));
@@ -954,15 +1010,15 @@ class AgentNodeExecutionTest {
                                         .toolType("HIGH")
                                         .build())
                         .build();
-        NodeOutput pending = invoke(node, NodeInput.fromMap(Map.of("_aiRun", run, "q", "x")));
-        assertFalse(pending.isSuccess());
-        assertEquals("approval-1", pending.getData("approvalId", null));
+        NodeApprovalRequiredException pending = assertThrows(NodeApprovalRequiredException.class,
+                () -> invoke(node, trustedInput(Map.of("_aiRun", run, "q", "x"))));
+        assertEquals("approval-1", pending.approvalId());
 
         when(pipeline.execute(eq(run), any(), any()))
                 .thenReturn(
                         new ToolExecutionPipeline.Result(
                                 ToolExecutionPipeline.Result.Status.COMPLETED, "answer", approval));
-        NodeOutput completed = invoke(node, NodeInput.fromMap(Map.of("_aiRun", run, "q", "x")));
+        NodeOutput completed = invoke(node, trustedInput(Map.of("_aiRun", run, "q", "x")));
         assertTrue(completed.isSuccess());
         assertEquals("answer", completed.getData("toolResult", null));
 
@@ -973,10 +1029,66 @@ class AgentNodeExecutionTest {
         NodeOutput byId =
                 invoke(
                         node,
-                        NodeInput.fromMap(
-                                Map.of("__aiRunId", run.id(), "tenantId", "1", "userId", 2L)));
+                        trustedInput(Map.of("__aiRunId", run.id())));
         assertTrue(byId.isSuccess());
         assertEquals("by-id", byId.getData("toolResult", null));
+    }
+
+    @Test
+    void highRiskToolFailsClosedWithoutTrackedRuntimeOrApprovalPipeline() throws Exception {
+        ToolService tools = mock(ToolService.class);
+        ToolCallNode withoutRun = ToolCallNode.builder()
+                .toolService(tools)
+                .executionPipeline(mock(ToolExecutionPipeline.class))
+                .config(ToolCallConfig.builder().toolName("filesystem.write")
+                        .toolType("HIGH").build())
+                .build();
+        ToolCallNode withoutPipeline = ToolCallNode.builder()
+                .toolService(tools)
+                .config(ToolCallConfig.builder().toolName("filesystem.write")
+                        .toolType("HIGH_RISK").build())
+                .build();
+
+        assertFalse(invoke(withoutRun, NodeInput.fromMap(Map.of("path", "a"))).isSuccess());
+        assertFalse(invoke(withoutPipeline,
+                trustedInput(Map.of("__aiRunId", "run-1", "path", "a"))).isSuccess());
+        verifyNoInteractions(tools);
+    }
+
+    @Test
+    void externalToolCannotBypassApprovalByDeclaringNormalNodeType() throws Exception {
+        ToolService tools = mock(ToolService.class);
+        when(tools.requiresApproval("external.write")).thenReturn(true);
+        when(tools.execute(eq("external.write"), any()))
+                .thenReturn(new ToolService.ToolExecutionResult(true, "written", null));
+        ToolCallNode node = ToolCallNode.builder()
+                .toolService(tools)
+                .config(ToolCallConfig.builder().toolName("external.write")
+                        .toolType("NORMAL").build())
+                .build();
+
+        assertFalse(invoke(node, trustedInput(Map.of("path", "a"))).isSuccess());
+        verify(tools, never()).execute(eq("external.write"), any());
+
+        AiRun run = new AiRuntimeService().startRun(
+                new AiRunContext(new TenantId(1), 2, null, null, null, null, null, null, Map.of()),
+                AiRunSource.AGENT, "agent", "model", "prompt");
+        ToolExecutionPipeline pipeline = mock(ToolExecutionPipeline.class);
+        var approval = mock(com.shiyu.ai.agent.implementation.runtime.model.ToolApproval.class);
+        when(approval.id()).thenReturn("approval-1");
+        when(pipeline.execute(eq(run), argThat(request -> request.highRisk()), any()))
+                .thenReturn(new ToolExecutionPipeline.Result(
+                        ToolExecutionPipeline.Result.Status.APPROVAL_REQUIRED,
+                        null, approval));
+        ToolCallNode tracked = ToolCallNode.builder()
+                .toolService(tools).executionPipeline(pipeline)
+                .config(ToolCallConfig.builder().toolName("external.write")
+                        .toolType("NORMAL").build())
+                .build();
+
+        assertThrows(NodeApprovalRequiredException.class,
+                () -> invoke(tracked, trustedInput(Map.of("_aiRun", run, "path", "a"))));
+        verify(tools, never()).execute(eq("external.write"), any());
     }
 
     @Test
@@ -1003,7 +1115,7 @@ class AgentNodeExecutionTest {
         NodeOutput result =
                 invoke(
                         node,
-                        NodeInput.fromMap(
+                        trustedInput(
                                 Map.of(
                                         "chatType",
                                         "unknown",
@@ -1028,7 +1140,7 @@ class AgentNodeExecutionTest {
                         .chatEngine(engine)
                         .config(LlmCallConfig.builder().promptTemplate("hello {name}").build())
                         .build();
-        invoke(template, NodeInput.fromMap(Map.of("name", "Ada", "tenantId", 1L, "userId", 2L)));
+        invoke(template, trustedInput(Map.of("name", "Ada")));
         LlmCallNode.builder()
                 .chatEngine(engine)
                 .config(LlmCallConfig.builder().stream(true).build())
@@ -1040,7 +1152,7 @@ class AgentNodeExecutionTest {
                                 .chatEngine(engine)
                                 .config(LlmCallConfig.builder().stream(true).build())
                                 .build(),
-                        NodeInput.fromMap(Map.of("tenantId", 1L, "userId", 2L)));
+                        trustedInput(Map.of()));
         assertTrue(streamFailure.isSuccess());
     }
 
@@ -1056,13 +1168,14 @@ class AgentNodeExecutionTest {
                                 .success(false)
                                 .errorMessage("provider rejected")
                                 .build());
-        NodeOutput failure = invoke(node, NodeInput.fromMap(Map.of("tenantId", 1L, "userId", 2L)));
+        NodeOutput failure = invoke(node, trustedInput(Map.of()));
         assertFalse(failure.isSuccess());
         assertEquals("LLM 调用失败，请稍后重试", failure.getMsg());
         assertFalse(failure.getMsg().contains("provider rejected"));
         NodeOutput invalidTenant =
                 invoke(node, NodeInput.fromMap(Map.of("tenantId", 0L, "userId", 2L)));
         assertFalse(invalidTenant.isSuccess());
+        assertEquals("LLM 调用节点执行失败，请稍后重试", invalidTenant.getMsg());
 
         LlmCallNode stream =
                 LlmCallNode.builder()
@@ -1085,7 +1198,7 @@ class AgentNodeExecutionTest {
         NodeOutput streamed =
                 invoke(
                         stream,
-                        NodeInput.fromMap(
+                        trustedInput(
                                 Map.of(
                                         "tenantId",
                                         "1",
@@ -1101,6 +1214,124 @@ class AgentNodeExecutionTest {
         assertTrue(streamed.isSuccess());
         assertEquals(Boolean.TRUE, streamed.getData(FieldKey.STREAM, null));
         assertNotNull(streamed.getData(FieldKey.STREAMING_GENERATOR, null));
+    }
+
+    private static NodeInput trustedInput(Map<String, Object> data) {
+        return NodeInput.fromMap(NodeActorContext.bind(TRUSTED_ACTOR, data));
+    }
+
+    @Test
+    void toolNodeNormalizesNonSerializableResultBeforeGraphCheckpoint() throws Exception {
+        /** 模拟不实现序列化接口的工具返回值。 */
+        record ToolPayload(String answer) {}
+        ToolService tools = mock(ToolService.class);
+        ToolCallNode node = ToolCallNode.builder().toolService(tools)
+                .config(ToolCallConfig.builder().toolName("search").build()).build();
+        when(tools.execute(eq("search"), any()))
+                .thenReturn(new ToolService.ToolExecutionResult(
+                        true, new ToolPayload("found"), null));
+
+        NodeOutput output = invoke(node, NodeInput.fromMap(Map.of("query", "example")));
+
+        assertTrue(output.isSuccess());
+        assertEquals(Map.of("answer", "found"), output.getData("toolResult", null));
+    }
+
+    @Test
+    void nestedAgentFailureAndCancellationDoNotBecomeSuccessfulNodeResults() throws Exception {
+        AgentRuntime runtime = mock(AgentRuntime.class);
+        AgentCallConfig config = new AgentCallConfig();
+        config.setTargetAgentId("child");
+        AgentCallNode node = AgentCallNode.builder().config(config).agentRuntime(runtime).build();
+        Execution failed = new Execution("child", "v1", Map.of());
+        failed.start();
+        failed.fail("private child error");
+        Execution cancelled = new Execution("child", "v1", Map.of());
+        cancelled.start();
+        cancelled.cancel();
+        when(runtime.execute(eq(TRUSTED_ACTOR), eq("child"), any()))
+                .thenReturn(failed, cancelled);
+
+        NodeOutput failedOutput = invoke(node, trustedInput(Map.of()));
+        NodeOutput cancelledOutput = invoke(node, trustedInput(Map.of()));
+
+        assertFalse(failedOutput.isSuccess());
+        assertFalse(cancelledOutput.isSuccess());
+        assertNull(failedOutput.getData("agentResult", null));
+        assertFalse(failedOutput.getMsg().contains("private child error"));
+    }
+
+    @Test
+    void configuredChildAgentAndVersionCannotBeRedirectedByInput() throws Exception {
+        AgentRuntime runtime = mock(AgentRuntime.class);
+        AgentCallConfig config = new AgentCallConfig();
+        config.setTargetAgentId("allowed-child");
+        config.setTargetVersion("v1");
+        AgentCallNode node = AgentCallNode.builder().config(config).agentRuntime(runtime).build();
+        Execution completed = new Execution("allowed-child", "v1", Map.of());
+        completed.start();
+        completed.complete(Map.of("answer", "ok"));
+        when(runtime.execute(eq(TRUSTED_ACTOR), eq("allowed-child"), eq("v1"), any()))
+                .thenReturn(completed);
+
+        NodeOutput output = invoke(node, trustedInput(Map.of(
+                FieldKey.TARGET_AGENT_ID.key(), "unapproved-child",
+                FieldKey.TARGET_VERSION.key(), "v99",
+                "query", "hello")));
+
+        assertTrue(output.isSuccess());
+        assertEquals("allowed-child", output.getData(FieldKey.TARGET_AGENT_ID.key(), null));
+        assertEquals("v1", output.getData(FieldKey.TARGET_VERSION.key(), null));
+        verify(runtime).execute(eq(TRUSTED_ACTOR), eq("allowed-child"), eq("v1"), any());
+        verify(runtime, never()).execute(eq(TRUSTED_ACTOR), eq("unapproved-child"),
+                anyString(), any());
+    }
+
+    @Test
+    void dynamicChildTargetIsAvailableOnlyWhenTheNodeDoesNotConfigureOne() throws Exception {
+        AgentRuntime runtime = mock(AgentRuntime.class);
+        AgentCallNode node = AgentCallNode.builder().config(new AgentCallConfig())
+                .agentRuntime(runtime).build();
+        Execution completed = new Execution("selected-child", "v1", Map.of());
+        completed.start();
+        completed.complete(Map.of("answer", "ok"));
+        when(runtime.execute(eq(TRUSTED_ACTOR), eq("selected-child"), eq("v1"), any()))
+                .thenReturn(completed);
+
+        NodeOutput output = invoke(node, trustedInput(Map.of(
+                FieldKey.TARGET_AGENT_ID.key(), "selected-child",
+                FieldKey.TARGET_VERSION.key(), "v1", "query", "hello")));
+
+        assertTrue(output.isSuccess());
+        verify(runtime).execute(eq(TRUSTED_ACTOR), eq("selected-child"), eq("v1"),
+                argThat(childInput -> "hello".equals(childInput.get("query"))
+                        && !childInput.containsKey(FieldKey.TARGET_AGENT_ID.key())
+                        && !childInput.containsKey(FieldKey.TARGET_VERSION.key())));
+    }
+
+    @Test
+    void childCallWithoutATargetOrSuccessfulExecutionNeverReportsSuccess() throws Exception {
+        assertThrows(IllegalStateException.class, () -> AgentCallNode.builder().build());
+        AgentRuntime runtime = mock(AgentRuntime.class);
+        AgentCallNode noTarget = AgentCallNode.builder().agentRuntime(runtime).build();
+        NodeOutput missingTarget = invoke(noTarget, trustedInput(Map.of()));
+        assertFalse(missingTarget.isSuccess());
+        NodeOutput blankTarget = invoke(noTarget, trustedInput(Map.of(
+                FieldKey.TARGET_AGENT_ID.key(), "   ")));
+        assertFalse(blankTarget.isSuccess());
+        verifyNoInteractions(runtime);
+
+        AgentCallConfig config = new AgentCallConfig();
+        config.setTargetAgentId("child");
+        AgentCallNode call = AgentCallNode.builder().config(config).agentRuntime(runtime).build();
+        when(runtime.execute(eq(TRUSTED_ACTOR), eq("child"), any()))
+                .thenReturn(null)
+                .thenThrow(new IllegalStateException("private child detail"));
+
+        assertFalse(invoke(call, trustedInput(Map.of())).isSuccess());
+        NodeOutput failed = invoke(call, trustedInput(Map.of()));
+        assertFalse(failed.isSuccess());
+        assertFalse(failed.getMsg().contains("private child detail"));
     }
 
     private static NodeOutput invoke(Object node, NodeInput input) throws Exception {

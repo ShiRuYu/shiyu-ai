@@ -123,9 +123,13 @@ public class AiPlatformServiceImpl implements AiPlatformService {
     @Override
     public AiPlatformResponse updateResponse(
             ActorContext actor, Long id, AiPlatformRequest request) {
+        boolean clearApiKey = Boolean.TRUE.equals(request.getClearApiKey());
+        if (clearApiKey && StringUtils.isNotBlank(request.getApiKey())) {
+            throw new IllegalArgumentException("清除密钥与设置新密钥不能同时进行");
+        }
         AiPlatformBO bo = AiPlatformAssembler.toBO(request);
         bo.setId(id);
-        return AiPlatformAssembler.toResponse(updateBO(actor, bo));
+        return AiPlatformAssembler.toResponse(updateBO(actor, bo, clearApiKey));
     }
 
     /**
@@ -188,7 +192,7 @@ public class AiPlatformServiceImpl implements AiPlatformService {
         return aiPlatformRepository.create(actor.tenantId(), bo);
     }
 
-    private AiPlatformBO updateBO(ActorContext actor, AiPlatformBO bo) {
+    private AiPlatformBO updateBO(ActorContext actor, AiPlatformBO bo, boolean clearApiKey) {
         AiPlatformBO existing = null;
         if (StringUtils.isBlank(bo.getAdapterType()) || StringUtils.isBlank(bo.getApiKey())) {
             existing = aiPlatformRepository.selectById(actor.tenantId(), bo.getId());
@@ -196,7 +200,9 @@ public class AiPlatformServiceImpl implements AiPlatformService {
                 throw new IllegalArgumentException("平台不存在: " + bo.getId());
             }
         }
-        if (StringUtils.isBlank(bo.getApiKey())) {
+        if (clearApiKey) {
+            bo.setApiKey("");
+        } else if (StringUtils.isBlank(bo.getApiKey())) {
             bo.setApiKey(existing.getApiKey());
         }
         if (StringUtils.isBlank(bo.getAdapterType())) {

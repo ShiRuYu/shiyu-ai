@@ -23,8 +23,9 @@ function Invoke-Postgres {
     }
     Require-Command $(if ($Operation -eq 'baseline') { 'psql' } elseif ($Action -eq 'dump') { 'pg_dump' } else { 'pg_restore' })
     if ($Operation -eq 'baseline') {
-        & psql --set ON_ERROR_STOP=1 --file (Join-Path $repoRoot 'scripts/database/postgresql/baseline-schema.sql')
-        & psql --set ON_ERROR_STOP=1 --file (Join-Path $repoRoot 'scripts/database/postgresql/baseline-seed.sql')
+        & psql --set ON_ERROR_STOP=1 --single-transaction `
+            --file (Join-Path $repoRoot 'scripts/database/postgresql/baseline-schema.sql') `
+            --file (Join-Path $repoRoot 'scripts/database/postgresql/baseline-seed.sql')
     } elseif ($Action -eq 'dump') {
         & pg_dump --format=custom --file $File
     } else {

@@ -67,6 +67,33 @@ class PlatformUsageAccessImplTest {
             tenant.setStatus(0);
             assertFalse(access.canReadPlatformUsage(actor));
             tenant.setStatus(1);
+            tenant.setId(2L);
+            assertFalse(access.canReadPlatformUsage(actor));
+            tenant.setId(1L);
+            tenant.setDelFlag(1);
+            assertFalse(access.canReadPlatformUsage(actor));
+            tenant.setDelFlag(0);
+            role.setId(2L);
+            assertFalse(access.canReadPlatformUsage(actor));
+            role.setId(1L);
+            role.setTenantId(2L);
+            assertFalse(access.canReadPlatformUsage(actor));
+            role.setTenantId(1L);
+            role.setCode("tenant_super");
+            assertFalse(access.canReadPlatformUsage(actor));
+            role.setCode("super");
+            role.setDelFlag(1);
+            assertFalse(access.canReadPlatformUsage(actor));
+            role.setDelFlag(0);
+            assignment.setUserId(8L);
+            assertFalse(access.canReadPlatformUsage(actor));
+            assignment.setUserId(7L);
+            assignment.setTenantId(2L);
+            assertFalse(access.canReadPlatformUsage(actor));
+            assignment.setTenantId(1L);
+            assignment.setRoleId(2L);
+            assertFalse(access.canReadPlatformUsage(actor));
+            assignment.setRoleId(1L);
             when(permissions.selectCodesByRoleId(1L, tenantId)).thenReturn(List.of());
             assertFalse(access.canReadPlatformUsage(actor));
             return null;
@@ -109,5 +136,38 @@ class PlatformUsageAccessImplTest {
         assertFalse(access.canReadPlatformUsage(childTenant));
         assertFalse(access.canReadPlatformUsage(delegated));
         assertFalse(access.canReadPlatformUsage(null));
+    }
+
+    @Test
+    void rejectsIncompleteDefaultTenantIdentityBeforeRepositoryLookup() {
+        TenantId tenantId = new TenantId(1L);
+        UserId userId = new UserId(7L);
+        assertFalse(access.canReadPlatformUsage(new ActorContext(
+                tenantId, userId, new RoleId(1L), "super", null, null, false)));
+        assertFalse(access.canReadPlatformUsage(new ActorContext(
+                tenantId, userId, new RoleId(1L), "super", new TenantId(2L), null, false)));
+        assertFalse(access.canReadPlatformUsage(new ActorContext(
+                tenantId, userId, null, "super", tenantId, null, false)));
+        assertFalse(access.canReadPlatformUsage(new ActorContext(
+                tenantId, userId, new RoleId(1L), "tenant_super", tenantId, null, false)));
+        verifyNoInteractions(roles, assignments, permissions);
+    }
+
+    @Test
+    void rejectsMissingTenantAndRoleRecords() {
+        TenantId tenantId = new TenantId(1L);
+        ActorContext actor = new ActorContext(tenantId, new UserId(7L), new RoleId(1L),
+                "super", tenantId, null, false);
+        TenantScope.withTenant(tenantId, () -> {
+            assertFalse(access.canReadPlatformUsage(actor));
+            TenantBO tenant = new TenantBO();
+            tenant.setId(1L);
+            tenant.setStatus(1);
+            tenant.setDelFlag(0);
+            when(roles.selectTenantById(tenantId)).thenReturn(tenant);
+            assertFalse(access.canReadPlatformUsage(actor));
+            return null;
+        });
+        verifyNoInteractions(assignments, permissions);
     }
 }

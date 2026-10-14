@@ -34,6 +34,35 @@ class AuthCodeServiceImplTest {
             new AuthCodeServiceImpl(repository, roleRepository, tenantRepository);
 
     @Test
+    void invalidBatchDoesNotPartiallyChangeRolePermissionsAndRetryAddsOnlyMissingCode() {
+        TenantBO tenant = new TenantBO();
+        tenant.setStatus(1);
+        tenant.setDelFlag(0);
+        when(roleRepository.isRoleOwnedByTenant(7L, ACTOR.tenantId())).thenReturn(true);
+        when(tenantRepository.selectById(5L)).thenReturn(tenant);
+        when(tenantRepository.selectDescendantIds(ACTOR.tenantId()))
+                .thenReturn(List.of(5L));
+        AuthCodeBO existing = code(3L, "agent:read");
+        AuthCodeBO fresh = code(4L, "agent:write");
+        when(repository.selectAvailableByIds(List.of(3L, 4L), ACTOR.tenantId()))
+                .thenReturn(List.of(existing))
+                .thenReturn(List.of(existing, fresh));
+        when(repository.selectByTenantId(ACTOR.tenantId())).thenReturn(List.of(existing));
+
+        assertFalse(service.grant(ACTOR, 7L, ACTOR.tenantId(), List.of(3L, 4L)));
+        assertFalse(service.replace(ACTOR, 7L, ACTOR.tenantId(),
+                List.of("agent:read", "agent:write")));
+        verify(repository, never()).insertRoleAssignments(any());
+        verify(repository, never()).deleteRoleAssignments(any(), any(), any());
+
+        when(repository.selectByRoleIdAndTenantId(7L, ACTOR.tenantId()))
+                .thenReturn(List.of(existing));
+        assertTrue(service.grant(ACTOR, 7L, ACTOR.tenantId(), List.of(3L, 4L)));
+        verify(repository).insertRoleAssignments(argThat(records ->
+                records.size() == 1 && Long.valueOf(4L).equals(records.get(0).getAuthCodeId())));
+    }
+
+    @Test
     void listsPagesCreatesUpdatesAndDeletesTenantCodes() {
         AuthCodeBO code = code(1L, "agent:read");
         when(repository.selectByTenantId(ACTOR.tenantId())).thenReturn(List.of(code));
@@ -155,6 +184,49 @@ class AuthCodeServiceImplTest {
         when(roleRepository.isRoleOwnedByTenant(7L, new TenantId(5L))).thenReturn(true);
         when(tenantRepository.selectById(5L)).thenReturn(disabled);
         assertFalse(service.revoke(ACTOR, 7L, ACTOR.tenantId(), 3L));
+    }
+
+    @Test
+    void invalidAndVeryLargePaginationInputsStayWithinResultBounds() {
+        when(repository.selectByTenantId(ACTOR.tenantId()))
+                .thenReturn(List.of(code(1L, "agent:read"), code(2L, "agent:write")));
+        AuthCodePageRequest request = new AuthCodePageRequest();
+
+        request.setPageNum(-1);
+        request.setPageSize(-1);
+        assertEquals(2, service.page(ACTOR, request).getItems().size());
+
+        request.setPageNum(Integer.MAX_VALUE);
+        request.setPageSize(Integer.MAX_VALUE);
+        assertTrue(service.page(ACTOR, request).getItems().isEmpty());
+
+        request.setPageNum(1);
+        assertEquals(2, service.page(ACTOR, request).getItems().size());
+    }
+
+    @Test
+    void filtersBeforePaginatingAndSkipsCodesWithMissingSearchFields() {
+        AuthCodeBO missingCode = code(1L, null);
+        missingCode.setName("Reader");
+        AuthCodeBO missingName = code(2L, "agent:read");
+        missingName.setName(null);
+        AuthCodeBO matching = code(3L, "agent:read");
+        matching.setName("Reader");
+        AuthCodeBO other = code(4L, "agent:write");
+        other.setName("Writer");
+        when(repository.selectByTenantId(ACTOR.tenantId()))
+                .thenReturn(List.of(other, matching, missingName, missingCode));
+        AuthCodePageRequest request = new AuthCodePageRequest();
+        request.setCode("agent");
+        request.setName("Reader");
+        request.setPageNum(1);
+        request.setPageSize(1);
+
+        assertEquals(1, service.page(ACTOR, request).getTotal());
+        assertEquals(3L, service.page(ACTOR, request).getItems().getFirst().getId());
+
+        request.setPageNum(2);
+        assertTrue(service.page(ACTOR, request).getItems().isEmpty());
     }
 
     @Test

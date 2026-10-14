@@ -55,7 +55,8 @@ def main() -> int:
         artifact_id = (ET.parse(pom).findtext("m:artifactId", default="", namespaces=NS) or "").strip()
         if not artifact_id:
             continue
-        if pom.parent.name != artifact_id:
+        # The checkout directory may be chosen by a worktree or CI runner.
+        if pom != ROOT / "pom.xml" and pom.parent.name != artifact_id:
             violations.append(
                 f"{pom.relative_to(ROOT)}: directory '{pom.parent.name}' != artifactId '{artifact_id}'"
             )

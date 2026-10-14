@@ -258,14 +258,18 @@ shiyu:
     event:
       provider: in-process # in-process / postgres-outbox / kafka
   ai:
+    tenant-id: ${SHIYU_AI_TENANT_ID:1} # 内置模型配置所属租户；部署时按实际租户覆盖
+    platform-key-encryption-key: ${SHIYU_AI_PLATFORM_KEY_ENCRYPTION_KEY:} # Base64 编码的 32 字节主密钥
     ollama:
       base-url: http://localhost:11434
       model: gemma3:4b
     deepseek:
       base-url: https://api.deepseek.com
       api-key: ${AI_DEEPSEEK_API_KEY:}
-      model: deepseek-v4-flash
+      model: deepseek-flash
 ```
+
+平台管理页面保存的 API Key 使用该主密钥进行 AES-GCM 加密，密文绑定租户；已有明文凭证在应用启动时迁移。只要数据库中存在非空平台凭证，启动时就必须提供相同的 `SHIYU_AI_PLATFORM_KEY_ENCRYPTION_KEY`，否则启动失败。各实例应使用同一主密钥；请在部署平台的秘密变量中保存并备份，不能随意更换。单个配置租户也可通过 `AI_DEEPSEEK_API_KEY` 或运行控制台的加密启动配置提供 DeepSeek 密钥，无须在平台表单中重复填写。
 
 ### 启动
 

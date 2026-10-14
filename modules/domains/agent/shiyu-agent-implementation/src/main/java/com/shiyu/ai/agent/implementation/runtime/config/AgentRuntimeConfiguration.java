@@ -37,13 +37,15 @@ public class AgentRuntimeConfiguration {
             AgentExecutionRepository executionRepository,
             AgentCheckpointRepository checkpointRepository,
             EventPublisher eventPublisher,
-            AiRuntimeService runtime) {
+            AiRuntimeService runtime,
+            com.shiyu.ai.agent.implementation.runtime.service.ToolApprovalService approvals) {
         return new AgentRuntimeImpl(
                 cacheManager,
                 agentLoader,
                 executionRepository,
                 checkpointRepository,
                 eventPublisher,
-                runtime);
+                runtime,
+                approvals);
     }
 }

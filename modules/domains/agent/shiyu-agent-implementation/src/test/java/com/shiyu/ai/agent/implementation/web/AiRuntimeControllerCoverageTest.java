@@ -19,8 +19,10 @@ import com.shiyu.ai.kernel.context.UserId;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 验证 AI Runtime Controller Coverage 相关功能、边界条件、异常路径和协作行为。
@@ -138,6 +140,7 @@ class AiRuntimeControllerCoverageTest {
             assertEquals(1, controller.trajectory("run-1").getData().size());
             assertTrue(controller.promptSnapshot("run-1").getData().containsKey("promptHash"));
             assertTrue(controller.cancel("run-1").isSuccess());
+            verify(agents).cancel(ACTOR, "exec-1");
         }
     }
 
@@ -269,13 +272,128 @@ class AiRuntimeControllerCoverageTest {
         try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
             ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
             ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
-            assertEquals(
-                    2,
-                    controller
-                            .events("run-follow", 0, 10, true, 1000, null)
-                            .collectList()
-                            .block()
-                            .size());
+            var events = controller.events("run-follow", 0, 1000, true, 1000, null)
+                    .collectList().block();
+            assertEquals(1, events.size());
+            assertEquals(AiRunEventType.RUN_CANCELLED, events.get(0).data().type());
+        }
+    }
+
+    @Test
+    void followingStreamSendsHeartbeatBeforeLaterTerminalEvent() {
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AiRuntimeController controller = new AiRuntimeController(runtime, mock(AgentRuntime.class));
+        AiRun run = run("run-follow", null, null);
+        AiRunEvent terminal = new AiRunEvent("run-follow", new TenantId(7), 2,
+                AiRunEventType.RUN_COMPLETED, "{}", true, Instant.now());
+        AtomicInteger polls = new AtomicInteger();
+        when(runtime.requireRun("run-follow", new TenantId(7), 9)).thenReturn(run);
+        when(runtime.events(eq("run-follow"), eq(new TenantId(7)), eq(9L), anyLong(), eq(1000)))
+                .thenAnswer(call -> polls.getAndIncrement() == 0 ? List.of() : List.of(terminal));
+
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            var events = controller.events("run-follow", 0, 1000, true, 2000, null)
+                    .collectList().block(Duration.ofSeconds(3));
+            assertEquals("heartbeat", events.get(0).comment());
+            assertEquals(AiRunEventType.RUN_COMPLETED, events.get(1).data().type());
+            assertEquals(2, events.size());
+        }
+    }
+
+    @Test
+    void cancelPropagatesConflictWhenExecutionIsStillRunning() {
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agents = mock(AgentRuntime.class);
+        AiRuntimeController controller = new AiRuntimeController(runtime, agents);
+        AiRun run = run("run-1", null, "exec-1");
+        when(runtime.requireRun("run-1", new TenantId(7), 9)).thenReturn(run);
+        doThrow(new IllegalStateException("execution changed state"))
+                .when(agents).cancel(ACTOR, "exec-1");
+        when(agents.getStatus(ACTOR, "exec-1"))
+                .thenReturn(com.shiyu.ai.agent.implementation.execution.ExecutionStatus.RUNNING);
+
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(ACTOR);
+            assertThrows(IllegalStateException.class, () -> controller.cancel("run-1"));
+            verify(runtime, never()).finish(eq("run-1"), any(), anyLong(), any(), any());
+        }
+    }
+
+    @Test
+    void cancelReturnsThePersistedTerminalRunWhenAgentFinishesConcurrently() {
+        for (var terminalStatus : List.of(
+                com.shiyu.ai.agent.implementation.execution.ExecutionStatus.COMPLETED,
+                com.shiyu.ai.agent.implementation.execution.ExecutionStatus.FAILED,
+                com.shiyu.ai.agent.implementation.execution.ExecutionStatus.CANCELLED)) {
+            AiRuntimeService runtime = mock(AiRuntimeService.class);
+            AgentRuntime agents = mock(AgentRuntime.class);
+            AiRuntimeController controller = new AiRuntimeController(runtime, agents);
+            AiRun running = mock(AiRun.class);
+            AiRun terminal = mock(AiRun.class);
+            when(running.status()).thenReturn(AiRunStatus.RUNNING);
+            when(running.executionId()).thenReturn("exec-1");
+            when(runtime.requireRun("run-1", new TenantId(7), 9))
+                    .thenReturn(running, terminal);
+            doThrow(new IllegalStateException("execution changed state"))
+                    .when(agents).cancel(ACTOR, "exec-1");
+            when(agents.getStatus(ACTOR, "exec-1")).thenReturn(terminalStatus);
+
+            try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+                ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+                ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+                ignored.when(ActorContextHttpAdapter::currentActor).thenReturn(ACTOR);
+                assertSame(terminal, controller.cancel("run-1").getData());
+            }
+            verify(runtime, never()).finish(eq("run-1"), any(), anyLong(), any(), any());
+        }
+    }
+
+    @Test
+    void cancellingAnAlreadyTerminalRunDoesNotTouchTheAgentExecution() {
+        for (AiRunStatus status : List.of(
+                AiRunStatus.COMPLETED, AiRunStatus.FAILED, AiRunStatus.CANCELLED)) {
+            AiRuntimeService runtime = mock(AiRuntimeService.class);
+            AgentRuntime agents = mock(AgentRuntime.class);
+            AiRun terminal = mock(AiRun.class);
+            when(terminal.status()).thenReturn(status);
+            when(runtime.requireRun("run-1", new TenantId(7), 9)).thenReturn(terminal);
+            try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+                ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+                ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+                assertSame(terminal,
+                        new AiRuntimeController(runtime, agents).cancel("run-1").getData());
+            }
+            verifyNoInteractions(agents);
+            verify(runtime, never()).finish(eq("run-1"), any(), anyLong(), any(), any());
+        }
+    }
+
+    @Test
+    void cancellingARunWithoutAnAgentExecutionFinishesItsOwnRuntimeRecord() {
+        for (String executionId : new String[] {null, ""}) {
+            AiRuntimeService runtime = mock(AiRuntimeService.class);
+            AgentRuntime agents = mock(AgentRuntime.class);
+            AiRun running = mock(AiRun.class);
+            AiRun cancelled = mock(AiRun.class);
+            when(running.status()).thenReturn(AiRunStatus.RUNNING);
+            when(running.executionId()).thenReturn(executionId);
+            when(runtime.requireRun("run-1", new TenantId(7), 9)).thenReturn(running);
+            when(runtime.finish("run-1", new TenantId(7), 9, AiRunStatus.CANCELLED,
+                    "CLIENT_CANCELLED")).thenReturn(cancelled);
+
+            try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+                ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+                ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+                assertSame(cancelled,
+                        new AiRuntimeController(runtime, agents).cancel("run-1").getData());
+            }
+            verifyNoInteractions(agents);
+            verify(runtime).finish("run-1", new TenantId(7), 9, AiRunStatus.CANCELLED,
+                    "CLIENT_CANCELLED");
         }
     }
 
