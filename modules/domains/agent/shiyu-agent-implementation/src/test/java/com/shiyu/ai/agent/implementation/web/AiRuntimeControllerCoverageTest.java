@@ -14,6 +14,7 @@ import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
@@ -299,6 +300,51 @@ class AiRuntimeControllerCoverageTest {
             assertEquals("heartbeat", events.get(0).comment());
             assertEquals(AiRunEventType.RUN_COMPLETED, events.get(1).data().type());
             assertEquals(2, events.size());
+        }
+    }
+
+    @Test
+    void followingGenerationStreamBindsTenantOnPollingThread() {
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AiRuntimeController controller = new AiRuntimeController(runtime, mock(AgentRuntime.class));
+        AiRun run = run("run-generation-follow", "gen-follow", null);
+        AiRunEvent terminal =
+                new AiRunEvent(
+                        "run-generation-follow",
+                        new TenantId(7),
+                        1,
+                        AiRunEventType.RUN_COMPLETED,
+                        "{}",
+                        true,
+                        Instant.now());
+        when(runtime.requireGenerationRun("gen-follow", new TenantId(7), 9)).thenReturn(run);
+        when(
+                        runtime.events(
+                                eq("run-generation-follow"),
+                                eq(new TenantId(7)),
+                                eq(9L),
+                                anyLong(),
+                                eq(1000)))
+                .thenAnswer(
+                        invocation -> {
+                            TenantScope.requireMatches(invocation.getArgument(1));
+                            return List.of(terminal);
+                        });
+
+        try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
+            ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+            ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+            var events =
+                    TenantScope.withTenant(
+                            new TenantId(7),
+                            () ->
+                                    controller
+                                            .generationEvents("gen-follow", 0, true, 1000, null)
+                                            .collectList()
+                                            .block(Duration.ofSeconds(3)));
+
+            assertEquals(1, events.size());
+            assertEquals(AiRunEventType.RUN_COMPLETED, events.get(0).data().type());
         }
     }
 

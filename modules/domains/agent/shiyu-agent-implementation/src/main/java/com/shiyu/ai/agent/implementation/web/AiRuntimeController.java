@@ -12,6 +12,7 @@ import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import jakarta.validation.Valid;
 
@@ -372,6 +373,8 @@ public class AiRuntimeController {
     private Flux<org.springframework.http.codec.ServerSentEvent<AiRunEvent>> eventStream(
             AiRun run, long afterSeq, boolean follow, int waitMs, int limit) {
         AtomicLong cursor = new AtomicLong(Math.max(0, afterSeq));
+        TenantId runTenant = run.tenantId();
+        long ownerUserId = run.ownerUserId().value();
         Flux<org.springframework.http.codec.ServerSentEvent<AiRunEvent>> poll =
                 Flux.interval(Duration.ZERO, Duration.ofMillis(500))
                         .concatMap(
@@ -379,12 +382,15 @@ public class AiRuntimeController {
                                         Flux.defer(
                                                 () -> {
                                                     List<AiRunEvent> events =
-                                                            runtime.events(
-                                                                    run.id(),
-                                                                    run.tenantId(),
-                                                                    run.ownerUserId().value(),
-                                                                    cursor.get(),
-                                                                    limit);
+                                                            TenantScope.withTenant(
+                                                                    runTenant,
+                                                                    () ->
+                                                                            runtime.events(
+                                                                                    run.id(),
+                                                                                    runTenant,
+                                                                                    ownerUserId,
+                                                                                    cursor.get(),
+                                                                                    limit));
                                                     if (events.isEmpty()) {
                                                         return Flux.just(
                                                                 org.springframework.http.codec
@@ -418,12 +424,15 @@ public class AiRuntimeController {
                                                 }));
         if (!follow)
             return Flux.fromIterable(
-                            runtime.events(
-                                    run.id(),
-                                    run.tenantId(),
-                                    run.ownerUserId().value(),
-                                    afterSeq,
-                                    limit))
+                            TenantScope.withTenant(
+                                    runTenant,
+                                    () ->
+                                            runtime.events(
+                                                    run.id(),
+                                                    runTenant,
+                                                    ownerUserId,
+                                                    afterSeq,
+                                                    limit)))
                     .map(
                             event ->
                                     org.springframework.http.codec.ServerSentEvent
