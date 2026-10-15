@@ -23,7 +23,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/** Verifies required audit records reach H2 and join the caller's transaction. */
+/** 验证必需的审计记录会写入 H2，并加入调用方事务。 */
 class AuditServicePersistenceIntegrationTest {
     private EmbeddedDatabase database;
     private JdbcTemplate jdbc;

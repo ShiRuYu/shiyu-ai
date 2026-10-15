@@ -10,7 +10,7 @@ import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 
-/** Suppresses LangGraph's error-level stack trace when an interrupted graph worker was cancelled. */
+/** 过滤 LangGraph 中因工作线程取消而产生的 error 级异常堆栈日志。 */
 @Plugin(
         name = "AgentCancellationFilter",
         category = Core.CATEGORY_NAME,
@@ -22,7 +22,7 @@ public final class AgentCancellationFilter extends AbstractFilter {
 
     private AgentCancellationFilter() {}
 
-    /** Create the filter configured by Log4j. */
+    /** 创建由 Log4j 配置文件使用的过滤器实例。 */
     @PluginFactory
     public static AgentCancellationFilter createFilter() {
         return new AgentCancellationFilter();

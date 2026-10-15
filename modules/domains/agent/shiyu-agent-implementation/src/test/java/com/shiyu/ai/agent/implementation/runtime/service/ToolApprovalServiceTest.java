@@ -98,6 +98,7 @@ class ToolApprovalServiceTest {
         }
     }
 
+    /** 模拟未执行审批结果写入时发生的并发冲突。 */
     private static final class NotExecutedResolutionConflictRepository
             extends InMemoryToolApprovalRepository {
         @Override

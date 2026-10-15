@@ -20,6 +20,7 @@ import org.apache.logging.log4j.message.SimpleMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** 验证 Log4j 对取消日志过滤器的配置与加载。 */
 class NodeApprovalRequiredFilterTest {
 
     @TempDir

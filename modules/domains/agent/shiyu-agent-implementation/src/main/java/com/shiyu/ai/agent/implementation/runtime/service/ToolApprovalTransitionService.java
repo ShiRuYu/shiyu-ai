@@ -9,20 +9,20 @@ import com.shiyu.ai.kernel.context.TenantId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Coordinates approval state changes with their corresponding runtime events. */
+/** 协调审批状态变更及其对应的运行时事件。 */
 @Service
 public class ToolApprovalTransitionService {
 
     private final ToolApprovalService approvals;
     private final AiRuntimeService runtime;
 
-    /** Creates a coordinator for approval and runtime persistence. */
+    /** 创建用于协调审批与运行状态持久化的服务。 */
     public ToolApprovalTransitionService(ToolApprovalService approvals, AiRuntimeService runtime) {
         this.approvals = approvals;
         this.runtime = runtime;
     }
 
-    /** Creates an approval only while its run is active and records the matching event. */
+    /** 仅在运行仍处于活动状态时创建审批，并记录对应事件。 */
     @Transactional
     public ToolApproval request(
             String runId,
@@ -42,7 +42,7 @@ public class ToolApprovalTransitionService {
         return approval;
     }
 
-    /** Applies an approval decision and records it atomically with the run event. */
+    /** 应用审批决定，并与运行事件在同一事务中保存。 */
     @Transactional
     public ToolApproval decide(
             String id, TenantId tenantId, long ownerUserId, ToolApprovalStatus status) {

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+/** 验证取消标记仅影响被标记的工作线程，并在清除后失效。 */
 class AgentCancellationLogContextTest {
 
     @Test

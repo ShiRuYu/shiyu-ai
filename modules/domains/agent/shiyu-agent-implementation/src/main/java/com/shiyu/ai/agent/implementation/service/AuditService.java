@@ -26,7 +26,7 @@ public class AuditService {
      * eventPublisher 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final EventPublisher eventPublisher;
-    /** Repository used for audit writes that must join a business transaction. */
+    /** 用于在业务事务中持久化审计记录的仓储。 */
     private final AuditLogRepository auditLogRepository;
 
     /**
@@ -39,10 +39,10 @@ public class AuditService {
     }
 
     /**
-     * Creates the audit service with both best-effort event publishing and durable persistence.
+     * 创建兼顾尽力发布事件与持久化审计记录的服务。
      *
-     * @param eventPublisher publisher used by ordinary audit events
-     * @param auditLogRepository repository used by required synchronous writes
+     * @param eventPublisher 普通审计事件发布器。
+     * @param auditLogRepository 必须同步写入时使用的审计仓储。
      */
     @Autowired
     public AuditService(EventPublisher eventPublisher, AuditLogRepository auditLogRepository) {
