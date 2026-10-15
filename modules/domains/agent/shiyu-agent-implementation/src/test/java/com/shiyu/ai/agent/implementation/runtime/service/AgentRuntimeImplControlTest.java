@@ -133,11 +133,15 @@ class AgentRuntimeImplControlTest {
                 mock(EventPublisher.class), runs);
 
         List<Map<String, Object>> events = runtime.executeStream(ACTOR, "agent-1",
-                Map.of("path", "a")).collectList().block(java.time.Duration.ofSeconds(5));
+                Map.of("path", "a"))
+                .takeUntil(event -> "PAUSED".equals(event.get("status")))
+                .collectList().block(java.time.Duration.ofSeconds(5));
 
         assertEquals("STARTED", events.getFirst().get("status"));
         assertEquals("PAUSED", events.getLast().get("status"));
         assertTrue(events.getLast().containsKey("approvalId"));
+        assertEquals(ExecutionStatus.PAUSED, runtime.getStatus(ACTOR,
+                (String) events.getLast().get("executionId")));
         assertEquals(1, approvals.list((String) events.getFirst().get("runtimeRunId"),
                 ACTOR.tenantId(), ACTOR.userId().value()).size());
         verify(tools, never()).execute(anyString(), any());

@@ -211,10 +211,15 @@ final class AgentExecutionLifecycle {
             return Flux.<Map<String, Object>>create(
                         sink -> TenantScope.withTenant(actor.tenantId(), () -> {
                             AtomicBoolean clientCancelled = new AtomicBoolean();
+                            AtomicBoolean approvalPaused = new AtomicBoolean();
                             AtomicReference<Thread> workerThread =
                                     new AtomicReference<>(Thread.currentThread());
                             sink.onCancel(
                                     () -> {
+                                        if (approvalPaused.get()
+                                                || execution.getStatus() == ExecutionStatus.PAUSED) {
+                                            return;
+                                        }
                                         clientCancelled.set(true);
                                         if (!execution.cancel()) return;
                                         Thread worker = workerThread.get();
@@ -339,6 +344,7 @@ final class AgentExecutionLifecycle {
                                 if (approvalRequired != null) {
                                     execution.pause();
                                     stateStore.save(actor, execution);
+                                    approvalPaused.set(true);
                                     sink.next(Map.of(
                                             "status", "PAUSED",
                                             "executionId", execution.getExecutionId(),
