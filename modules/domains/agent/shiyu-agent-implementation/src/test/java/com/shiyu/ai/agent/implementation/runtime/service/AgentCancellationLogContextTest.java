@@ -22,4 +22,17 @@ class AgentCancellationLogContextTest {
         AgentCancellationLogContext.clear(cancelled);
         assertFalse(AgentCancellationLogContext.isMarked(cancelled.threadId()));
     }
+
+    @Test
+    void ignoresMissingWorkerWhenMarkingOrClearing() {
+        Thread worker = Thread.currentThread();
+        AgentCancellationLogContext.mark(worker);
+        try {
+            AgentCancellationLogContext.mark(null);
+            AgentCancellationLogContext.clear(null);
+            assertTrue(AgentCancellationLogContext.isMarked(worker.threadId()));
+        } finally {
+            AgentCancellationLogContext.clear(worker);
+        }
+    }
 }

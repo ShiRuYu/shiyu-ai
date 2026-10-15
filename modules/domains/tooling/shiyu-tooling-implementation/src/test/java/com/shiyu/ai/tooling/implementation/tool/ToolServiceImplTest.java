@@ -264,4 +264,12 @@ class ToolServiceImplTest {
         assertTrue(service.execute("TYPE_UNTYPED", Map.of("value", new Object())).success());
         assertTrue(service.execute("TYPE_BLANK", Map.of("value", new Object())).success());
     }
+
+    @Test
+    void acceptsUnknownDeclaredTypesForBackwardCompatibility() {
+        service.registerTool("TYPE_UNKNOWN", "unknown declared type",
+                Map.of("value", new ParameterInfo("timestamp", "value", true)), p -> "called");
+
+        assertTrue(service.execute("TYPE_UNKNOWN", Map.of("value", new Object())).success());
+    }
 }
