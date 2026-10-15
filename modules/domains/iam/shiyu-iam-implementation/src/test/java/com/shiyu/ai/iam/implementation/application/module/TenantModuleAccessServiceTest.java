@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -32,6 +33,9 @@ class TenantModuleAccessServiceTest {
     void rejectsMissingTenantOrModuleIdentifiers() {
         assertThrows(IllegalArgumentException.class, () -> service.isEnabled(null, "education"));
         assertThrows(IllegalArgumentException.class, () -> service.isEnabled(new TenantId(7L), " "));
+        assertThrows(IllegalArgumentException.class, () -> service.isEnabled(new TenantId(7L), null));
+        assertThrows(IllegalArgumentException.class, () -> service.initializeTenantDefaults(null));
+        verifyNoInteractions(repository);
     }
 
     @Test

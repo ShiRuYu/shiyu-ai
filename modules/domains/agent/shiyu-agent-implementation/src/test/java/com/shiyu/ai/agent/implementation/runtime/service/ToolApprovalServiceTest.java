@@ -65,6 +65,47 @@ class ToolApprovalServiceTest {
         }
     }
 
+    /** 模拟定时过期扫描尚未处理到期记录。 */
+    private static final class ExpirySweepMissRepository extends InMemoryToolApprovalRepository {
+        @Override
+        public int expirePending(TenantId tenantId, long ownerUserId) {
+            return 0;
+        }
+    }
+
+    /** 模拟另一个请求先完成审批决策，当前请求随后遇到 CAS 冲突。 */
+    private static final class DecisionConflictRepository extends InMemoryToolApprovalRepository {
+        @Override
+        public int update(ToolApproval approval, ToolApprovalStatus expectedStatus) {
+            if (expectedStatus == ToolApprovalStatus.PENDING
+                    && approval.status() == ToolApprovalStatus.APPROVED) {
+                ToolApproval current = find(
+                        approval.id(), new TenantId(approval.tenantId()), approval.ownerUserId())
+                        .orElseThrow();
+                ToolApproval rejected = new ToolApproval(
+                        current.id(), current.runId(), current.tenantId(), current.ownerUserId(),
+                        current.toolName(), current.argumentsRedacted(), ToolApprovalStatus.REJECTED,
+                        current.createdAt(), Instant.now(), current.expiresAt());
+                super.update(rejected, expectedStatus);
+                return 0;
+            }
+            return super.update(approval, expectedStatus);
+        }
+    }
+
+    /** 模拟另一个执行请求先占用已批准的工具调用。 */
+    private static final class ClaimConflictRepository extends InMemoryToolApprovalRepository {
+        @Override
+        public int update(ToolApproval approval, ToolApprovalStatus expectedStatus) {
+            if (expectedStatus == ToolApprovalStatus.APPROVED
+                    && approval.status() == ToolApprovalStatus.CLAIMED) {
+                super.update(approval, expectedStatus);
+                return 0;
+            }
+            return super.update(approval, expectedStatus);
+        }
+    }
+
     @Test
     void concurrentClaimsAllowOnlyOneExecution() throws Exception {
         ToolApprovalService service = new ToolApprovalService(new InMemoryToolApprovalRepository());
@@ -89,6 +130,19 @@ class ToolApprovalServiceTest {
         }
         assertEquals(ToolApprovalStatus.CLAIMED,
                 service.require(pending.id(), new TenantId(1), 2).status());
+    }
+
+    @Test
+    void claimReportsConcurrentWinnerAfterApprovalIsRead() {
+        InMemoryToolApprovalRepository repository = new ClaimConflictRepository();
+        ToolApprovalService service = new ToolApprovalService(repository);
+        ToolApproval pending = service.request("run-1", new TenantId(1), 2, "tool", "hash");
+        service.decide(pending.id(), new TenantId(1), 2, ToolApprovalStatus.APPROVED);
+
+        assertThrows(IllegalStateException.class, () -> service.claimForExecution(
+                pending.id(), new TenantId(1), 2, "run-1", "tool", "hash"));
+        assertEquals(ToolApprovalStatus.CLAIMED,
+                repository.find(pending.id(), new TenantId(1), 2).orElseThrow().status());
     }
 
     @Test
@@ -133,6 +187,40 @@ class ToolApprovalServiceTest {
                 new ToolApprovalService(repository)
                         .decide("approval-1", new TenantId(1), 2, ToolApprovalStatus.APPROVED);
         assertEquals(ToolApprovalStatus.EXPIRED, result.status());
+    }
+
+    @Test
+    void decisionMarksExpiredWhenExpirySweepMissesPendingApproval() {
+        InMemoryToolApprovalRepository repository = new ExpirySweepMissRepository();
+        Instant created = Instant.now().minusSeconds(10);
+        ToolApproval pending = new ToolApproval(
+                "approval-expired", "run-1", 1, 2, "tool", "{}",
+                ToolApprovalStatus.PENDING, created, null, Instant.now().minusSeconds(1));
+        repository.insert(pending);
+
+        ToolApproval result = new ToolApprovalService(repository).decide(
+                pending.id(), new TenantId(1), 2, ToolApprovalStatus.APPROVED);
+
+        assertEquals(ToolApprovalStatus.EXPIRED, result.status());
+        assertEquals(ToolApprovalStatus.EXPIRED,
+                repository.find(pending.id(), new TenantId(1), 2).orElseThrow().status());
+    }
+
+    @Test
+    void decisionReturnsTheWinningStateAfterCompareAndSetConflict() {
+        InMemoryToolApprovalRepository repository = new DecisionConflictRepository();
+        Instant now = Instant.now();
+        ToolApproval pending = new ToolApproval(
+                "approval-conflict", "run-1", 1, 2, "tool", "{}",
+                ToolApprovalStatus.PENDING, now, null, now.plusSeconds(60));
+        repository.insert(pending);
+
+        ToolApproval result = new ToolApprovalService(repository).decide(
+                pending.id(), new TenantId(1), 2, ToolApprovalStatus.APPROVED);
+
+        assertEquals(ToolApprovalStatus.REJECTED, result.status());
+        assertEquals(ToolApprovalStatus.REJECTED,
+                repository.find(pending.id(), new TenantId(1), 2).orElseThrow().status());
     }
 
     @Test
