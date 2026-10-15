@@ -15,6 +15,7 @@ import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.agent.implementation.runtime.service.ToolExecutionPipeline;
 import com.shiyu.ai.agent.implementation.checkpoint.AgentGraphCheckpointSaver;
 import com.shiyu.ai.tooling.contract.api.ToolService;
+import com.shiyu.ai.tooling.contract.api.ToolService.ToolExecutionContext;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -198,16 +199,17 @@ public class ToolCallNode extends BaseNode {
                         throw new IllegalStateException("runtime run owner does not match authenticated actor");
                     }
                     pipelineResult =
-                            executionPipeline.execute(
-                                    run, request, args -> executeTool(toolName, args));
+                            executionPipeline.executeWithContext(
+                                    run, request, (args, context) ->
+                                            executeTool(toolName, args, context));
                 } else {
                     pipelineResult =
-                            executionPipeline.executeById(
+                            executionPipeline.executeByIdWithContext(
                                     String.valueOf(runtimeRunId),
                                     actor.tenantId(),
                                     actor.userId().value(),
                                     request,
-                                    args -> executeTool(toolName, args));
+                                    (args, context) -> executeTool(toolName, args, context));
                 }
                 if (pipelineResult.status()
                         == ToolExecutionPipeline.Result.Status.APPROVAL_REQUIRED) {
@@ -249,6 +251,15 @@ public class ToolCallNode extends BaseNode {
 
     private Object executeTool(String toolName, java.util.Map<String, Object> args) {
         ToolService.ToolExecutionResult value = toolService.execute(toolName, args);
+        if (!value.success()) throw new IllegalStateException(value.errorMessage());
+        return value.result();
+    }
+
+    private Object executeTool(
+            String toolName,
+            java.util.Map<String, Object> args,
+            ToolExecutionContext context) {
+        ToolService.ToolExecutionResult value = toolService.execute(toolName, args, context);
         if (!value.success()) throw new IllegalStateException(value.errorMessage());
         return value.result();
     }

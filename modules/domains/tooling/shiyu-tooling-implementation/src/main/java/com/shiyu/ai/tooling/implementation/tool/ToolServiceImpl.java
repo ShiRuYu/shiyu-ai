@@ -1,6 +1,7 @@
 package com.shiyu.ai.tooling.implementation.tool;
 
 import com.shiyu.ai.tooling.contract.api.ToolService;
+import com.shiyu.ai.tooling.contract.api.ToolService.ToolExecutionContext;
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolDescriptor;
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolDescriptor.ParameterInfo;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,7 +30,7 @@ public class ToolServiceImpl implements ToolService {
     private final Map<String, McpToolDescriptor> toolRegistry = new ConcurrentHashMap<>();
 
     /** 工具名 → 执行器 */
-    private final Map<String, Function<Map<String, Object>, Object>> executorRegistry =
+    private final Map<String, BiFunction<Map<String, Object>, ToolExecutionContext, Object>> executorRegistry =
             new ConcurrentHashMap<>();
 
     /**
@@ -91,8 +93,28 @@ public class ToolServiceImpl implements ToolService {
                         "custom",
                         false);
         toolRegistry.put(name, descriptor);
-        executorRegistry.put(name, executor);
+        executorRegistry.put(name, (toolArguments, context) -> executor.apply(toolArguments));
         log.info("工具已注册: {} - {}", name, description);
+    }
+
+    /** 注册可读取稳定操作标识的外部工具执行器。 */
+    public void registerToolWithContext(
+            String name,
+            String description,
+            Map<String, ParameterInfo> parameters,
+            BiFunction<Map<String, Object>, ToolExecutionContext, Object> executor) {
+        McpToolDescriptor descriptor =
+                new McpToolDescriptor(
+                        name,
+                        description,
+                        "builtin",
+                        parameters != null ? parameters : Map.of(),
+                        List.of("custom"),
+                        "custom",
+                        false);
+        toolRegistry.put(name, descriptor);
+        executorRegistry.put(name, executor);
+        log.info("带执行上下文的工具已注册: {} - {}", name, description);
     }
 
     /** 注册内置工具 */
@@ -111,7 +133,7 @@ public class ToolServiceImpl implements ToolService {
                         "builtin",
                         true);
         toolRegistry.put(name, descriptor);
-        executorRegistry.put(name, executor);
+        executorRegistry.put(name, (toolArguments, context) -> executor.apply(toolArguments));
     }
 
     /** 注销工具 */
@@ -161,6 +183,15 @@ public class ToolServiceImpl implements ToolService {
      */
     @Override
     public ToolExecutionResult execute(String toolName, Map<String, Object> parameters) {
+        return execute(toolName, parameters, new ToolExecutionContext(null));
+    }
+
+    @Override
+    public ToolExecutionResult execute(
+            String toolName, Map<String, Object> parameters, ToolExecutionContext executionContext) {
+        ToolExecutionContext context = executionContext == null
+                ? new ToolExecutionContext(null)
+                : executionContext;
         log.info(
                 "工具调用: tool=[{}], paramNames={}, paramCount={}",
                 toolName,
@@ -184,14 +215,15 @@ public class ToolServiceImpl implements ToolService {
         }
 
         // 查找执行器
-        Function<Map<String, Object>, Object> executor = executorRegistry.get(toolName);
+        BiFunction<Map<String, Object>, ToolExecutionContext, Object> executor =
+                executorRegistry.get(toolName);
         if (executor == null) {
             return new ToolExecutionResult(false, null, "工具 [" + toolName + "] 未注册执行器");
         }
 
         try {
             Map<String, Object> mergedParams = mergeParameters(def, parameters);
-            Object result = executor.apply(mergedParams);
+            Object result = executor.apply(mergedParams, context);
 
             Map<String, Object> enriched = new HashMap<>();
             enriched.put("tool", toolName);

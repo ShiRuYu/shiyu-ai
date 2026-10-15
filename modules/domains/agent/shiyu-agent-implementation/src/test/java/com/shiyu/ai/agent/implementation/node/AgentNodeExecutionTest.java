@@ -34,9 +34,14 @@ import com.shiyu.ai.agent.implementation.node.tool.ToolCallNode;
 import com.shiyu.ai.agent.implementation.node.transform.TransformConfig;
 import com.shiyu.ai.agent.implementation.node.transform.TransformNode;
 import com.shiyu.ai.agent.implementation.runtime.model.AgentExecutionContext;
+import com.shiyu.ai.agent.implementation.runtime.model.ToolApprovalStatus;
 import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.agent.implementation.runtime.service.AiRuntimeService;
+import com.shiyu.ai.agent.implementation.runtime.service.ToolApprovalService;
 import com.shiyu.ai.agent.implementation.runtime.service.ToolExecutionPipeline;
+import com.shiyu.ai.agent.implementation.runtime.adapter.inmemory.InMemoryAiAppRepository;
+import com.shiyu.ai.agent.implementation.runtime.adapter.inmemory.InMemoryAiRunRepository;
+import com.shiyu.ai.agent.implementation.runtime.adapter.inmemory.InMemoryToolApprovalRepository;
 import com.shiyu.ai.agent.implementation.service.IntentService;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -55,6 +60,7 @@ import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatResponse;
 import com.shiyu.ai.model.contract.model.ChatType;
 import com.shiyu.ai.tooling.contract.api.ToolService;
+import com.shiyu.ai.tooling.contract.api.ToolService.ToolExecutionContext;
 
 import org.junit.jupiter.api.Test;
 
@@ -65,6 +71,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 验证 智能体 Node Execution 相关功能、边界条件、异常路径和协作行为。
@@ -97,7 +104,7 @@ class AgentNodeExecutionTest {
         ToolCallNode node = ToolCallNode.builder().toolService(tools)
                 .executionPipeline(pipeline)
                 .config(ToolCallConfig.builder().toolName("search").build()).build();
-        when(pipeline.executeById(any(), any(), anyLong(), any(), any()))
+        when(pipeline.executeByIdWithContext(any(), any(), anyLong(), any(), any()))
                 .thenReturn(new ToolExecutionPipeline.Result(
                         ToolExecutionPipeline.Result.Status.COMPLETED, "ok", null));
         Map<String, Object> forged = Map.of(
@@ -105,7 +112,8 @@ class AgentNodeExecutionTest {
                 "tenantId", 99L, "userId", 88L, "__aiRunId", "run-1");
 
         assertTrue(invoke(node, NodeInput.fromMap(forged)).isSuccess());
-        verify(pipeline).executeById(eq("run-1"), eq(new TenantId(1L)), eq(2L), any(), any());
+        verify(pipeline).executeByIdWithContext(
+                eq("run-1"), eq(new TenantId(1L)), eq(2L), any(), any());
 
         assertFalse(invoke(node, NodeInput.fromMap(Map.of(
                 "tenantId", 1L, "userId", 2L, "__aiRunId", "run-2"))).isSuccess());
@@ -117,6 +125,55 @@ class AgentNodeExecutionTest {
         assertFalse(invoke(node, NodeInput.fromMap(Map.of(
                 NodeActorContext.KEY, TRUSTED_ACTOR, "_aiRun", foreign))).isSuccess());
         verify(pipeline, never()).execute(eq(foreign), any(), any());
+    }
+
+    @Test
+    void approvedToolCallPassesApprovalIdToContextAwareAdapter() throws Exception {
+        AtomicReference<ToolExecutionContext> received = new AtomicReference<>();
+        ToolService tools = new ToolService() {
+            @Override
+            public ToolExecutionResult execute(String toolName, Map<String, Object> parameters) {
+                return new ToolExecutionResult(false, null, "execution context was not passed");
+            }
+
+            @Override
+            public ToolExecutionResult execute(
+                    String toolName,
+                    Map<String, Object> parameters,
+                    ToolExecutionContext context) {
+                received.set(context);
+                return new ToolExecutionResult(true, "done", null);
+            }
+
+            @Override
+            public boolean requiresApproval(String toolName) {
+                return true;
+            }
+        };
+        AiRuntimeService runtime = new AiRuntimeService(
+                new InMemoryAiRunRepository(), new InMemoryAiAppRepository());
+        ToolApprovalService approvals =
+                new ToolApprovalService(new InMemoryToolApprovalRepository());
+        ToolExecutionPipeline pipeline = new ToolExecutionPipeline(runtime, approvals);
+        AiRun run = runtime.startRun(
+                new AiRunContext(new TenantId(1), 2, null, null, null, null, null, null, Map.of()),
+                AiRunSource.AGENT, "agent-1", "model", "write");
+        ToolCallNode node = ToolCallNode.builder()
+                .toolService(tools)
+                .executionPipeline(pipeline)
+                .config(ToolCallConfig.builder().toolName("external.write").build())
+                .build();
+
+        NodeApprovalRequiredException pending = assertThrows(NodeApprovalRequiredException.class,
+                () -> invoke(node, trustedInput(Map.of("_aiRun", run, "path", "a"))));
+        approvals.decide(pending.approvalId(), new TenantId(1), 2, ToolApprovalStatus.APPROVED);
+
+        NodeOutput output = invoke(node, trustedInput(Map.of(
+                "_aiRun", run, "_toolApprovalId", pending.approvalId(), "path", "a")));
+
+        assertTrue(output.isSuccess());
+        assertNotNull(received.get());
+        assertEquals(pending.approvalId(), received.get().operationId());
     }
 
     @Test
@@ -994,7 +1051,7 @@ class AgentNodeExecutionTest {
         com.shiyu.ai.agent.implementation.runtime.model.ToolApproval approval =
                 mock(com.shiyu.ai.agent.implementation.runtime.model.ToolApproval.class);
         when(approval.id()).thenReturn("approval-1");
-        when(pipeline.execute(eq(run), any(), any()))
+        when(pipeline.executeWithContext(eq(run), any(), any()))
                 .thenReturn(
                         new ToolExecutionPipeline.Result(
                                 ToolExecutionPipeline.Result.Status.APPROVAL_REQUIRED,
@@ -1014,7 +1071,7 @@ class AgentNodeExecutionTest {
                 () -> invoke(node, trustedInput(Map.of("_aiRun", run, "q", "x"))));
         assertEquals("approval-1", pending.approvalId());
 
-        when(pipeline.execute(eq(run), any(), any()))
+        when(pipeline.executeWithContext(eq(run), any(), any()))
                 .thenReturn(
                         new ToolExecutionPipeline.Result(
                                 ToolExecutionPipeline.Result.Status.COMPLETED, "answer", approval));
@@ -1022,7 +1079,8 @@ class AgentNodeExecutionTest {
         assertTrue(completed.isSuccess());
         assertEquals("answer", completed.getData("toolResult", null));
 
-        when(pipeline.executeById(eq(run.id()), eq(new TenantId(1L)), eq(2L), any(), any()))
+        when(pipeline.executeByIdWithContext(
+                eq(run.id()), eq(new TenantId(1L)), eq(2L), any(), any()))
                 .thenReturn(
                         new ToolExecutionPipeline.Result(
                                 ToolExecutionPipeline.Result.Status.COMPLETED, "by-id", approval));
@@ -1076,7 +1134,8 @@ class AgentNodeExecutionTest {
         ToolExecutionPipeline pipeline = mock(ToolExecutionPipeline.class);
         var approval = mock(com.shiyu.ai.agent.implementation.runtime.model.ToolApproval.class);
         when(approval.id()).thenReturn("approval-1");
-        when(pipeline.execute(eq(run), argThat(request -> request.highRisk()), any()))
+        when(pipeline.executeWithContext(
+                eq(run), argThat(request -> request.highRisk()), any()))
                 .thenReturn(new ToolExecutionPipeline.Result(
                         ToolExecutionPipeline.Result.Status.APPROVAL_REQUIRED,
                         null, approval));

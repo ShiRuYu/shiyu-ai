@@ -9,33 +9,33 @@
         <cve>CVE-2022-45868</cve>
     </suppress>
     <suppress>
-        <notes><![CDATA[False positive: these CVEs target org.mybatis:mybatis before 3.5.6 or MyBatis-Plus before 3.5.3.1. MyBatis Flex is a distinct artifact and resolves org.mybatis:mybatis 3.5.19.]]></notes>
-        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-core@1.11.7</packageUrl>
+        <notes><![CDATA[False positive CPE match: CVE-2020-26945 affects org.mybatis:mybatis before 3.5.6; the resolved MyBatis version is 3.5.19. CVE-2023-25330 affects com.baomidou:mybatis-plus before 3.5.3.1, which is absent from the dependency tree.]]></notes>
+        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-core@1.11.8</packageUrl>
         <cve>CVE-2020-26945</cve>
     </suppress>
     <suppress>
-        <notes><![CDATA[False positive: CVE-2023-25330 affects MyBatis-Plus tenant SQL injection, not com.mybatis-flex:mybatis-flex-core.]]></notes>
-        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-core@1.11.7</packageUrl>
+        <notes><![CDATA[False positive CPE match: CVE-2023-25330 affects com.baomidou:mybatis-plus before 3.5.3.1, not com.mybatis-flex:mybatis-flex-core; MyBatis-Plus is absent from the dependency tree.]]></notes>
+        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-core@1.11.8</packageUrl>
         <cve>CVE-2023-25330</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[False positive: these CVEs are mapped to the MyBatis CPE, but com.mybatis-flex:mybatis-flex-spring is not org.mybatis:mybatis or MyBatis-Plus.]]></notes>
-        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-spring@1.11.7</packageUrl>
+        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-spring@1.11.8</packageUrl>
         <cve>CVE-2020-26945</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[False positive: CVE-2023-25330 affects MyBatis-Plus tenant SQL injection, not com.mybatis-flex:mybatis-flex-spring.]]></notes>
-        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-spring@1.11.7</packageUrl>
+        <packageUrl>pkg:maven/com.mybatis-flex/mybatis-flex-spring@1.11.8</packageUrl>
         <cve>CVE-2023-25330</cve>
     </suppress>
     <suppress>
-        <notes><![CDATA[False positive CPE match: all com.mybatis-flex 1.11.7 artifacts are distinct from org.mybatis:mybatis and MyBatis-Plus, the products affected by these CVEs.]]></notes>
-        <filePath regex="true">.*[\\/]mybatis-flex-[^\\/]+-1\.11\.7\.jar</filePath>
+        <notes><![CDATA[False positive CPE match: com.mybatis-flex 1.11.8 artifacts are distinct from org.mybatis:mybatis and MyBatis-Plus, the products affected by these CVEs. The core dependency tree resolves org.mybatis:mybatis 3.5.19 and does not include MyBatis-Plus.]]></notes>
+        <filePath regex="true">.*[\\/]mybatis-flex-[^\\/]+-1\.11\.8\.jar</filePath>
         <cve>CVE-2020-26945</cve>
     </suppress>
     <suppress>
-        <notes><![CDATA[False positive CPE match: all com.mybatis-flex 1.11.7 artifacts are distinct from org.mybatis:mybatis and MyBatis-Plus, the products affected by these CVEs.]]></notes>
-        <filePath regex="true">.*[\\/]mybatis-flex-[^\\/]+-1\.11\.7\.jar</filePath>
+        <notes><![CDATA[False positive CPE match: com.mybatis-flex 1.11.8 artifacts are distinct from org.mybatis:mybatis and MyBatis-Plus, the products affected by these CVEs. The core dependency tree resolves org.mybatis:mybatis 3.5.19 and does not include MyBatis-Plus.]]></notes>
+        <filePath regex="true">.*[\\/]mybatis-flex-[^\\/]+-1\.11\.8\.jar</filePath>
         <cve>CVE-2023-25330</cve>
     </suppress>
     <suppress>
@@ -47,5 +47,30 @@
         <notes><![CDATA[False positive CPE match: this is the ShiYu support module, not MyBatis-Plus.]]></notes>
         <packageUrl>pkg:maven/com.shiyu.ai/shiyu-common-mybatis@1.0.0</packageUrl>
         <cve>CVE-2023-25330</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive CPE match: CVE-2025-15104 affects The Nu Html Checker (validator.nu), not org.hibernate.validator:hibernate-validator. The NVD record describes Nu Html Checker DNS rebinding/SSRF and identifies the validator product; suppress only this exact Hibernate Validator package version.]]></notes>
+        <packageUrl>pkg:maven/org.hibernate.validator/hibernate-validator@9.1.3.Final</packageUrl>
+        <cve>CVE-2025-15104</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive CPE match: CVE-2026-0994 affects the Python protobuf package (pip), specifically google.protobuf.json_format.ParseDict. This package is the separate Java protobuf-java artifact; suppress only this exact Maven package version.]]></notes>
+        <packageUrl>pkg:maven/com.google.protobuf/protobuf-java@4.35.1</packageUrl>
+        <cve>CVE-2026-0994</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive CPE match: CVE-2026-54285 affects the npm JavaScript package @opentelemetry/core, not the separate Java opentelemetry-api artifact. Suppress only this exact Maven package version.]]></notes>
+        <packageUrl>pkg:maven/io.opentelemetry/opentelemetry-api@1.64.0</packageUrl>
+        <cve>CVE-2026-54285</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive CPE match: CVE-2026-54285 affects the npm JavaScript package @opentelemetry/core, not the separate Java opentelemetry-common artifact. Suppress only this exact Maven package version.]]></notes>
+        <packageUrl>pkg:maven/io.opentelemetry/opentelemetry-common@1.64.0</packageUrl>
+        <cve>CVE-2026-54285</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[False positive CPE match: CVE-2026-54285 affects the npm JavaScript package @opentelemetry/core, not the separate Java opentelemetry-context artifact. Suppress only this exact Maven package version.]]></notes>
+        <packageUrl>pkg:maven/io.opentelemetry/opentelemetry-context@1.64.0</packageUrl>
+        <cve>CVE-2026-54285</cve>
     </suppress>
 </suppressions>

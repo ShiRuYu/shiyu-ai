@@ -223,7 +223,10 @@ final class AgentExecutionLifecycle {
                                         clientCancelled.set(true);
                                         if (!execution.cancel()) return;
                                         Thread worker = workerThread.get();
-                                        if (worker != null) worker.interrupt();
+                                        if (worker != null) {
+                                            AgentCancellationLogContext.mark(worker);
+                                            worker.interrupt();
+                                        }
                                     });
                             try {
                                 Map<String, Object> started = new HashMap<>();
@@ -374,6 +377,7 @@ final class AgentExecutionLifecycle {
                                                 AgentRuntimeImpl.publicFailureCode()));
                                 sink.error(e);
                             } finally {
+                                AgentCancellationLogContext.clear(Thread.currentThread());
                                 workerThread.set(null);
                                 stateStore.cleanup(actor, execution);
                             }
@@ -396,16 +400,21 @@ final class AgentExecutionLifecycle {
         Execution active = stateStore.active(executionId);
         if (active != null) {
             stateStore.ensureAccessible(actor, active);
-            Checkpoint latest = checkpointManager.loadLatestCheckpoint(actor.tenantId(), executionId);
-            if (AgentGraphCheckpointSaver.isApprovalPending(latest)) {
-                synchronized (active) {
+            synchronized (active) {
+                if (active.getStatus() != ExecutionStatus.PAUSED) {
+                    throw new IllegalStateException("执行未处于可恢复的暂停状态");
+                }
+                Checkpoint latest =
+                        checkpointManager.loadLatestCheckpoint(actor.tenantId(), executionId);
+                if (AgentGraphCheckpointSaver.isApprovalPending(latest)) {
                     return resumeFromCheckpoint(actor, active);
                 }
+                if (!stateStore.claimPausedForResume(actor, active)) {
+                    throw new IllegalStateException("执行已被其他请求恢复或状态已变化");
+                }
+                active.resume();
+                return active;
             }
-            AgentStateMachine.transition(active.getStatus(), ExecutionStatus.RUNNING);
-            active.resume();
-            stateStore.save(actor, active);
-            return active;
         }
         AgentExecutionBO execBO = stateStore.persisted(actor, executionId);
         if (execBO == null) throw new IllegalStateException("执行实例不存在: " + executionId);
@@ -458,8 +467,10 @@ final class AgentExecutionLifecycle {
         if (agentVersion == null || agentVersion.getGraph() == null) {
             throw new IllegalStateException("检查点对应的 Agent 版本图不存在");
         }
+        if (!stateStore.claimPausedForResume(actor, execution)) {
+            throw new IllegalStateException("执行已被其他请求恢复或状态已变化");
+        }
         execution.resume();
-        stateStore.save(actor, execution);
         stateStore.put(execution);
         Execution result = agentExecutor.resumeFromCheckpoint(
                 actor, execution, definition, agentVersion, checkpoint,

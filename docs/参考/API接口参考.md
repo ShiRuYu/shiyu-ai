@@ -1,7 +1,7 @@
 # API 接口参考
 
 > 本文档由 `scripts/docs/generate_reference_docs.py` 从 SpringDoc OpenAPI 自动生成。
-> 生成源：`E:\Dev\shiyu\.worktrees\fix-2026-10-05-ui\tests\contracts\shiyu-ai-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
+> 生成源：`tests/contracts/shiyu-ai-openapi.json`；OpenAPI：`3.1.0`；服务版本：`0.1`。
 
 ## 契约约定
 
@@ -649,6 +649,8 @@
 | GET | `/api/agent/approvals` | listAll | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListToolApproval |
 | POST | `/api/agent/approvals/{id}/approve` | approve_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
 | POST | `/api/agent/approvals/{id}/approve-and-resume` | approveAndResume | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
+| POST | `/api/agent/approvals/{id}/confirm-completed` | confirmClaimedSuccess | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[必填]=application/json:ManualResolutionRequest | 200=*/*:ResultToolApproval |
+| POST | `/api/agent/approvals/{id}/confirm-not-executed` | confirmClaimedNotExecuted | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string; body[必填]=application/json:ManualNonExecutionResolutionRequest | 200=*/*:ResultToolApproval |
 | POST | `/api/agent/approvals/{id}/reject` | reject_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
 | POST | `/api/agent/approvals/{id}/reject-and-cancel` | rejectAndCancel | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
 | GET | `/api/agent/runs/{runId}/approvals` | list_12 | 登录态；细粒度权限见权限矩阵 | runId[path,必填]:string | 200=*/*:ResultListToolApproval |
@@ -958,6 +960,8 @@
 | `LoginResponseVO` | object | - | accessToken:string; currentTenantId:integer/int64; expiresIn:integer/int64; homePath:string; homeTenantId:integer/int64; id:integer/int64; realName:string; roles:array<string>; subTenants:array<TenantContextVO>; switchMode:string; tenantName:string; tenants:array<TenantInfoVO>; tokenType:string; username:string |
 | `LorebookAsset` | object | - | createdAt:string/date-time; entry:LorebookEntry; id:string; ownerUserId:integer/int64; tenantId:integer/int64; updatedAt:string/date-time |
 | `LorebookEntry` | object | - | content:string; enabled:boolean; id:string; insertionPosition:string; keys:array<string>; priority:integer/int32; tokenBudget:integer/int32 |
+| `ManualNonExecutionResolutionRequest` | object | externalNonExecutionConfirmed | externalNonExecutionConfirmed*:boolean |
+| `ManualResolutionRequest` | object | externalSuccessConfirmed | externalSuccessConfirmed*:boolean |
 | `McpToolDescriptor` | object | - | builtin:boolean; category:string; description:string; name:string; parameters:object; registeredAt:integer/int64; serverId:string; tags:array<string> |
 | `MemberRequest` | object | principalId, principalType, spaceRole | principalId*:integer/int64; principalType*:string; spaceRole*:string |
 | `MemberView` | object | - | id:integer/int64; principalId:integer/int64; principalType:string; spaceId:integer/int64; spaceRole:string |
@@ -1289,7 +1293,7 @@
 | `TextbookRequest` | object | grade, name, publisher, subjectCode | author:string; edition:string; grade*:integer/int32; id:integer/int64; isbn:string; name*:string; publisher*:string; status:integer/int32; subjectCode*:string |
 | `TextbookResponse` | object | - | grade:integer/int32; id:integer/int64; isbn:string; name:string; publisher:string; subjectCode:string |
 | `TimezoneOptionVO` | object | - | label:string; value:string |
-| `ToolApproval` | object | - | argumentsRedacted:string; createdAt:string/date-time; decidedAt:string/date-time; expiresAt:string/date-time; id:string; ownerUserId:integer/int64; runId:string; status:string(PENDING,APPROVED,CLAIMED,COMPLETED,REJECTED,EXPIRED); tenantId:integer/int64; toolName:string |
+| `ToolApproval` | object | - | argumentsRedacted:string; createdAt:string/date-time; decidedAt:string/date-time; expiresAt:string/date-time; id:string; ownerUserId:integer/int64; runId:string; status:string(PENDING,APPROVED,CLAIMED,COMPLETED,NOT_EXECUTED,REJECTED,EXPIRED); tenantId:integer/int64; toolName:string |
 | `TranslateRequest` | object | - | provider:string; sourceLanguage:string; targetLanguage:string; text:string |
 | `TrendResponse` | object | - | dates:array<string>; values:array<number/double> |
 | `TtsRequest` | object | - | format:string; provider:string; text:string; voice:string |

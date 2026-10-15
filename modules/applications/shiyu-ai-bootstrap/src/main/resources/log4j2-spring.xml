@@ -142,7 +142,16 @@
         <Logger name="SYSTEM_LOGGER" level="INFO" additivity="false"><AppenderRef ref="Console"/><AppenderRef ref="commonInfo"/></Logger>
         <Logger name="BUSINESS_LOGGER" level="INFO" additivity="false"><AppenderRef ref="Console"/><AppenderRef ref="commonInfo"/></Logger>
         <Logger name="COMMON_LOGGER" level="INFO" additivity="false"><AppenderRef ref="Console"/><AppenderRef ref="commonInfo"/><AppenderRef ref="commonWarn"/><AppenderRef ref="errorFile"/></Logger>
-        <Root level="INFO"><AppenderRef ref="Console"/></Root>
+        <Logger name="org.bsc.langgraph4j" additivity="true">
+            <Filters>
+                <AgentCancellationFilter/>
+                <LevelMatchFilter level="ERROR" onMatch="NEUTRAL" onMismatch="ACCEPT"/>
+                <RegexFilter regex=".*NodeApprovalRequiredException.*" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+        </Logger>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
     </Loggers>
 </Configuration>
 

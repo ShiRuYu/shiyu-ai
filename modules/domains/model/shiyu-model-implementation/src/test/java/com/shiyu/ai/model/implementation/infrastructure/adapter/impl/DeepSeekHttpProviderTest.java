@@ -110,6 +110,67 @@ class DeepSeekHttpProviderTest {
     }
 
     @Test
+    void rejectsReasoningOnlyNonStreamingResponse() {
+        server.createContext(
+                "/v1/chat/completions",
+                exchange -> {
+                    String response =
+                            "{\"choices\":[{\"message\":{\"content\":\"\",\"reasoning_content\":\"thinking\"},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":8,\"completion_tokens\":8,\"total_tokens\":16}}";
+                    byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
+                    exchange.sendResponseHeaders(200, bytes.length);
+                    exchange.getResponseBody().write(bytes);
+                    exchange.close();
+                });
+
+        ChatResponse result = provider().chat(request());
+
+        assertFalse(result.isSuccess());
+        assertEquals("FAILED", result.getEventType());
+        assertEquals("DeepSeek returned no visible assistant content", result.getErrorMessage());
+        assertEquals(8, result.getCompletionTokens());
+    }
+
+    @Test
+    void allowsToolOnlyNonStreamingResponse() {
+        server.createContext(
+                "/v1/chat/completions",
+                exchange -> {
+                    String response =
+                            "{\"choices\":[{\"message\":{\"content\":\"\",\"tool_calls\":[{\"id\":\"call-1\",\"type\":\"function\",\"function\":{\"name\":\"lookup\",\"arguments\":\"{}\"}}]},\"finish_reason\":\"tool_calls\"}]}";
+                    byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
+                    exchange.sendResponseHeaders(200, bytes.length);
+                    exchange.getResponseBody().write(bytes);
+                    exchange.close();
+                });
+
+        ChatResponse result = provider().chat(request());
+
+        assertTrue(result.isSuccess());
+        assertEquals(1, result.getToolCalls().size());
+    }
+
+    @Test
+    void rejectsReasoningOnlyStreamingResponseBeforeCompletion() {
+        server.createContext(
+                "/v1/chat/completions",
+                exchange -> {
+                    String response =
+                            "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"thinking\"},\"finish_reason\":null}]}\n\n"
+                                    + "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}]}\n\n"
+                                    + "data: [DONE]\n\n";
+                    byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
+                    exchange.getResponseHeaders().add("Content-Type", "text/event-stream");
+                    exchange.sendResponseHeaders(200, bytes.length);
+                    exchange.getResponseBody().write(bytes);
+                    exchange.close();
+                });
+
+        assertThrows(
+                Exception.class,
+                () -> provider().stream(request()).collectList().block());
+    }
+
+    @Test
     void parsesReasoningToolAndUsageSseFrames() {
         server.createContext(
                 "/v1/chat/completions",
@@ -485,7 +546,7 @@ class DeepSeekHttpProviderTest {
     }
 
     @Test
-    void mapsToolOnlyMessageAndDefaultResponseFields() {
+    void failsWhenProviderReturnsNoChoices() {
         server.createContext(
                 "/v1/chat/completions",
                 exchange -> {
@@ -507,7 +568,9 @@ class DeepSeekHttpProviderTest {
                         .messages(List.of(toolResult))
                         .build();
         ChatResponse result = provider().chat(request);
-        assertTrue(result.isSuccess());
+        assertFalse(result.isSuccess());
+        assertEquals("FAILED", result.getEventType());
+        assertEquals("DeepSeek returned no visible assistant content", result.getErrorMessage());
         assertEquals("DEEPSEEK", result.getPlatform());
         assertTrue(result.isEstimatedUsage());
     }

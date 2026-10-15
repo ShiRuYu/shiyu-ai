@@ -13,8 +13,11 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.shiyu.ai.agent.implementation.service.AuditService;
+import com.shiyu.ai.common.foundation.context.UserContextHolder;
+import com.shiyu.ai.common.foundation.context.model.UserContext;
 import com.shiyu.ai.common.web.auth.ClientIpResolver;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -26,8 +29,28 @@ import org.springframework.mock.web.MockHttpServletResponse;
 @Tag("dev")
 class AuditInterceptorTest {
 
+    @AfterEach
+    void clearActorContext() {
+        UserContextHolder.clearContext();
+    }
+
+    @Test
+    void skipsAuditWhenRequestHasNoAuthenticatedActor() throws Exception {
+        AuditService auditService = mock(AuditService.class);
+        ClientIpResolver clientIpResolver = mock(ClientIpResolver.class);
+        AuditInterceptor interceptor = new AuditInterceptor(auditService, clientIpResolver);
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/iam/auth/login");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        interceptor.preHandle(request, response, new Object());
+        interceptor.afterCompletion(request, response, new Object(), null);
+
+        verifyNoInteractions(auditService, clientIpResolver);
+    }
+
     @Test
     void recordsResolvedClientIpInsteadOfTransportAddress() throws Exception {
+        bindAuthenticatedActor();
         AuditService auditService = mock(AuditService.class);
         ClientIpResolver clientIpResolver = mock(ClientIpResolver.class);
         when(clientIpResolver.currentClientIp()).thenReturn("203.0.113.7");
@@ -70,6 +93,7 @@ class AuditInterceptorTest {
 
     @Test
     void containsAuditStorageFailures() throws Exception {
+        bindAuthenticatedActor();
         AuditService auditService = mock(AuditService.class);
         ClientIpResolver clientIpResolver = mock(ClientIpResolver.class);
         when(clientIpResolver.currentClientIp()).thenReturn("192.0.2.10");
@@ -94,5 +118,12 @@ class AuditInterceptorTest {
 
         assertDoesNotThrow(
                 () -> interceptor.afterCompletion(request, response, new Object(), null));
+    }
+
+    private static void bindAuthenticatedActor() {
+        UserContext context = new UserContext();
+        context.setCurrentTenantId(7L);
+        context.setUserId(9L);
+        UserContextHolder.setContext(context);
     }
 }

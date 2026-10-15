@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shiyu.ai.runtimeconsole.auth.ConsoleSessionStore;
 import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
+import com.shiyu.ai.agent.implementation.port.repository.AgentExecutionRepository;
 import com.shiyu.ai.education.implementation.application.ExamService;
 import com.shiyu.ai.education.implementation.application.ExamPublishingService;
 import com.shiyu.ai.education.implementation.application.ExamTakingService;
@@ -53,6 +54,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -101,9 +104,56 @@ class CoreJourneyIntegrationTest {
 
     @Autowired private JdbcTemplate jdbcTemplate;
 
+    @Autowired private AgentExecutionRepository agentExecutionRepository;
+
     @Autowired private ModelManager modelManager;
 
     @Autowired private PlatformCredentialCipher platformCredentialCipher;
+
+    @Test
+    void concurrentResumeClaimsAreSerializedByTheDatabase() throws Exception {
+        TenantId tenantId = new TenantId(1L);
+        String executionId = "resume-claim-" + UUID.randomUUID();
+        String checkpointId = "checkpoint-" + UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO AGENT_EXECUTION"
+                        + " (EXECUTION_ID, AGENT_ID, VERSION, USER_ID, TENANT_ID,"
+                        + " LAST_CHECKPOINT_ID, STATUS, START_TIME)"
+                        + " VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+                executionId, "resume-test-agent", "v1", 2L, tenantId.value(),
+                checkpointId, 3);
+
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+        var callers = Executors.newFixedThreadPool(2);
+        try {
+            var first = callers.submit(() -> {
+                ready.countDown();
+                start.await();
+                return TenantScope.withTenant(tenantId, () ->
+                        agentExecutionRepository.claimPausedForResume(
+                                tenantId, executionId, checkpointId));
+            });
+            var second = callers.submit(() -> {
+                ready.countDown();
+                start.await();
+                return TenantScope.withTenant(tenantId, () ->
+                        agentExecutionRepository.claimPausedForResume(
+                                tenantId, executionId, checkpointId));
+            });
+            assertThat(ready.await(5, TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+
+            int claims = (first.get(5, TimeUnit.SECONDS) ? 1 : 0)
+                    + (second.get(5, TimeUnit.SECONDS) ? 1 : 0);
+            assertThat(claims).isEqualTo(1);
+            assertThat(jdbcTemplate.queryForObject(
+                    "SELECT STATUS FROM AGENT_EXECUTION WHERE EXECUTION_ID=? AND TENANT_ID=?",
+                    Integer.class, executionId, tenantId.value())).isZero();
+        } finally {
+            callers.shutdownNow();
+        }
+    }
 
     @Test
     void platformApiCanExplicitlyClearAStoredCredentialWithoutReturningIt() throws Exception {

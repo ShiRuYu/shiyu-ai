@@ -160,6 +160,23 @@ public class ToolApprovalService {
         return completed;
     }
 
+    /** 将经人工确认没有产生外部副作用的认领审批收敛为未执行终态。 */
+    public ToolApproval markClaimedNotExecuted(
+            String id, TenantId tenantId, long ownerUserId) {
+        ToolApproval current = require(id, tenantId, ownerUserId);
+        if (current.status() != ToolApprovalStatus.CLAIMED) {
+            throw new IllegalStateException("tool approval is not claimed");
+        }
+        ToolApproval resolved = new ToolApproval(
+                current.id(), current.runId(), current.tenantId(), current.ownerUserId(),
+                current.toolName(), current.argumentsRedacted(), ToolApprovalStatus.NOT_EXECUTED,
+                current.createdAt(), Instant.now(), current.expiresAt());
+        if (approvals.update(resolved, ToolApprovalStatus.CLAIMED) != 1) {
+            throw new IllegalStateException("tool approval resolution could not be recorded");
+        }
+        return resolved;
+    }
+
     /**
      * 执行 工具 Approval 相关业务数据，并返回处理结果。
      *

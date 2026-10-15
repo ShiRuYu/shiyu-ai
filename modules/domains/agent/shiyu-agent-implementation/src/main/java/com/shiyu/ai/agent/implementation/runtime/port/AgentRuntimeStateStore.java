@@ -76,6 +76,12 @@ public final class AgentRuntimeStateStore {
         }
     }
 
+    /** 原子地将持久化的暂停执行认领为运行中。 */
+    public boolean claimPausedForResume(ActorContext actor, Execution execution) {
+        return executionRepository.claimPausedForResume(
+                actor.tenantId(), execution.getExecutionId(), execution.getLastCheckpointId());
+    }
+
     public Execution rebuild(AgentExecutionBO bo) {
         Map<String, Object> input = parseData(bo.getInputData());
         if (bo.getTenantId() != null) {

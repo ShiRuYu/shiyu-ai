@@ -26,6 +26,17 @@ public interface AgentExecutionRepository {
     void update(TenantId tenantId, AgentExecutionBO bo);
 
     /**
+     * 原子认领一个仍处于暂停状态且检查点指针未变化的执行，以防多个实例同时续跑。
+     *
+     * @param tenantId 执行所属租户
+     * @param executionId 执行标识
+     * @param expectedCheckpointId 读取执行记录时的检查点标识，可为 null
+     * @return 本次调用成功将状态从 PAUSED 改为 RUNNING 时返回 true
+     */
+    boolean claimPausedForResume(
+            TenantId tenantId, String executionId, String expectedCheckpointId);
+
+    /**
      * 查询 智能体 Execution 相关业务数据，并返回处理结果。
      *
      * @param tenantId 当前操作涉及的租户标识。

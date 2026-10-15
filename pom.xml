@@ -29,6 +29,7 @@
         <netty.version>4.2.18.Final</netty.version>
 
         <langchain4j.version>1.16.3</langchain4j.version> <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
+        <opennlp.version>2.5.12</opennlp.version>
         <langgraph4j.version>1.8.19</langgraph4j.version> <!-- 该配置用于当前模块的依赖、构建或运行边界。 -->
 
         <sa-token.version>1.46.0</sa-token.version>
@@ -237,6 +238,13 @@
                 <version>${langchain4j.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- CVE-2026-82617 fix for OpenNLP pulled in by LangChain4j. -->
+            <dependency>
+                <groupId>org.apache.opennlp</groupId>
+                <artifactId>opennlp-tools</artifactId>
+                <version>${opennlp.version}</version>
             </dependency>
 
             <!-- ONNX 嵌入模型（EmbeddingService 默认实现） -->

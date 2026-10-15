@@ -322,7 +322,8 @@ class GraphExecutionCoverageTest {
         when(chat.chat(any())).thenReturn(ChatResponse.builder().success(true)
                 .content("ok").platform("p").model("m").build());
         ToolExecutionPipeline pipeline = mock(ToolExecutionPipeline.class);
-        when(pipeline.executeById(anyString(), any(TenantId.class), anyLong(), any(), any()))
+        when(pipeline.executeByIdWithContext(
+                anyString(), any(TenantId.class), anyLong(), any(), any()))
                 .thenReturn(new ToolExecutionPipeline.Result(
                         ToolExecutionPipeline.Result.Status.COMPLETED, "tool-ok", null));
         BaseNode mutator = new BaseNode(NodeConfig.builder()
@@ -350,7 +351,8 @@ class GraphExecutionCoverageTest {
 
         verify(chat).chat(argThat(request -> request.getTenantId() == 9L
                 && request.getUserId() == 7L));
-        verify(pipeline).executeById(eq("run-1"), eq(authenticated.tenantId()), eq(7L),
+        verify(pipeline).executeByIdWithContext(
+                eq("run-1"), eq(authenticated.tenantId()), eq(7L),
                 any(), any());
     }
 

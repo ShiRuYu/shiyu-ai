@@ -55,12 +55,55 @@ class ToolApprovalServiceTest {
                 .orElseThrow().status());
     }
 
+    @Test
+    void notExecutedResolutionConflictPreservesClaimedApproval() {
+        InMemoryToolApprovalRepository repository = new NotExecutedResolutionConflictRepository();
+        Instant now = Instant.now();
+        ToolApproval claimed = new ToolApproval("approval-1", "run-1", 1, 2, "tool", "{}",
+                ToolApprovalStatus.CLAIMED, now, now, now.plusSeconds(60));
+        repository.insert(claimed);
+
+        assertThrows(IllegalStateException.class, () -> new ToolApprovalService(repository)
+                .markClaimedNotExecuted(claimed.id(), new TenantId(1), 2));
+        assertEquals(ToolApprovalStatus.CLAIMED, repository.find(claimed.id(), new TenantId(1), 2)
+                .orElseThrow().status());
+    }
+
+    @Test
+    void manualNotExecutedResolutionMovesOnlyClaimedApprovalToTerminalState() {
+        InMemoryToolApprovalRepository repository = new InMemoryToolApprovalRepository();
+        ToolApprovalService service = new ToolApprovalService(repository);
+        Instant now = Instant.now();
+        ToolApproval claimed = new ToolApproval("approval-1", "run-1", 1, 2, "tool", "{}",
+                ToolApprovalStatus.CLAIMED, now, now, now.plusSeconds(60));
+        repository.insert(claimed);
+
+        ToolApproval resolved = service.markClaimedNotExecuted(
+                claimed.id(), new TenantId(1), 2);
+
+        assertEquals(ToolApprovalStatus.NOT_EXECUTED, resolved.status());
+        assertEquals(ToolApprovalStatus.NOT_EXECUTED,
+                repository.find(claimed.id(), new TenantId(1), 2).orElseThrow().status());
+        assertThrows(IllegalStateException.class, () -> service.markClaimedNotExecuted(
+                claimed.id(), new TenantId(1), 2));
+    }
+
     /** 模拟完成状态写入时的乐观并发冲突。 */
     private static final class CompletionConflictRepository extends InMemoryToolApprovalRepository {
         @Override
         public int update(ToolApproval approval, ToolApprovalStatus expectedStatus) {
             if (expectedStatus == ToolApprovalStatus.CLAIMED
                     && approval.status() == ToolApprovalStatus.COMPLETED) return 0;
+            return super.update(approval, expectedStatus);
+        }
+    }
+
+    private static final class NotExecutedResolutionConflictRepository
+            extends InMemoryToolApprovalRepository {
+        @Override
+        public int update(ToolApproval approval, ToolApprovalStatus expectedStatus) {
+            if (expectedStatus == ToolApprovalStatus.CLAIMED
+                    && approval.status() == ToolApprovalStatus.NOT_EXECUTED) return 0;
             return super.update(approval, expectedStatus);
         }
     }

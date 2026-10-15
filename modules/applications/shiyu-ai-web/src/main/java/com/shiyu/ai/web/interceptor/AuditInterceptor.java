@@ -83,6 +83,9 @@ public class AuditInterceptor implements HandlerInterceptor {
             // 跳过不需要审计的路径
             if (shouldSkip(path)) return;
 
+            var actor = ActorContextHttpAdapter.currentActorOrNull();
+            if (actor == null) return;
+
             String action = resolveAction(method, path);
             String targetType = resolveTargetType(path);
             String targetId = resolveTargetId(path);
@@ -92,10 +95,9 @@ public class AuditInterceptor implements HandlerInterceptor {
             Map<String, Object> detail =
                     Map.of("method", method, "path", path, "status", response.getStatus());
 
-            var actor = ActorContextHttpAdapter.currentActorOrNull();
             auditService.record(
-                    actor == null ? null : actor.tenantId(),
-                    actor == null ? null : actor.userId().value(),
+                    actor.tenantId(),
+                    actor.userId().value(),
                     clientIpResolver.currentClientIp(),
                     action,
                     targetType,

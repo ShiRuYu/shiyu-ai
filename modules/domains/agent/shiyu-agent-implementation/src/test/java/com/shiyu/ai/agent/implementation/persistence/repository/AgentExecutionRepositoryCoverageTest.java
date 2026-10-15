@@ -121,6 +121,25 @@ class AgentExecutionRepositoryCoverageTest {
     }
 
     @Test
+    void atomicallyClaimsOnlyPausedExecutionsWithTheExpectedCheckpoint() throws Exception {
+        AgentExecutionMapper mapper = mock(AgentExecutionMapper.class);
+        AgentExecutionRepositoryImpl repository = new AgentExecutionRepositoryImpl();
+        inject(repository, "agentExecutionMapper", mapper);
+        when(mapper.updateByQuery(any(AgentExecutionDO.class), any(QueryWrapper.class)))
+                .thenReturn(1, 0);
+
+        assertTrue(repository.claimPausedForResume(TENANT, "execution", "checkpoint-1"));
+        assertFalse(repository.claimPausedForResume(TENANT, "execution", "checkpoint-1"));
+        org.mockito.ArgumentCaptor<AgentExecutionDO> updates =
+                org.mockito.ArgumentCaptor.forClass(AgentExecutionDO.class);
+        verify(mapper, times(2)).updateByQuery(updates.capture(), any(QueryWrapper.class));
+        assertEquals(0, updates.getAllValues().get(0).getStatus());
+        assertEquals(0, updates.getAllValues().get(1).getStatus());
+        assertThrows(IllegalArgumentException.class,
+                () -> repository.claimPausedForResume(TENANT, " ", null));
+    }
+
+    @Test
     void checkpointsEnforceTenantAndSupportLifecycleOperations() throws Exception {
         AgentCheckpointMapper mapper = mock(AgentCheckpointMapper.class);
         AgentCheckpointRepositoryImpl repository = new AgentCheckpointRepositoryImpl();

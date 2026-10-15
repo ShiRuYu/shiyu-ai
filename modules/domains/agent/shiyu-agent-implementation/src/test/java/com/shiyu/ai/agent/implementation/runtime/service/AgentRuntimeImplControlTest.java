@@ -154,7 +154,7 @@ class AgentRuntimeImplControlTest {
         ToolApprovalService approvals =
                 new ToolApprovalService(new InMemoryToolApprovalRepository());
         ToolService tools = mock(ToolService.class);
-        when(tools.execute(eq("filesystem.write"), any()))
+        when(tools.execute(eq("filesystem.write"), any(), any()))
                 .thenReturn(new ToolService.ToolExecutionResult(true, "written", null));
         ToolCallNode tool = ToolCallNode.builder()
                 .toolService(tools)
@@ -227,7 +227,7 @@ class AgentRuntimeImplControlTest {
                 ACTOR.userId().value()).status());
         assertEquals(ToolApprovalStatus.COMPLETED, approvals.require(approval.id(),
                 ACTOR.tenantId(), ACTOR.userId().value()).status());
-        verify(tools).execute(eq("filesystem.write"), any());
+        verify(tools).execute(eq("filesystem.write"), any(), any());
         assertThrows(IllegalStateException.class,
                 () -> restarted.resume(ACTOR, pending.getExecutionId()));
     }
@@ -964,6 +964,80 @@ class AgentRuntimeImplControlTest {
     }
 
     @Test
+    void concurrentPersistedResumeDoesNotExecuteTheSameCheckpointTwice() throws Exception {
+        String executionId = "concurrent-resume";
+        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
+        AgentExecutionBO paused = persisted(executionId, 3, null, null);
+        paused.setLastCheckpointId("checkpoint-ready");
+        java.util.concurrent.CyclicBarrier bothReadPaused =
+                new java.util.concurrent.CyclicBarrier(2);
+        java.util.concurrent.atomic.AtomicInteger reads =
+                new java.util.concurrent.atomic.AtomicInteger();
+        when(repository.selectByExecutionId(ACTOR.tenantId(), executionId))
+                .thenAnswer(invocation -> {
+                    if (reads.getAndIncrement() < 2) {
+                        bothReadPaused.await(5, TimeUnit.SECONDS);
+                    }
+                    return paused;
+                });
+        AgentCheckpointBO checkpoint = new AgentCheckpointBO();
+        checkpoint.setTenantId(ACTOR.tenantId().value());
+        checkpoint.setExecutionId(executionId);
+        checkpoint.setCheckpointId("checkpoint-ready");
+        checkpoint.setNodeId("before-tool");
+        checkpoint.setStateData("{\"__agentCheckpointFormat\":\"langgraph4j-v2\","
+                + "\"nextNodeId\":\"block\",\"state\":{\"tenantId\":9,\"userId\":7},"
+                + "\"typeHints\":{}}");
+        when(checkpoints.selectLatestByExecutionId(ACTOR.tenantId(), executionId))
+                .thenReturn(checkpoint);
+        java.util.concurrent.atomic.AtomicInteger externalEffects =
+                new java.util.concurrent.atomic.AtomicInteger();
+        BaseNode sideEffect = new BaseNode(NodeConfig.builder()
+                .nodeId("block").nodeName("external-write").nodeType(NodeType.DEFAULT)
+                .timeout(0L).build()) {
+            @Override
+            protected NodeOutput doExecute(NodeInput input) {
+                externalEffects.incrementAndGet();
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(true);
+                output.addData("written", true);
+                return output;
+            }
+        };
+        AgentRuntimeImpl runtime = newRuntime(repository, sideEffect,
+                mock(EventPublisher.class), null, checkpoints);
+        java.util.concurrent.atomic.AtomicBoolean claimed =
+                new java.util.concurrent.atomic.AtomicBoolean();
+        when(repository.claimPausedForResume(
+                        ACTOR.tenantId(), executionId, "checkpoint-ready"))
+                .thenAnswer(invocation -> claimed.compareAndSet(false, true));
+        java.util.concurrent.ExecutorService callers =
+                java.util.concurrent.Executors.newFixedThreadPool(2);
+        try {
+            var first = callers.submit(() -> runtime.resume(ACTOR, executionId));
+            var second = callers.submit(() -> runtime.resume(ACTOR, executionId));
+            int completed = 0;
+            int rejected = 0;
+            for (var result : List.of(first, second)) {
+                try {
+                    assertEquals(ExecutionStatus.COMPLETED,
+                            result.get(5, TimeUnit.SECONDS).getStatus());
+                    completed++;
+                } catch (java.util.concurrent.ExecutionException failure) {
+                    assertTrue(failure.getCause() instanceof IllegalStateException);
+                    rejected++;
+                }
+            }
+            assertEquals(1, completed);
+            assertEquals(1, rejected);
+            assertEquals(1, externalEffects.get());
+        } finally {
+            callers.shutdownNow();
+        }
+    }
+
+    @Test
     void persistedPauseRejectsCheckpointThatDiffersFromExecutionRecord() {
         AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
@@ -1023,31 +1097,32 @@ class AgentRuntimeImplControlTest {
     }
 
     @Test
-    void failedResumeWriteDoesNotExposeUnpersistedRunningExecution() {
+    void failedResumeClaimDoesNotExposeUnclaimedRunningExecution() {
         AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
-        AgentExecutionBO paused = persisted("resume-write-failed", 3, null, null);
-        when(repository.selectByExecutionId(ACTOR.tenantId(), "resume-write-failed"))
+        AgentExecutionBO paused = persisted("resume-claim-failed", 3, null, null);
+        when(repository.selectByExecutionId(ACTOR.tenantId(), "resume-claim-failed"))
                 .thenReturn(paused);
         AgentCheckpointBO finalCheckpoint = new AgentCheckpointBO();
         finalCheckpoint.setTenantId(9L);
-        finalCheckpoint.setExecutionId("resume-write-failed");
+        finalCheckpoint.setExecutionId("resume-claim-failed");
         finalCheckpoint.setNodeId("graph_final");
         finalCheckpoint.setStateData("{\"answer\":\"saved\"}");
-        when(checkpoints.selectLatestByExecutionId(ACTOR.tenantId(), "resume-write-failed"))
+        when(checkpoints.selectLatestByExecutionId(ACTOR.tenantId(), "resume-claim-failed"))
                 .thenReturn(finalCheckpoint);
-        doThrow(new IllegalStateException("write unavailable"))
-                .when(repository).update(eq(ACTOR.tenantId()),
-                        argThat(value -> "resume-write-failed".equals(value.getExecutionId())
-                                && Integer.valueOf(0).equals(value.getStatus())));
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode(),
                 mock(EventPublisher.class), null, checkpoints);
+        when(repository.claimPausedForResume(
+                        ACTOR.tenantId(), "resume-claim-failed", null))
+                .thenReturn(false);
 
         assertThrows(IllegalStateException.class,
-                () -> runtime.resume(ACTOR, "resume-write-failed"));
+                () -> runtime.resume(ACTOR, "resume-claim-failed"));
 
         assertEquals(ExecutionStatus.PAUSED,
-                runtime.getStatus(ACTOR, "resume-write-failed"));
+                runtime.getStatus(ACTOR, "resume-claim-failed"));
+        verify(repository, never()).update(eq(ACTOR.tenantId()),
+                argThat(value -> "resume-claim-failed".equals(value.getExecutionId())));
     }
 
     @Test
@@ -1588,6 +1663,8 @@ class AgentRuntimeImplControlTest {
             AiRuntimeService runtime,
             AgentCheckpointRepository checkpointRepository,
             ToolApprovalService approvals) {
+        when(repository.claimPausedForResume(any(TenantId.class), anyString(), any()))
+                .thenReturn(true);
         AgentAdminRepository adminRepository = mock(AgentAdminRepository.class);
         AgentLoader loader = mock(AgentLoader.class);
         AgentCacheManager cacheManager = new AgentCacheManager(adminRepository, loader);

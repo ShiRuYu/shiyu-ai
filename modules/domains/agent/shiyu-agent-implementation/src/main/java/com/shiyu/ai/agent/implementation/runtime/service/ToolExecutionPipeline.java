@@ -4,6 +4,7 @@ import com.shiyu.ai.common.foundation.utils.JSONUtils;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.tooling.contract.api.ToolService.ToolExecutionContext;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -13,6 +14,7 @@ import java.util.HexFormat;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -49,6 +51,22 @@ public final class ToolExecutionPipeline {
      */
     public Result execute(
             AiRun run, Request request, Function<Map<String, Object>, Object> executor) {
+        Objects.requireNonNull(executor, "executor");
+        return executeWithContext(run, request, (arguments, context) -> executor.apply(arguments));
+    }
+
+    /**
+     * 执行工具，并向执行器传递与审批关联的稳定操作标识。
+     *
+     * @param run 当前运行
+     * @param request 工具请求
+     * @param executor 接收参数和执行上下文的工具执行器
+     * @return 执行结果或待审批状态
+     */
+    public Result executeWithContext(
+            AiRun run,
+            Request request,
+            BiFunction<Map<String, Object>, ToolExecutionContext, Object> executor) {
         Objects.requireNonNull(run, "run");
         Objects.requireNonNull(request, "request");
         Objects.requireNonNull(executor, "executor");
@@ -79,8 +97,10 @@ public final class ToolExecutionPipeline {
                     request.approvalId(), run.tenantId(), run.ownerUserId().value(),
                     run.id(), request.toolName(), redactedArgs);
         }
+        ToolExecutionContext executionContext = new ToolExecutionContext(
+                approval == null ? request.approvalId() : approval.id());
         try {
-            Object value = executor.apply(request.arguments());
+            Object value = executor.apply(request.arguments(), executionContext);
             String payload =
                     "{\"toolName\":\"" + escape(request.toolName()) + "\",\"success\":true}";
             runtime.append(run, AiRunEventType.TOOL_COMPLETED, payload, true);
@@ -116,7 +136,32 @@ public final class ToolExecutionPipeline {
             long ownerUserId,
             Request request,
             Function<Map<String, Object>, Object> executor) {
-        return execute(
+        Objects.requireNonNull(executor, "executor");
+        return executeByIdWithContext(
+                runId,
+                tenantId,
+                ownerUserId,
+                request,
+                (arguments, context) -> executor.apply(arguments));
+    }
+
+    /**
+     * 按运行标识执行工具，并向执行器传递稳定操作标识。
+     *
+     * @param runId 运行记录标识
+     * @param tenantId 租户标识
+     * @param ownerUserId 所有者用户标识
+     * @param request 工具请求
+     * @param executor 接收参数和执行上下文的工具执行器
+     * @return 执行结果或待审批状态
+     */
+    public Result executeByIdWithContext(
+            String runId,
+            TenantId tenantId,
+            long ownerUserId,
+            Request request,
+            BiFunction<Map<String, Object>, ToolExecutionContext, Object> executor) {
+        return executeWithContext(
                 runtime.requireRun(
                         runId,
                         Objects.requireNonNull(tenantId, "tenantId must not be null"),

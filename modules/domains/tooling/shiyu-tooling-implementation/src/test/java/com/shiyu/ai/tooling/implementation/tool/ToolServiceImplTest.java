@@ -3,6 +3,7 @@ package com.shiyu.ai.tooling.implementation.tool;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.shiyu.ai.tooling.implementation.tool.mcp.McpToolDescriptor.ParameterInfo;
+import com.shiyu.ai.tooling.contract.api.ToolService.ToolExecutionContext;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 验证 工具 Service Impl 相关功能、边界条件、异常路径和协作行为。
@@ -31,6 +33,22 @@ class ToolServiceImplTest {
         assertFalse(service.requiresApproval("CALCULATOR"));
         assertTrue(service.requiresApproval("external.write"));
         assertTrue(service.requiresApproval("missing-tool"));
+    }
+
+    @Test
+    void forwardsOperationIdToContextAwareToolExecutors() {
+        AtomicReference<ToolExecutionContext> received = new AtomicReference<>();
+        service.registerToolWithContext("REMOTE_WRITE", "remote write", Map.of(),
+                (parameters, context) -> {
+                    received.set(context);
+                    return "done";
+                });
+
+        var result = service.execute("REMOTE_WRITE", Map.of(),
+                new ToolExecutionContext("approval-42"));
+
+        assertTrue(result.success());
+        assertEquals("approval-42", received.get().operationId());
     }
 
     @Test

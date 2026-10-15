@@ -11,16 +11,50 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.tooling.contract.api.ToolService.ToolExecutionContext;
 
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 验证 工具 Execution Pipeline 相关功能、边界条件、异常路径和协作行为。
  */
 class ToolExecutionPipelineTest {
+    @Test
+    void passesApprovalIdAsStableOperationIdToTheExecutor() {
+        AiRuntimeService runtime =
+                new AiRuntimeService(new InMemoryAiRunRepository(), new InMemoryAiAppRepository());
+        AiRun run = runtime.startRun(
+                new AiRunContext(new TenantId(1), 2, null, null, null, null, null, null, Map.of()),
+                AiRunSource.AGENT, "agent-1", "model", "write");
+        ToolApprovalService approvals =
+                new ToolApprovalService(new InMemoryToolApprovalRepository());
+        ToolExecutionPipeline pipeline = new ToolExecutionPipeline(runtime, approvals);
+        String approvalId = pipeline.executeWithContext(run,
+                        new ToolExecutionPipeline.Request("filesystem.write", Map.of("path", "a"),
+                                "write", true, null),
+                        (args, context) -> {
+                            throw new AssertionError("must wait for approval");
+                        })
+                .approval().id();
+        approvals.decide(approvalId, new TenantId(1), 2, ToolApprovalStatus.APPROVED);
+        AtomicReference<ToolExecutionContext> received = new AtomicReference<>();
+
+        pipeline.executeWithContext(run,
+                new ToolExecutionPipeline.Request("filesystem.write", Map.of("path", "a"),
+                        "write", true, approvalId),
+                (args, context) -> {
+                    received.set(context);
+                    return "done";
+                });
+
+        assertNotNull(received.get());
+        assertEquals(approvalId, received.get().operationId());
+    }
+
     @Test
     void failedHighRiskToolCannotBeRetriedWithTheSameApproval() {
         AiRuntimeService runtime =

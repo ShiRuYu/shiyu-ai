@@ -3,6 +3,7 @@ import com.shiyu.ai.agent.implementation.event.model.AuditEvent;
 
 import com.shiyu.ai.agent.implementation.domain.model.AuditLogBO;
 import com.shiyu.ai.agent.implementation.port.repository.AuditLogRepository;
+import com.shiyu.ai.kernel.context.TenantScope;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,7 +60,12 @@ public class AuditEventListener {
             record.setErrorMsg(event.getErrorMsg());
             record.setDurationMs(event.getDurationMs());
             record.setCreateTime(LocalDateTime.now());
-            auditLogRepository.insert(event.getTenantId(), record);
+            TenantScope.withTenant(
+                    event.getTenantId(),
+                    () -> {
+                        auditLogRepository.insert(event.getTenantId(), record);
+                        return null;
+                    });
             log.debug(
                     "审计日志已记录: actionPresent={}, userIdPresent={}",
                     event.getAction() != null,

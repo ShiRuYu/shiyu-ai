@@ -41,8 +41,13 @@ class PlatformCredentialCipherTest {
     void detectsTamperedCiphertextAndOversizedCredentials() {
         PlatformCredentialCipher cipher = new PlatformCredentialCipher(MASTER_KEY);
         String stored = cipher.protect(7L, "temporary-test-secret");
+        int payloadStart = "enc:v1:".length();
+        char replacement = stored.charAt(payloadStart) == 'A' ? 'B' : 'A';
+        String tampered = stored.substring(0, payloadStart)
+                + replacement
+                + stored.substring(payloadStart + 1);
 
-        assertThatThrownBy(() -> cipher.unprotect(7L, stored.substring(0, stored.length() - 2) + "XX"))
+        assertThatThrownBy(() -> cipher.unprotect(7L, tampered))
                 .isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> cipher.protect(7L, "x".repeat(400)))
                 .isInstanceOf(IllegalArgumentException.class);

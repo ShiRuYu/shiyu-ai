@@ -118,6 +118,15 @@ class AgentInfrastructureCoverageTest {
     void recordsAuditOnlyForValidTenantAndContainsListenerFailures() {
         AuditLogRepository repository = mock(AuditLogRepository.class);
         AuditEventListener listener = new AuditEventListener(repository);
+        AtomicReference<TenantId> persistedTenant = new AtomicReference<>();
+        doAnswer(
+                        invocation -> {
+                            TenantId tenantId = invocation.getArgument(0);
+                            persistedTenant.set(TenantScope.requireMatches(tenantId));
+                            return null;
+                        })
+                .when(repository)
+                .insert(eq(new TenantId(7L)), any());
         AuditEvent valid =
                 new AuditEvent(
                         new TenantId(7L),
@@ -130,7 +139,10 @@ class AgentInfrastructureCoverageTest {
                         "SUCCESS",
                         null,
                         3L);
+        TenantScope.clear();
         listener.onAuditEvent(valid);
+        assertEquals(new TenantId(7L), persistedTenant.get());
+        assertTrue(TenantScope.current().isEmpty());
         listener.onAuditEvent(
                 new AuditEvent(null, 9L, "CREATE", "AGENT", "a1", "{}", null, "FAILED", "bad", 4L));
         assertThrows(

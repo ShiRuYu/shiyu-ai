@@ -115,9 +115,12 @@ public final class DeepSeekHttpProvider {
             total = input + output;
         }
         String finish = string(choice.get("finish_reason"));
+        boolean hasAssistantOutput = !content.isBlank() || !calls.isEmpty();
         return ChatResponse.builder()
-                .success(true)
-                .eventType("COMPLETED")
+                .success(hasAssistantOutput)
+                .eventType(hasAssistantOutput ? "COMPLETED" : "FAILED")
+                .errorMessage(
+                        hasAssistantOutput ? null : "DeepSeek returned no visible assistant content")
                 .content(content)
                 .reasoningContent(reasoning)
                 .platform("DEEPSEEK")
@@ -168,6 +171,8 @@ public final class DeepSeekHttpProvider {
                                 Map<Integer, String> toolIds = new LinkedHashMap<>();
                                 Map<Integer, String> toolNames = new LinkedHashMap<>();
                                 Map<Integer, StringBuilder> toolArgs = new LinkedHashMap<>();
+                                StringBuilder visibleContent = new StringBuilder();
+                                boolean toolCallReceived = false;
                                 boolean emittedBlock = false;
                                 boolean usageEmitted = false;
                                 String finishReason = "";
@@ -241,7 +246,8 @@ public final class DeepSeekHttpProvider {
                                                                 .providerRequestId(requestId)
                                                                 .build());
                                             String text = string(delta.get("content"));
-                                            if (!text.isBlank())
+                                            if (!text.isBlank()) {
+                                                visibleContent.append(text);
                                                 sink.next(
                                                         ChatResponse.builder()
                                                                 .success(true)
@@ -251,8 +257,10 @@ public final class DeepSeekHttpProvider {
                                                                 .model(model)
                                                                 .providerRequestId(requestId)
                                                                 .build());
+                                            }
                                             List<Map<String, Object>> deltas =
                                                     maps(delta.get("tool_calls"));
+                                            if (!deltas.isEmpty()) toolCallReceived = true;
                                             for (Map<String, Object> tool : deltas) {
                                                 int index = number(tool.get("index"));
                                                 String id = string(tool.get("id"));
@@ -308,6 +316,9 @@ public final class DeepSeekHttpProvider {
                                                     .finishReason(finishReason)
                                                     .build());
                                 }
+                                if (visibleContent.isEmpty() && !toolCallReceived)
+                                    throw new DeepSeekProviderException(
+                                            "DeepSeek returned no visible assistant content");
                                 sink.next(
                                         ChatResponse.builder()
                                                 .success(true)

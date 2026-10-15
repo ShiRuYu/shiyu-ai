@@ -49,7 +49,7 @@ class AuthControllerTest {
 
         LoginRequest request = new LoginRequest();
         request.setUsername("admin");
-        request.setPassword("123456");
+        request.setPassword("test-only-password");
         LoginResponseVO response = new LoginResponseVO();
         response.setId(2L);
         response.setUsername("admin");
@@ -58,7 +58,7 @@ class AuthControllerTest {
         response.setSwitchMode("NORMAL");
         when(rateLimiter.getClientIp()).thenReturn("127.0.0.1");
         when(rateLimiter.isAllowed("127.0.0.1")).thenReturn(true);
-        when(authService.login("admin", "123456", null, "127.0.0.1")).thenReturn(response);
+        when(authService.login("admin", "test-only-password", null, "127.0.0.1")).thenReturn(response);
 
         AtomicReference<UserContext> observedContext = new AtomicReference<>();
         doAnswer(

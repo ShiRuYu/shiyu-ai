@@ -1,6 +1,7 @@
 package com.shiyu.ai.agent.implementation.persistence.repository;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.agent.implementation.domain.enums.AgentExecutionStatus;
 import com.shiyu.ai.agent.implementation.domain.model.AgentExecutionBO;
 import com.shiyu.ai.agent.implementation.persistence.dataobject.AgentExecutionDO;
 import com.shiyu.ai.agent.implementation.persistence.mapper.AgentExecutionMapper;
@@ -38,6 +39,26 @@ public class AgentExecutionRepositoryImpl
         AgentExecutionDO execution = MapstructUtils.convert(bo, AgentExecutionDO.class);
         execution.setTenantId(tenantId.value());
         agentExecutionMapper.update(execution);
+    }
+
+    @Override
+    public boolean claimPausedForResume(
+            TenantId tenantId, String executionId, String expectedCheckpointId) {
+        if (tenantId == null || executionId == null || executionId.isBlank()) {
+            throw new IllegalArgumentException("execution tenant and ID are required");
+        }
+        QueryWrapper query = new QueryWrapper();
+        query.eq(AgentExecutionDO::getTenantId, tenantId.value());
+        query.eq(AgentExecutionDO::getExecutionId, executionId);
+        query.eq(AgentExecutionDO::getStatus, AgentExecutionStatus.PAUSED.getCode());
+        if (expectedCheckpointId == null) {
+            query.isNull(AgentExecutionDO::getLastCheckpointId);
+        } else {
+            query.eq(AgentExecutionDO::getLastCheckpointId, expectedCheckpointId);
+        }
+        AgentExecutionDO update = new AgentExecutionDO();
+        update.setStatus(AgentExecutionStatus.RUNNING.getCode());
+        return agentExecutionMapper.updateByQuery(update, query) == 1;
     }
 
     @Override

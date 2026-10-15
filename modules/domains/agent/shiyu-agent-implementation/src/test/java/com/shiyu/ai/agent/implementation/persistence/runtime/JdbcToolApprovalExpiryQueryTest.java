@@ -7,6 +7,7 @@ import com.shiyu.ai.agent.contract.runtime.AiRunSource;
 import com.shiyu.ai.agent.contract.runtime.AiRunStatus;
 import com.shiyu.ai.agent.implementation.runtime.model.ToolApproval;
 import com.shiyu.ai.agent.implementation.runtime.model.ToolApprovalStatus;
+import com.shiyu.ai.agent.implementation.runtime.service.ToolApprovalService;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
@@ -18,6 +19,32 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 /** 使用实际的 H2 运行时表结构验证全局审批过期扫描。 */
 class JdbcToolApprovalExpiryQueryTest {
+    @Test
+    void persistsManualNotExecutedResolutionInH2() {
+        var database = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
+                .addScript("db/baseline/h2/schema/agent/16_ai_runtime.sql").build();
+        try {
+            JdbcTemplate jdbc = new JdbcTemplate(database);
+            JdbcToolApprovalRepository approvals = new JdbcToolApprovalRepository(jdbc);
+            TenantId tenant = new TenantId(7);
+            Instant now = Instant.parse("2026-01-01T00:00:00Z");
+            ToolApproval claimed = new ToolApproval(
+                    "approval-1", "run-1", tenant.value(), 9, "CALCULATOR", "{}",
+                    ToolApprovalStatus.CLAIMED, now, now, now.plusSeconds(300));
+            TenantScope.withTenant(tenant, () -> {
+                approvals.insert(claimed);
+                ToolApproval resolved = new ToolApprovalService(approvals)
+                        .markClaimedNotExecuted(claimed.id(), tenant, 9);
+                assertEquals(ToolApprovalStatus.NOT_EXECUTED, resolved.status());
+                assertEquals(ToolApprovalStatus.NOT_EXECUTED,
+                        approvals.find(claimed.id(), tenant, 9).orElseThrow().status());
+                return null;
+            });
+        } finally {
+            database.shutdown();
+        }
+    }
+
     @Test
     void selectsOnlyOverdueApprovalsOnOwnedRunningRuns() {
         var database = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
