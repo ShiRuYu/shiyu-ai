@@ -53,7 +53,8 @@ jobs:
       - name: 预检依赖清单路径
         run: |
           mvn --batch-mode --no-transfer-progress -pl modules/domains/agent/shiyu-agent-implementation -am dependency:go-offline -DskipTests -Ddependency-check.skip=true
-          python scripts/architecture/check_dependency_manifests.py --allow-missing slf4j-api-2.0.17.jar "$HOME/.m2/repository/org/apache/opennlp/opennlp-tools/2.5.9/opennlp-tools-2.5.9.jar"
+          OPENNLP_VERSION="$(python -c 'import xml.etree.ElementTree as ET; root=ET.parse("pom.xml").getroot(); ns={"m":"http://maven.apache.org/POM/4.0.0"}; print(root.findtext("m:properties/m:opennlp.version", namespaces=ns))')"
+          python scripts/architecture/check_dependency_manifests.py --allow-missing slf4j-api-2.0.18.jar "$HOME/.m2/repository/org/apache/opennlp/opennlp-tools/$OPENNLP_VERSION/opennlp-tools-$OPENNLP_VERSION.jar"
 
       - name: 运行 Maven 编译、架构和测试门禁
         run: mvn --batch-mode --no-transfer-progress -Pstrict-warnings verify -Ddependency-check.skip=true
