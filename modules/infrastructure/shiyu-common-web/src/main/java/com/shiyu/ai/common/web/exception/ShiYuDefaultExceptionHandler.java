@@ -31,7 +31,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @Slf4j
 public class ShiYuDefaultExceptionHandler {
 
-    /** A disconnected SSE client has no usable response to write an error into. */
+    /** SSE 客户端断开后响应已不可用，无法继续写入错误信息。 */
     @ExceptionHandler(AsyncRequestNotUsableException.class)
     public void clientDisconnected(AsyncRequestNotUsableException e) {
         log.debug("客户端已断开流式响应: errorType={}", e.getClass().getSimpleName());

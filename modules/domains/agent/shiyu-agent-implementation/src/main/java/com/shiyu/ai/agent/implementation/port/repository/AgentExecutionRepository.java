@@ -64,13 +64,13 @@ public interface AgentExecutionRepository {
     List<AgentExecutionBO> selectByAgentId(TenantId tenantId, String agentId, int limit);
 
     /**
-     * Returns one user's Agent executions within a tenant before applying the result limit.
+     * 查询租户内指定用户的 Agent 执行记录，并对结果应用数量限制。
      *
-     * @param tenantId tenant that owns the records
-     * @param agentId Agent whose executions are requested
-     * @param userId owner of the executions
-     * @param limit maximum number of records to return
-     * @return the matching executions in repository order
+     * @param tenantId 记录所属租户
+     * @param agentId 待查询执行记录的 Agent 标识
+     * @param userId 执行记录所属用户标识
+     * @param limit 最多返回的记录数
+     * @return 按仓储顺序排列的匹配执行记录
      */
     List<AgentExecutionBO> selectByAgentIdAndUserId(
             TenantId tenantId, String agentId, long userId, int limit);

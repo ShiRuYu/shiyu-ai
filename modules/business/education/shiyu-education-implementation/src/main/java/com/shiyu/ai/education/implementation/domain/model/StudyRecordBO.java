@@ -42,22 +42,22 @@ public class StudyRecordBO implements Serializable {
      */
     private Long questionId;
 
-    /** Client-generated idempotency key for a formally submitted practice answer. */
+    /** 客户端为正式提交的练习答案生成的幂等键。 */
     private String submissionKey;
 
-    /** Submitted answer snapshot. */
+    /** 已提交答案的快照。 */
     private String selectedAnswer;
 
-    /** Correct answer snapshot for an idempotent retry. */
+    /** 用于幂等重试的正确答案快照。 */
     private String correctAnswer;
 
-    /** Explanation snapshot for an idempotent retry. */
+    /** 用于幂等重试的解析快照。 */
     private String answerAnalysis;
 
-    /** Question ability dimension captured when the answer was graded. */
+    /** 批改答案时记录的题目能力维度。 */
     private String abilityDimension;
 
-    /** Whether the trusted record has already contributed to the ability profile. */
+    /** 标记可信学习记录是否已计入能力画像。 */
     private Boolean analysisApplied;
 
     /**

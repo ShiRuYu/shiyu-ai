@@ -119,7 +119,7 @@ public class ToolApprovalService {
                 .orElseThrow(() -> new IllegalArgumentException("approval not found"));
     }
 
-    /** Atomically reserves an approval for exactly one matching tool invocation. */
+    /** 原子地为唯一匹配的工具调用占用审批记录。 */
     public ToolApproval claimForExecution(
             String id,
             TenantId tenantId,
@@ -142,6 +142,22 @@ public class ToolApprovalService {
             throw new IllegalStateException("tool approval has already been claimed");
         }
         return claimed;
+    }
+
+    /** 将已执行成功的占用审批记录推进到完成状态。 */
+    public ToolApproval completeClaimed(String id, TenantId tenantId, long ownerUserId) {
+        ToolApproval current = require(id, tenantId, ownerUserId);
+        if (current.status() != ToolApprovalStatus.CLAIMED) {
+            throw new IllegalStateException("tool approval is not claimed");
+        }
+        ToolApproval completed = new ToolApproval(
+                current.id(), current.runId(), current.tenantId(), current.ownerUserId(),
+                current.toolName(), current.argumentsRedacted(), ToolApprovalStatus.COMPLETED,
+                current.createdAt(), current.decidedAt(), current.expiresAt());
+        if (approvals.update(completed, ToolApprovalStatus.CLAIMED) != 1) {
+            throw new IllegalStateException("tool approval completion could not be recorded");
+        }
+        return completed;
     }
 
     /**

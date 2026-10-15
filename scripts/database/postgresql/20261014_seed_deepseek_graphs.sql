@@ -1,5 +1,5 @@
--- Run once on existing PostgreSQL installations after a database backup.
--- Route legacy system agents to DeepSeek while preserving other graph changes.
+-- 备份数据库后，在现有 PostgreSQL 数据库执行一次。
+-- 将旧系统 Agent 切换到 DeepSeek，同时保留图中的其他改动。
 
 UPDATE "agent_version"
 SET "graph_config" = REPLACE("graph_config", '"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B"', '"platform":"DEEPSEEK","modelName":"deepseek-flash"')

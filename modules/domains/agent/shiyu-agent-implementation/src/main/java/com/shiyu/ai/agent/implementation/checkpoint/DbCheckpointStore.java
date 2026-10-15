@@ -138,7 +138,7 @@ public class DbCheckpointStore implements CheckpointStore {
                     || !(state instanceof Map<?, ?> storedState)) {
                 throw new IllegalStateException("图检查点内容不完整");
             }
-            // v1 did not record Java scalar types. Intermediate v1 checkpoints must fail closed.
+            // v1 未记录 Java 标量类型，因此必须拒绝恢复处于中间状态的 v1 检查点。
             nextNodeId = "langgraph4j-v2".equals(format)
                     || "__agent_node_started__".equals(doObj.getNodeId()) ? value : null;
             Map<String, Object> restored = new LinkedHashMap<>();

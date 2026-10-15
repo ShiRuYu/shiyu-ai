@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-/** Persisted result visible only to the student who owns the attempt. */
+/** 已保存的考试结果，仅对应作答记录所属学生可见。 */
 public record ExamResultResponse(
         Long attemptId,
         Long examId,
@@ -14,7 +14,7 @@ public record ExamResultResponse(
         BigDecimal totalScore,
         Instant submittedAt,
         List<QuestionResult> questions) {
-    /** Submitted answer, correct answer, and awarded score. */
+    /** 提交的答案、正确答案及获得的分数。 */
     @Schema(name = "ExamQuestionResult")
     public record QuestionResult(
             Long questionId,

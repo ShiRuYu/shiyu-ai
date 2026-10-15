@@ -84,6 +84,10 @@ public final class ToolExecutionPipeline {
             String payload =
                     "{\"toolName\":\"" + escape(request.toolName()) + "\",\"success\":true}";
             runtime.append(run, AiRunEventType.TOOL_COMPLETED, payload, true);
+            if (approval != null) {
+                approval = approvals.completeClaimed(
+                        approval.id(), run.tenantId(), run.ownerUserId().value());
+            }
             return Result.completed(value, approval);
         } catch (RuntimeException ex) {
             runtime.append(

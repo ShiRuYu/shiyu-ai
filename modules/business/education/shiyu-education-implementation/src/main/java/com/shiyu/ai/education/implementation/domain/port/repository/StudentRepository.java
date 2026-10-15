@@ -28,7 +28,7 @@ public interface StudentRepository {
      */
     StudentBO selectByUserId(TenantId tenantId, Long userId);
 
-    /** Locks the student's row for a transactional learning write. */
+    /** 在事务性学习记录写入期间锁定学生记录。 */
     boolean lockForStudentWrite(TenantId tenantId, Long studentId);
 
     /**

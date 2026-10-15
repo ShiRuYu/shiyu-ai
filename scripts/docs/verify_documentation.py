@@ -78,8 +78,7 @@ def verify_links(files: list[Path], failures: list[str],
             checked += 1
             resolved = (path.parent / target).resolve()
             if not resolved.exists() and backend is not None and frontend is not None:
-                # Documentation uses the public sibling checkout names. Map those
-                # names to the explicitly paired worktrees during local verification.
+                # 文档使用公开的相邻仓库目录名；本地验收时映射到明确配对的工作树。
                 for alias, actual in ((backend.parent / "shiyu-ui", frontend),
                                       (frontend.parent / "shiyu-ai", backend)):
                     if resolved.is_relative_to(alias) and (actual / resolved.relative_to(alias)).exists():

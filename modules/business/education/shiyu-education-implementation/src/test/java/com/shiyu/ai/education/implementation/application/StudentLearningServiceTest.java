@@ -35,7 +35,7 @@ import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-/** Verifies the practice answer boundary for the authenticated student. */
+/** 验证已认证学生获取练习答案的权限边界。 */
 class StudentLearningServiceTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(9L), new UserId(37L), false);

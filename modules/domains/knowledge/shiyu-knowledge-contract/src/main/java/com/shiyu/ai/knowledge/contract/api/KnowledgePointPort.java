@@ -18,9 +18,9 @@ public interface KnowledgePointPort {
      */
     KnowledgeResponse getResponse(ActorContext actor, Long pointId);
 
-    /** List active points in tenant-visible education spaces for student tutoring. */
+    /** 列出租户可见教育空间中的有效知识点，供学生辅导使用。 */
     List<KnowledgeResponse> listStudentEducationPoints(ActorContext actor);
 
-    /** Read one tenant-visible education point, rejecting private and foreign points. */
+    /** 读取一个租户可见的教育知识点，并拒绝私有或其他租户的知识点。 */
     KnowledgeResponse getStudentEducationPoint(ActorContext actor, Long pointId);
 }

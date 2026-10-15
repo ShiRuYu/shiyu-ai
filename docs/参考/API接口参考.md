@@ -648,7 +648,9 @@
 |---|---|---|---|---|---|
 | GET | `/api/agent/approvals` | listAll | 登录态；细粒度权限见权限矩阵 | - | 200=*/*:ResultListToolApproval |
 | POST | `/api/agent/approvals/{id}/approve` | approve_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
+| POST | `/api/agent/approvals/{id}/approve-and-resume` | approveAndResume | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
 | POST | `/api/agent/approvals/{id}/reject` | reject_1 | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
+| POST | `/api/agent/approvals/{id}/reject-and-cancel` | rejectAndCancel | 登录态；细粒度权限见权限矩阵 | id[path,必填]:string | 200=*/*:ResultToolApproval |
 | GET | `/api/agent/runs/{runId}/approvals` | list_12 | 登录态；细粒度权限见权限矩阵 | runId[path,必填]:string | 200=*/*:ResultListToolApproval |
 | POST | `/api/agent/runs/{runId}/approvals` | request | 登录态；细粒度权限见权限矩阵 | runId[path,必填]:string; body[必填]=application/json:Request | 200=*/*:ResultToolApproval |
 
@@ -834,7 +836,7 @@
 | `AiModelRequest` | object | modelName | description:string; displayName:string; isDefault:string; modelConfig:string; modelName*:string; platformId:integer/int64; sort:integer/int32; status:string |
 | `AiModelResponse` | object | - | createTime:string/date-time; description:string; displayName:string; id:integer/int64; isDefault:string; modelConfig:string; modelName:string; platformId:integer/int64; platformName:string; sort:integer/int32; status:string; updateTime:string/date-time |
 | `AiModelVO` | object | - | createTime:string/date-time; description:string; displayName:string; id:integer/int64; isDefault:string; modelConfig:string; modelName:string; platformId:integer/int64; platformName:string; sort:integer/int32; status:string; updateTime:string/date-time |
-| `AiPlatformRequest` | object | code, name | adapterType:string(OPENAI_COMPATIBLE,OLLAMA); apiKey:string; availableModels:string; baseUrl:string; code*:string; extraConfig:string; isDefault:string; maxRetries:integer/int32; maxTokens:integer/int32; name*:string; remark:string; sort:integer/int32; status:string; temperature:number/double |
+| `AiPlatformRequest` | object | code, name | adapterType:string(OPENAI_COMPATIBLE,OLLAMA); apiKey:string; availableModels:string; baseUrl:string; clearApiKey:boolean; code*:string; extraConfig:string; isDefault:string; maxRetries:integer/int32; maxTokens:integer/int32; name*:string; remark:string; sort:integer/int32; status:string; temperature:number/double |
 | `AiPlatformResponse` | object | - | adapterType:string(OPENAI_COMPATIBLE,OLLAMA); availableModels:string; baseUrl:string; code:string; createTime:string/date-time; extraConfig:string; id:integer/int64; isDefault:string; maxRetries:integer/int32; maxTokens:integer/int32; name:string; remark:string; sort:integer/int32; status:string; temperature:number/double; updateTime:string/date-time |
 | `AiPlatformVO` | object | - | adapterType:string(OPENAI_COMPATIBLE,OLLAMA); availableModels:string; baseUrl:string; code:string; createTime:string/date-time; extraConfig:string; id:integer/int64; isDefault:string; maxRetries:integer/int32; maxTokens:integer/int32; name:string; remark:string; sort:integer/int32; status:string; temperature:number/double; updateTime:string/date-time |
 | `AiRun` | object | - | appId:string; appVersionId:string; completedAt:string/date-time; completionTokens:integer/int64; conversationId:string; costSnapshot:string; createdAt:string/date-time; errorCode:string; estimatedUsage:boolean; executionId:string; generationId:string; id:string; lastEventSeq:integer/int64; model:string; ownerUserId:UserId; parentRunId:string; promptHash:string; promptTokens:integer/int64; sourceId:string; sourceType:string(CONVERSATION,GENERATION,AGENT,KNOWLEDGE,MEMORY,TOOL,API); status:string(CREATED,RUNNING,COMPLETED,FAILED,CANCELLED); tenantId:TenantId; traceId:string; version:integer/int64 |
@@ -1259,13 +1261,14 @@
 | `ServerSentEventMapStringObject` | - | - | - |
 | `SessionResponse` | object | - | authenticated:boolean; csrfToken:string |
 | `SetTimezoneRequest` | object | timezone | timezone*:string |
+| `SourceRecord` | object | - | occurredAt:string/date-time; questionId:integer/int64; recordId:integer/int64; recordType:string; score:number/double |
 | `SpaceView` | object | - | accessMode:string; activeIndexVersion:integer/int64; bindingMode:string; chunkOverlap:integer/int32; chunkSize:integer/int32; chunkStrategy:string; code:string; createTime:string/date-time; description:string; difficultyScaleId:integer/int64; domainCode:string; embeddingProfile:string; id:integer/int64; name:string; rerankProfile:string; reviewMode:string; status:integer/int32; updateTime:string/date-time |
 | `StateGraphAgentState` | object | - | channels:object; stateFactory:AgentStateFactoryAgentState; stateSerializer:StateSerializerAgentState |
 | `StateSerializerAgentState` | - | - | - |
 | `StudentRequest` | object | grade, name, userId | className:string; grade*:integer/int32; gradeLevel:string; id:integer/int64; name*:string; school:string; status:integer/int32; studentNo:string; userId*:integer/int64 |
 | `StudentResponse` | object | - | className:string; gender:integer/int32; grade:integer/int32; gradeLevel:string; id:integer/int64; name:string; school:string; studentNo:string; userId:integer/int64 |
 | `StudentTutorRequest` | object | - | count:integer/int32; difficulty:integer/int32; knowledgeId:integer/int64; period:string; style:string; targetDate:string |
-| `StudentTutorResponse` | object | - | averageScore:number/double; content:string; insufficientData:boolean; knowledgeId:integer/int64; knowledgeName:string; period:string; recordCount:integer/int32 |
+| `StudentTutorResponse` | object | - | averageScore:number/double; content:string; insufficientData:boolean; knowledgeId:integer/int64; knowledgeName:string; period:string; recordCount:integer/int32; sources:array<SourceRecord> |
 | `StudyPlanRequest` | object | studentId | endDate:string/date; id:integer/int64; name:string; startDate:string/date; status:string; studentId*:integer/int64 |
 | `StudyPlanResponse` | object | - | completedItems:integer/int32; endDate:string; id:integer/int64; items:array<DailyTaskResponse>; name:string; startDate:string; status:integer/int32; statusDesc:string; studentId:integer/int64; totalItems:integer/int32 |
 | `StudyRecordRequest` | object | knowledgeId, recordType, studentId | accuracy:number/double; durationSec:integer/int32; id:integer/int64; knowledgeId*:integer/int64; questionId:integer/int64; recordType*:string; score:number/double; studentId*:integer/int64 |
@@ -1286,7 +1289,7 @@
 | `TextbookRequest` | object | grade, name, publisher, subjectCode | author:string; edition:string; grade*:integer/int32; id:integer/int64; isbn:string; name*:string; publisher*:string; status:integer/int32; subjectCode*:string |
 | `TextbookResponse` | object | - | grade:integer/int32; id:integer/int64; isbn:string; name:string; publisher:string; subjectCode:string |
 | `TimezoneOptionVO` | object | - | label:string; value:string |
-| `ToolApproval` | object | - | argumentsRedacted:string; createdAt:string/date-time; decidedAt:string/date-time; expiresAt:string/date-time; id:string; ownerUserId:integer/int64; runId:string; status:string(PENDING,APPROVED,REJECTED,EXPIRED); tenantId:integer/int64; toolName:string |
+| `ToolApproval` | object | - | argumentsRedacted:string; createdAt:string/date-time; decidedAt:string/date-time; expiresAt:string/date-time; id:string; ownerUserId:integer/int64; runId:string; status:string(PENDING,APPROVED,CLAIMED,COMPLETED,REJECTED,EXPIRED); tenantId:integer/int64; toolName:string |
 | `TranslateRequest` | object | - | provider:string; sourceLanguage:string; targetLanguage:string; text:string |
 | `TrendResponse` | object | - | dates:array<string>; values:array<number/double> |
 | `TtsRequest` | object | - | format:string; provider:string; text:string; voice:string |

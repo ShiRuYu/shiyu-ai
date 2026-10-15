@@ -31,7 +31,7 @@ public class QuestionBO implements Serializable {
      */
     private String type;
 
-    /** PRACTICE answers may be returned to students; EXAM_PRIVATE answers stay sealed. */
+    /** PRACTICE 题目的答案可返回给学生；EXAM_PRIVATE 题目的答案须保密。 */
     private String purpose;
 
     /**

@@ -1001,7 +1001,7 @@ WHERE T.ID = 1
   );
 
 -- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261005_exam_attempt.sql
--- Idempotent upgrade for H2 databases already marked with baseline 4.
+-- 对已标记为基线版本 4 的 H2 数据库执行幂等升级。
 UPDATE EDU_EXAM SET DEL_FLAG=0 WHERE DEL_FLAG IS NULL;
 UPDATE EDU_COURSE SET DEL_FLAG=0 WHERE DEL_FLAG IS NULL;
 UPDATE EDU_QUESTION SET DEL_FLAG=0 WHERE DEL_FLAG IS NULL;
@@ -1165,7 +1165,7 @@ WHERE "tenant_id" = 1 AND "owner_user_id" = 1 AND "status" = 'PUBLISHED'
               WHERE "id" = 2 AND "username" = 'admin');
 
 -- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261014_seed_deepseek_graphs.sql
--- Route legacy system agents to DeepSeek while preserving other graph changes.
+-- 将旧版系统 Agent 路由至 DeepSeek，同时保留图配置中的其他更改。
 
 UPDATE "agent_version"
 SET "graph_config" = REPLACE("graph_config", '"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B"', '"platform":"DEEPSEEK","modelName":"deepseek-flash"')

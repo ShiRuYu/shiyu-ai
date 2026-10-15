@@ -123,8 +123,8 @@ final class AgentExecutionLifecycle {
             stateStore.save(actor, result);
         } catch (Exception e) {
             if (execution.getStatus() == ExecutionStatus.COMPLETED) {
-                // A transient terminal write error must not turn a completed run into FAILED.
-                // Retry the same terminal state before publishing a completion event.
+                // 终态写入的暂时性故障不能将已完成的执行改为 FAILED。
+                // 发布完成事件前，先重试写入相同的终态。
                 try {
                     stateStore.save(actor, execution);
                     result = execution;
@@ -670,11 +670,11 @@ final class AgentExecutionLifecycle {
     }
 
     /**
-     * Binds the authorized Agent identity used by every node history record.
+     * 绑定已授权的 Agent 身份，供每条节点历史记录使用。
      *
-     * @param input caller-supplied graph input
-     * @param execution authorized execution whose identity overrides caller input
-     * @return graph input with the selected Agent identity and version
+     * @param input 调用方提供的图输入
+     * @param execution 已授权的执行，其身份信息会覆盖调用方输入
+     * @return 包含所选 Agent 身份和版本的图输入
      */
     static Map<String, Object> withExecution(Map<String, Object> input, Execution execution) {
         Map<String, Object> graphInput = withVersion(input, execution.getVersion());

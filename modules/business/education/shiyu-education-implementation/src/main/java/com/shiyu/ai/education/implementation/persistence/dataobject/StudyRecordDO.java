@@ -49,17 +49,17 @@ public class StudyRecordDO extends TenantEntity {
      * 题目标识，表示当前对象中的对应属性。
      */
     private Long questionId;
-    /** Idempotency key for practice submission. */
+    /** 练习提交的幂等键。 */
     private String submissionKey;
-    /** Submitted answer snapshot. */
+    /** 已提交答案的快照。 */
     private String selectedAnswer;
-    /** Correct answer snapshot. */
+    /** 正确答案快照。 */
     private String correctAnswer;
-    /** Explanation snapshot. */
+    /** 解析快照。 */
     private String answerAnalysis;
-    /** Graded question's ability dimension. */
+    /** 已评分题目的能力维度。 */
     private String abilityDimension;
-    /** Idempotent analysis marker. */
+    /** 防止重复分析的标记。 */
     private Boolean analysisApplied;
     /**
      * 分数，表示当前对象中的对应属性。

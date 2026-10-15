@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
-/** Starts an Agent app inside an owned conversation and streams persisted exchange IDs. */
+/** 在用户所属会话中启动 Agent 应用，并以流式方式返回已持久化的交互标识。 */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/conversation/conversations/{conversationId}/agent-executions")
 public class AgentConversationController {
     private final AgentConversationService service;
 
-    /** Executes a published app for the signed-in conversation owner. */
+    /** 为已登录的会话所有者执行已发布的应用。 */
     @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<Map<String, Object>>> execute(
             @PathVariable String conversationId, @Valid @RequestBody Request request) {
@@ -44,7 +44,7 @@ public class AgentConversationController {
                         .build());
     }
 
-    /** A stream that failed before its first event cannot use the JSON error converter. */
+    /** 首个事件发出前失败的流无法使用 JSON 错误转换器。 */
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
     public void startFailure(RuntimeException error, HttpServletResponse response) {
         if (!response.isCommitted()) {
@@ -52,7 +52,7 @@ public class AgentConversationController {
         }
     }
 
-    /** Published app selection and user input for an Agent conversation turn. */
+    /** Agent 会话轮次中选定的已发布应用及用户输入。 */
     public record Request(@NotBlank String appId, String appVersionId,
             @NotBlank String prompt, String sourceMessageId) {}
 }

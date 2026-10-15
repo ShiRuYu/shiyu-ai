@@ -6,7 +6,7 @@ import com.shiyu.ai.education.implementation.persistence.dataobject.ExamAttemptD
 
 import org.apache.ibatis.annotations.Mapper;
 
-/** Tenant-scoped exam attempt persistence mapper. */
+/** 按租户隔离的考试作答记录持久化映射器。 */
 @Mapper
 @UseDataSource("agent")
 public interface ExamAttemptMapper extends BaseMapperFlex<ExamAttemptDO> {}

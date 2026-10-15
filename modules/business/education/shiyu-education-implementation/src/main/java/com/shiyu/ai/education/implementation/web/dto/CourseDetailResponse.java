@@ -2,10 +2,10 @@ package com.shiyu.ai.education.implementation.web.dto;
 
 import java.util.List;
 
-/** Student-facing course outline. */
+/** 面向学生的课程大纲。 */
 public record CourseDetailResponse(CourseResponse course, List<Chapter> chapters) {
-    /** Visible chapter and its sections. */
+    /** 可见的章节及其小节。 */
     public record Chapter(Long id, String name, Integer orderNo, List<Section> sections) {}
-    /** Visible section within a course chapter. */
+    /** 课程章节中可见的小节。 */
     public record Section(Long id, String name, Integer orderNo, Integer durationMin) {}
 }

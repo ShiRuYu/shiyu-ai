@@ -16,7 +16,7 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-/** Verifies closed-page expiry across tenant boundaries. */
+/** 验证跨租户处理已关闭页面后的作答逾期情况。 */
 class ExamExpiryWorkerTest {
     @AfterEach
     void clearScope() {

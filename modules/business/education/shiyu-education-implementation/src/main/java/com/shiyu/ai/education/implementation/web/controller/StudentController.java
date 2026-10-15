@@ -32,7 +32,7 @@ public class StudentController {
      */
     private final StudentService studentService;
 
-    /** Returns the student belonging to the authenticated user in the active tenant. */
+    /** 返回当前租户内与已认证用户关联的学生信息。 */
     @SaCheckLogin
     @GetMapping("/me")
     public Result<StudentResponse> getMe() {

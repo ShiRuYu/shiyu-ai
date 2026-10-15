@@ -18,7 +18,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/** Releases paused executions after their tool approval deadline passes. */
+/** 工具审批超时后，释放暂停的执行。 */
 @Slf4j
 @Component
 public final class ToolApprovalExpirySweeper {

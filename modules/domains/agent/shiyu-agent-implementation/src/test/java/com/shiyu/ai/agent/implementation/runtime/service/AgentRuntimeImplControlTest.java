@@ -225,7 +225,7 @@ class AgentRuntimeImplControlTest {
         assertEquals("written", completed.getOutput().get("toolResult"));
         assertEquals(AiRunStatus.COMPLETED, runs.requireRun(run.id(), ACTOR.tenantId(),
                 ACTOR.userId().value()).status());
-        assertEquals(ToolApprovalStatus.CLAIMED, approvals.require(approval.id(),
+        assertEquals(ToolApprovalStatus.COMPLETED, approvals.require(approval.id(),
                 ACTOR.tenantId(), ACTOR.userId().value()).status());
         verify(tools).execute(eq("filesystem.write"), any());
         assertThrows(IllegalStateException.class,
@@ -1718,7 +1718,7 @@ class AgentRuntimeImplControlTest {
         }
     }
 
-    /** A provider-style failure returned as a value instead of an exception. */
+    /** 模拟提供方将失败作为返回值而非异常传出的节点。 */
     private static final class FailedOutputNode extends BaseNode {
         private FailedOutputNode() {
             super(NodeConfig.builder().nodeId("block").nodeName("block")

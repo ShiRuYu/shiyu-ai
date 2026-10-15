@@ -30,7 +30,7 @@ public interface ExamRepository {
      */
     PageData<ExamBO> selectPage(TenantId tenantId, int pageNum, int pageSize);
 
-    /** Page currently open published exams for the student's grade. */
+    /** 分页查询当前面向该学生年级开放的已发布考试。 */
     PageData<ExamBO> selectAvailable(TenantId tenantId, int grade, String subjectCode,
             LocalDateTime now, int pageNum, int pageSize);
 

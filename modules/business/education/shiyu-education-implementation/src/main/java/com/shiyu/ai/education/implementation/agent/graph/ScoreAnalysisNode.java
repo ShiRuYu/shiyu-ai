@@ -24,7 +24,7 @@ import java.util.List;
 @SuppressWarnings("this-escape")
 public class ScoreAnalysisNode extends BaseNode {
 
-    /** Server-side verifier and idempotent ability updater. */
+    /** 服务端核验器及幂等能力更新器。 */
     private final TrustedScoreAnalysisService analysis;
 
     /**
@@ -72,7 +72,7 @@ public class ScoreAnalysisNode extends BaseNode {
             output.addData("reviewNeeded", trusted.score() < 100D);
             return output;
         }
-        // Graph inputs may contain caller-controlled `correct` flags. They are never evidence.
+        // 图输入可能包含调用方可控制的 `correct` 标记，不能将其作为评分依据。
         output.setSuccess(true);
         output.setMsg("等待服务端判分记录");
         output.addData("questionCount", questions.size());

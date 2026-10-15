@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-/** A student-visible exam paper; answer keys and explanations are deliberately absent. */
+/** 学生可见的试卷，不包含标准答案和解析。 */
 public record ExamPaperResponse(
         Long examId,
         Long attemptId,
@@ -17,11 +17,11 @@ public record ExamPaperResponse(
         Instant deadlineAt,
         List<Section> sections) {
 
-    /** Ordered section without answer keys. */
+    /** 按顺序排列且不含标准答案的试卷章节。 */
     @Schema(name = "ExamPaperSection")
     public record Section(Long id, String name, Integer orderNo, List<Question> questions) {}
 
-    /** Student-visible question without grading fields. */
+    /** 学生可见且不含评分字段的试题。 */
     @Schema(name = "ExamPaperQuestion")
     public record Question(
             Long id,
@@ -31,7 +31,7 @@ public record ExamPaperResponse(
             BigDecimal score,
             List<Option> options) {}
 
-    /** Choice value and display label. */
+    /** 选项值及其展示文本。 */
     @Schema(name = "ExamPaperOption")
     public record Option(String value, String label) {}
 }

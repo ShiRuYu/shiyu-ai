@@ -63,7 +63,7 @@ public class ModelRouter {
                         true,
                         true);
         register(deepSeekFlash);
-        // Preserve routes saved with the historical model name.
+        // 保留使用历史模型名称保存的路由。
         register(new ModelProviderCapabilities(
                 deepSeekFlash.provider(), "deepseek-v4-flash", deepSeekFlash.features(),
                 deepSeekFlash.contextWindow(), deepSeekFlash.streaming(), deepSeekFlash.tools(),

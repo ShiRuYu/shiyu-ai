@@ -29,7 +29,7 @@ public interface CourseRepository {
      */
     PageData<CourseBO> selectPage(TenantId tenantId, int pageNum, int pageSize);
 
-    /** Page only courses visible in the student's catalog. */
+    /** 分页查询学生课程目录中可见的课程。 */
     PageData<CourseBO> selectCatalogPage(TenantId tenantId, String subjectCode,
             Integer grade, int pageNum, int pageSize);
 

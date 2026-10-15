@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/** Narrow student catalog and answer-safe practice access. */
+/** 限定学生可访问的课程目录及不泄露答案的练习内容。 */
 @Service
 @RequiredArgsConstructor
 public class StudentLearningService {
@@ -94,7 +94,7 @@ public class StudentLearningService {
         return visible(requireQuestion(actor, id));
     }
 
-    /** Lists only active wrong practice questions owned by the current student. */
+    /** 仅列出当前学生本人尚未解决的练习错题。 */
     public List<WrongPracticeResponse> wrongQuestions(ActorContext actor) {
         StudentBO student = requireStudent(actor);
         List<WrongPracticeResponse> visible = new ArrayList<>();
@@ -124,7 +124,7 @@ public class StudentLearningService {
                 question.getAnswer(), question.getAnalysis());
     }
 
-    /** Submits one answer as a trusted, idempotent learning fact. */
+    /** 将一次答题提交为可信且可幂等处理的学习记录。 */
     @Transactional(rollbackFor = Exception.class)
     public PracticeSubmissionResponse submit(ActorContext actor, Long id,
             String answer, String submissionKey) {

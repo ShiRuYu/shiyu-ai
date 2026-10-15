@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** Checks real model HTTP traffic against tenant-specific platform URLs and credentials. */
+/** 验证实际模型 HTTP 请求使用对应租户的平台地址和凭据。 */
 class ModelTenantHttpTest {
     @Test
     void ordinaryAndStreamingCallsReachOnlyTheRequestedTenantsEndpoint() throws Exception {

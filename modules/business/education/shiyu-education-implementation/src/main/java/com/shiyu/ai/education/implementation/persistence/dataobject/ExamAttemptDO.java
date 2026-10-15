@@ -10,7 +10,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/** One durable attempt per student and exam. */
+/** 每名学生在每场考试中仅有一条持久化作答记录。 */
 @Data
 @Table("edu_exam_attempt")
 public class ExamAttemptDO {

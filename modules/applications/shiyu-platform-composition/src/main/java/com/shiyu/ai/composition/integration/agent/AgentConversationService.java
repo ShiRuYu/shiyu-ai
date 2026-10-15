@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
-/** Joins a published Agent app execution to the signed-in user's conversation. */
+/** 将已发布 Agent 应用的执行关联到已登录用户的会话。 */
 @Service
 @RequiredArgsConstructor
 public class AgentConversationService implements AgentConversationCompletionPort {
@@ -32,7 +32,7 @@ public class AgentConversationService implements AgentConversationCompletionPort
     private final AiRuntimeService runtime;
     private final AgentRuntime agents;
 
-    /** Append the outcome after an approved execution continues from its checkpoint. */
+    /** 已获批的执行从检查点继续后，将结果追加到会话中。 */
     @Override
     public void completeApprovedRun(ActorContext actor, AiRun run, Execution execution) {
         if (actor == null || run == null || execution == null
@@ -108,7 +108,7 @@ public class AgentConversationService implements AgentConversationCompletionPort
                         ? text : JSONUtils.toJsonString(output);
     }
 
-    /** Persists the input and streams status, output, and the persisted message IDs. */
+    /** 持久化输入，并以流式方式返回状态、输出和已持久化的消息标识。 */
     public Flux<Map<String, Object>> execute(ActorContext actor, String conversationId,
             String appId, String appVersionId, String prompt, String sourceMessageId) {
         if (actor == null || actor.tenantId() == null || actor.userId() == null

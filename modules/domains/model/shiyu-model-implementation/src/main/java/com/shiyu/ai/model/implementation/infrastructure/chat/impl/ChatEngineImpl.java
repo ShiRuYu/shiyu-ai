@@ -108,10 +108,10 @@ public class ChatEngineImpl implements ChatEngine {
     }
 
     /**
-     * Calls a model while the validated request tenant is bound to the current thread.
+     * 将已校验的请求租户绑定到当前线程后调用模型。
      *
-     * @param request validated chat request
-     * @return model response or a sanitized failure
+     * @param request 已校验的聊天请求
+     * @return 模型响应或经过脱敏处理的失败结果
      */
     private ChatResponse chatForTenant(ChatRequest request) {
         long started = System.currentTimeMillis();

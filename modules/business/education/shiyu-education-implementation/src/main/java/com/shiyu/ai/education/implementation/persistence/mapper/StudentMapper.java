@@ -14,7 +14,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 @UseDataSource("agent")
 public interface StudentMapper extends BaseMapperFlex<StudentDO> {
-    /** Locks an owned student row until the surrounding transaction completes. */
+    /** 锁定当前租户的学生记录，直至所属事务结束。 */
     @Select("SELECT id FROM edu_student WHERE tenant_id = #{tenantId} AND id = #{id} FOR UPDATE")
     Long lockForStudentWrite(@Param("tenantId") long tenantId, @Param("id") long id);
 }

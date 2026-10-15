@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** Prevents a malformed historical role assignment from expanding login tenant scope. */
+/** 验证格式错误的历史角色分配不会扩大登录时可访问的租户范围。 */
 class AuthAuthenticationTenantBoundaryTest {
     @Test
     void loginRejectsDisabledOrDeletedCurrentTenantBeforeIssuingToken() {

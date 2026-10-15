@@ -89,7 +89,7 @@ public class AgentExecutor implements AutoCloseable {
                 ignored -> {});
     }
 
-    /** Execute while recording each durable checkpoint on the owning execution. */
+    /** 执行 Agent，并将每个已持久化的检查点记录到所属执行中。 */
     public Execution executeAgent(
             TenantId tenantId,
             AgentDefinition definition,
@@ -182,7 +182,7 @@ public class AgentExecutor implements AutoCloseable {
                 ignored -> {});
     }
 
-    /** Resume while recording checkpoints produced by subsequent nodes. */
+    /** 从检查点恢复执行，并记录后续节点产生的检查点。 */
     public Execution resumeFromCheckpoint(
             ActorContext actor,
             Execution execution,

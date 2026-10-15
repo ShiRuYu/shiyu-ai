@@ -40,7 +40,7 @@ public final class AgentGraphCheckpointSaver implements BaseCheckpointSaver {
         this(tenantId, executionId, manager, ignored -> {});
     }
 
-    /** Record the checkpoint ID on its execution only after its data is durable. */
+    /** 检查点数据持久化后，才将其标识记录到所属执行中。 */
     public AgentGraphCheckpointSaver(TenantId tenantId, String executionId,
             CheckpointManager manager, Consumer<String> checkpointRecorded) {
         if (tenantId == null || executionId == null || executionId.isBlank() || manager == null) {
@@ -117,7 +117,7 @@ public final class AgentGraphCheckpointSaver implements BaseCheckpointSaver {
                 STARTED_NODE, nodeId, Map.of()));
     }
 
-    /** Save the state before a tool that has requested approval without executing it. */
+    /** 保存待审批工具执行前的状态，不执行该工具。 */
     public void markApprovalPending(RunnableConfig config, String nodeId,
             Map<String, Object> state, String approvalId) {
         requireExecution(config);
@@ -196,7 +196,7 @@ public final class AgentGraphCheckpointSaver implements BaseCheckpointSaver {
         return STARTED_NODE.equals(checkpoint.getNodeId());
     }
 
-    /** Whether the node is safely waiting before its approved side effect. */
+    /** 判断节点是否停在获批操作执行前，安全等待审批。 */
     public static boolean isApprovalPending(Checkpoint checkpoint) {
         return checkpoint != null && APPROVAL_PENDING_NODE.equals(checkpoint.getNodeId());
     }

@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Verifies tenant isolation and idempotent module defaults. */
+/** 验证租户隔离和模块默认配置的幂等性。 */
 class TenantModuleAccessRepositoryImplTest {
     private TenantModuleAccessMapper mapper;
     private TenantModuleAccessRepositoryImpl repository;

@@ -57,5 +57,6 @@ public final class PlatformCredentialMigration implements ApplicationRunner {
         return migrated;
     }
 
+    /** 保存迁移期间读取的平台凭据及其租户归属。 */
     private record StoredCredential(long id, long tenantId, String value) {}
 }

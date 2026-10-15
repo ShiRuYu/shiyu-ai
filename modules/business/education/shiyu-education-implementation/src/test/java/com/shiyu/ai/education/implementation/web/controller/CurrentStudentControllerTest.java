@@ -16,7 +16,7 @@ import com.shiyu.ai.kernel.context.UserId;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-/** Verifies that student self-service resolves the current authenticated actor. */
+/** 验证学生自助服务正确识别当前已认证用户。 */
 class CurrentStudentControllerTest {
 
     @Test

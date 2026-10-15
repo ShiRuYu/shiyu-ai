@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** One-time, transactional backfill of the repository's H2 education demo seed. */
+/** 在单个事务中回填仓库的 H2 教育演示种子数据。 */
 public class BackfillDemoEducation {
     private static final Pattern TABLE = Pattern.compile("(?i)INSERT\\s+INTO\\s+\"PUBLIC\"\\.\"([A-Z_]+)\"");
     private static final List<String> FILES = List.of(

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
-/** Student-only course and practice endpoints. */
+/** 仅供学生使用的课程与练习接口。 */
 @RestController
 @RequestMapping("/student-learning")
 @RequiredArgsConstructor
@@ -63,7 +63,7 @@ public class StudentLearningController {
         return Result.success(learning.question(ActorContextHttpAdapter.currentActor(), id));
     }
 
-    /** Returns the current student's unresolved wrong practice questions. */
+    /** 返回当前学生尚未解决的练习错题。 */
     @SaCheckLogin
     @GetMapping("/wrong-questions")
     public Result<List<WrongPracticeResponse>> wrongQuestions() {
@@ -78,7 +78,7 @@ public class StudentLearningController {
                 id, request.answer()));
     }
 
-    /** Records one graded student practice answer, safe to retry with the same key. */
+    /** 记录一次已评分的学生练习作答；使用相同提交键重试时可安全复用结果。 */
     @SaCheckLogin
     @PostMapping("/questions/{id}/submissions")
     public Result<PracticeSubmissionResponse> submit(@PathVariable Long id,

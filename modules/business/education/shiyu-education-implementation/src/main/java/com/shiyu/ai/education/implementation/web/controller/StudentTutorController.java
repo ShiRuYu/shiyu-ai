@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Bounded tutor endpoints available to logged-in users with an active student profile. */
+/** 面向已登录且有有效学生档案的用户提供受限的辅导接口。 */
 @RestController
 @RequestMapping("/student-tutor")
 @RequiredArgsConstructor
@@ -23,31 +23,31 @@ import org.springframework.web.bind.annotation.RestController;
 public class StudentTutorController {
     private final StudentTutorService tutor;
 
-    /** Returns education points published to the current student's tenant. */
+    /** 返回已发布给当前学生所属租户的教育知识点。 */
     @GetMapping("/knowledge")
     public Result<List<KnowledgeResponse>> knowledge() {
         return Result.success(tutor.knowledge(ActorContextHttpAdapter.currentActor()));
     }
 
-    /** Generates a grounded lesson for the current student. */
+    /** 根据已选知识点为当前学生生成讲解。 */
     @PostMapping("/teach")
     public Result<StudentTutorResponse> teach(@RequestBody StudentTutorRequest request) {
         return Result.success(tutor.teach(ActorContextHttpAdapter.currentActor(), request));
     }
 
-    /** Generates non-graded practice suggestions for the current student. */
+    /** 为当前学生生成不计分的练习建议。 */
     @PostMapping("/practice")
     public Result<StudentTutorResponse> practice(@RequestBody StudentTutorRequest request) {
         return Result.success(tutor.practice(ActorContextHttpAdapter.currentActor(), request));
     }
 
-    /** Generates a study plan for a visible point. */
+    /** 针对一个可见知识点生成学习计划。 */
     @PostMapping("/plan")
     public Result<StudentTutorResponse> plan(@RequestBody StudentTutorRequest request) {
         return Result.success(tutor.plan(ActorContextHttpAdapter.currentActor(), request));
     }
 
-    /** Summarizes the current student's real records. */
+    /** 汇总当前学生的实际学习记录。 */
     @PostMapping("/report")
     public Result<StudentTutorResponse> report(@RequestBody StudentTutorRequest request) {
         return Result.success(tutor.report(ActorContextHttpAdapter.currentActor(), request));

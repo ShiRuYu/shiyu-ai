@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-/** Settles exam attempts after the deadline even when students close their pages. */
+/** 即使学生关闭页面，也会在截止时间后结算考试作答记录。 */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -18,7 +18,7 @@ public class ExamExpiryWorker {
     private final ExamTakingService service;
     private Long lastScannedAttemptId;
 
-    /** Process a bounded batch; each attempt uses its own transaction and tenant scope. */
+    /** 按批次处理到期作答记录；每条记录使用独立事务和租户作用域。 */
     @Scheduled(initialDelayString = "${shiyu.education.exam.expiry-initial-delay-ms:5000}",
             fixedDelayString = "${shiyu.education.exam.expiry-delay-ms:10000}")
     public synchronized void settleDueAttempts() {

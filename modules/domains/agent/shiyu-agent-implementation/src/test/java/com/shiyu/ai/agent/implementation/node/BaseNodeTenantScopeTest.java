@@ -11,6 +11,7 @@ import com.shiyu.ai.kernel.context.TenantScope;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
+/** 验证限时节点的工作线程继承调用方租户上下文。 */
 class BaseNodeTenantScopeTest {
     @Test
     void timedNodeKeepsTenantScopeInWorkerThread() throws Exception {

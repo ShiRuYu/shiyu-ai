@@ -64,7 +64,7 @@ public class AgentExecutionDO extends TenantEntity {
      */
     private String nodeType;
 
-    /** Last checkpoint durably associated with this execution. */
+    /** 与本次执行持久关联的最近一个检查点标识。 */
     private String lastCheckpointId;
 
     /**

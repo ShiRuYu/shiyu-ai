@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-/** Builds answer-free papers for the authenticated student. */
+/** 为已认证学生生成不含答案的试卷。 */
 @Service
 public class ExamTakingService {
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -140,7 +140,7 @@ public class ExamTakingService {
                 page.getTotal());
     }
 
-    /** List open exams with only the authenticated student's attempt state. */
+    /** 列出开放中的考试，仅附带已认证学生本人的作答状态。 */
     public PageData<ExamSummaryResponse> availableSummaries(ActorContext actor,
             String subjectCode, int pageNum, int pageSize) {
         StudentBO student = requireStudent(actor);
@@ -155,7 +155,7 @@ public class ExamTakingService {
                 .toList(), page.getTotal());
     }
 
-    /** Include prior attempts even after the exam window has closed. */
+    /** 即使考试时间窗口已关闭，仍返回学生此前的作答记录。 */
     @Transactional(rollbackFor = Exception.class)
     public PageData<ExamSummaryResponse> history(ActorContext actor, int pageNum, int pageSize) {
         StudentBO student = requireStudent(actor);
@@ -182,7 +182,7 @@ public class ExamTakingService {
         return new PageData<>(entries.subList(from, to), entries.size());
     }
 
-    /** Settle one due attempt selected by the trusted background worker. */
+    /** 结算由可信后台任务选出的一条到期作答记录。 */
     @Transactional(rollbackFor = Exception.class)
     public void settleExpiredAttempt(TenantId tenantId, Long attemptId) {
         TenantScope.requireMatches(tenantId);
@@ -211,7 +211,7 @@ public class ExamTakingService {
                 attempt == null ? null : attempt.score());
     }
 
-    /** Start once, or reopen the student's existing in-progress snapshot. */
+    /** 首次开始考试，或重新打开学生已有的进行中试卷快照。 */
     @Transactional(rollbackFor = Exception.class)
     public ExamPaperResponse start(ActorContext actor, Long examId) {
         StudentBO student = requireStudent(actor);
@@ -277,7 +277,7 @@ public class ExamTakingService {
                 toInstant(deadline), visible.sections());
     }
 
-    /** Persist every answer and finalize the attempt transactionally. */
+    /** 在同一事务中保存所有答案并完成本次作答。 */
     @Transactional(rollbackFor = Exception.class)
     public ExamResultResponse submit(
             ActorContext actor, Long attemptId, SubmitExamRequest request) {
@@ -349,7 +349,7 @@ public class ExamTakingService {
         return completedResult(attempt, taking.attemptQuestions(actor.tenantId(), attemptId));
     }
 
-    /** Persist one student answer without exposing its correct answer or changing the score. */
+    /** 保存学生的一条答案，不暴露正确答案，也不改变分数。 */
     @Transactional(rollbackFor = Exception.class)
     public void saveDraft(ActorContext actor, Long attemptId, SubmitExamRequest.Answer answer) {
         var attempt = requireOwnedAttempt(actor, attemptId);
@@ -370,7 +370,7 @@ public class ExamTakingService {
         taking.saveDraftAnswer(actor.tenantId(), snapshot.id(), value);
     }
 
-    /** Return only the student's saved choices, never the snapshot answer key. */
+    /** 仅返回学生已保存的选项，不返回试卷快照中的答案。 */
     public Map<Long, String> draft(ActorContext actor, Long attemptId) {
         var attempt = requireOwnedAttempt(actor, attemptId);
         if (!"STARTED".equals(attempt.status()) || attempt.deadlineAt() == null

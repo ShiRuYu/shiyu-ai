@@ -207,7 +207,7 @@ class AgentCacheManagerTest {
             try {
                 eviction.get(200, TimeUnit.MILLISECONDS);
             } catch (java.util.concurrent.TimeoutException expected) {
-                // Eviction waits for the in-flight load before clearing its cached result.
+                // 缓存逐出会等待进行中的加载完成，再清除其缓存结果。
             } finally {
                 finishLoad.countDown();
             }

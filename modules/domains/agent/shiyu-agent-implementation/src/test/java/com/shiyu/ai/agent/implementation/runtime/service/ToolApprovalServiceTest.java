@@ -28,6 +28,44 @@ import java.util.concurrent.Future;
  */
 class ToolApprovalServiceTest {
     @Test
+    void completionRequiresClaimedApproval() {
+        InMemoryToolApprovalRepository repository = new InMemoryToolApprovalRepository();
+        Instant now = Instant.now();
+        ToolApproval pending = new ToolApproval("approval-1", "run-1", 1, 2, "tool", "{}",
+                ToolApprovalStatus.PENDING, now, null, now.plusSeconds(60));
+        repository.insert(pending);
+
+        assertThrows(IllegalStateException.class, () -> new ToolApprovalService(repository)
+                .completeClaimed(pending.id(), new TenantId(1), 2));
+        assertEquals(ToolApprovalStatus.PENDING, repository.find(pending.id(), new TenantId(1), 2)
+                .orElseThrow().status());
+    }
+
+    @Test
+    void completionConflictPreservesClaimedApproval() {
+        InMemoryToolApprovalRepository repository = new CompletionConflictRepository();
+        Instant now = Instant.now();
+        ToolApproval claimed = new ToolApproval("approval-1", "run-1", 1, 2, "tool", "{}",
+                ToolApprovalStatus.CLAIMED, now, now, now.plusSeconds(60));
+        repository.insert(claimed);
+
+        assertThrows(IllegalStateException.class, () -> new ToolApprovalService(repository)
+                .completeClaimed(claimed.id(), new TenantId(1), 2));
+        assertEquals(ToolApprovalStatus.CLAIMED, repository.find(claimed.id(), new TenantId(1), 2)
+                .orElseThrow().status());
+    }
+
+    /** 模拟完成状态写入时的乐观并发冲突。 */
+    private static final class CompletionConflictRepository extends InMemoryToolApprovalRepository {
+        @Override
+        public int update(ToolApproval approval, ToolApprovalStatus expectedStatus) {
+            if (expectedStatus == ToolApprovalStatus.CLAIMED
+                    && approval.status() == ToolApprovalStatus.COMPLETED) return 0;
+            return super.update(approval, expectedStatus);
+        }
+    }
+
+    @Test
     void concurrentClaimsAllowOnlyOneExecution() throws Exception {
         ToolApprovalService service = new ToolApprovalService(new InMemoryToolApprovalRepository());
         ToolApproval pending = service.request("run-1", new TenantId(1), 2, "tool", "hash");

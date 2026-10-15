@@ -6,7 +6,7 @@ import com.shiyu.ai.education.implementation.persistence.dataobject.ExamAttemptQ
 
 import org.apache.ibatis.annotations.Mapper;
 
-/** Tenant-scoped immutable exam question snapshot mapper. */
+/** 按租户隔离的不可变考试题目快照映射器。 */
 @Mapper
 @UseDataSource("agent")
 public interface ExamAttemptQuestionMapper extends BaseMapperFlex<ExamAttemptQuestionDO> {}

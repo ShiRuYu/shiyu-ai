@@ -67,6 +67,6 @@ public interface ToolApprovalRepository {
      */
     int expirePending(TenantId tenantId, long ownerUserId);
 
-    /** Returns overdue approvals whose runs still need a terminal outcome. */
+    /** 查询已逾期且所属执行仍需写入终态结果的审批。 */
     List<ToolApproval> findOverdueRunning(Instant now, int limit);
 }

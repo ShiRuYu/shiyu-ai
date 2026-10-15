@@ -468,11 +468,11 @@ public class ModelManager implements ApplicationRunner, ModelRoutingPort {
     }
 
     /**
-     * Reads a platform only from the authenticated tenant and rejects disabled entries.
+     * 仅从已认证的租户读取平台，并拒绝已停用的条目。
      *
-     * @param tenantId authenticated request tenant
-     * @param code platform code requested by the model call
-     * @return enabled platform owned by the request tenant
+     * @param tenantId 已认证的请求租户
+     * @param code 模型调用请求的平台代码
+     * @return 请求租户所属且已启用的平台
      */
     private AiPlatformBO requireTenantPlatform(TenantId tenantId, String code) {
         AiPlatformBO platform = TenantScope.withTenant(tenantId,

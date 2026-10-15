@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
-/** Verifies confidential question selection and publication boundaries. */
+/** 验证保密题目选取及考试发布边界。 */
 class ExamPublishingServiceTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(7), new UserId(9), false);

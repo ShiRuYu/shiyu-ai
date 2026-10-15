@@ -16,7 +16,7 @@ public interface ToolService {
      */
     ToolExecutionResult execute(String toolName, Map<String, Object> parameters);
 
-    /** External or unknown tools require approval unless an implementation proves them safe. */
+    /** 外部工具或未知工具需要审批，除非具体实现能证明其安全。 */
     default boolean requiresApproval(String toolName) {
         return true;
     }

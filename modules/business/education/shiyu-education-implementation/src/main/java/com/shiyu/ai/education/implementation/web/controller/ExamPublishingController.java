@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Administrative paper composition and publishing. */
+/** 管理端的试卷编排与发布接口。 */
 @RestController
 @RequestMapping("/exam")
 @RequiredArgsConstructor

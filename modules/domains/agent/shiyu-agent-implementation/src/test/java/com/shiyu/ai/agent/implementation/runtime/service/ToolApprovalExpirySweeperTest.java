@@ -19,7 +19,7 @@ import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 
-/** Verifies that expired approvals release their paused execution without invoking a tool. */
+/** 验证审批过期后释放暂停的执行，且不会调用工具。 */
 class ToolApprovalExpirySweeperTest {
     @Test
     void concurrentApprovalWinsOverExpiryWithoutCancellingExecution() {

@@ -9,6 +9,7 @@ public enum ToolApprovalStatus {
     PENDING,
     APPROVED,
     CLAIMED,
+    COMPLETED,
     REJECTED,
     EXPIRED
 }

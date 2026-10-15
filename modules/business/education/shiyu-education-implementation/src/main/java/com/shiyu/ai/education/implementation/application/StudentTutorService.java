@@ -21,7 +21,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/** Restricts student tutoring to four education operations and the signed-in student's data. */
+/** 将学生辅导限定为四种教育操作，并仅使用已登录学生本人的数据。 */
 @Service
 @RequiredArgsConstructor
 public class StudentTutorService {
@@ -31,13 +31,13 @@ public class StudentTutorService {
     private final KnowledgePointPort points;
     private final ChatEngine chatEngine;
 
-    /** Lists the knowledge points explicitly published to the actor's tenant. */
+    /** 列出明确发布给当前操作者所属租户的知识点。 */
     public List<KnowledgeResponse> knowledge(ActorContext actor) {
         requireStudent(actor);
         return points.listStudentEducationPoints(actor);
     }
 
-    /** Generates a lesson grounded in the selected tenant-visible point. */
+    /** 根据所选且对当前租户可见的知识点生成讲解。 */
     public StudentTutorResponse teach(ActorContext actor, StudentTutorRequest request) {
         requireStudent(actor);
         KnowledgeResponse point = point(actor, request);
@@ -49,7 +49,7 @@ public class StudentTutorService {
         return result(point, generate(actor, prompt));
     }
 
-    /** Generates practice suggestions grounded in the selected point. */
+    /** 根据所选知识点生成练习建议。 */
     public StudentTutorResponse practice(ActorContext actor, StudentTutorRequest request) {
         requireStudent(actor);
         KnowledgeResponse point = point(actor, request);
@@ -64,7 +64,7 @@ public class StudentTutorService {
         return result(point, generate(actor, prompt));
     }
 
-    /** Generates a study plan for one visible point and a validated future date. */
+    /** 针对一个可见知识点和已校验的未来日期生成学习计划。 */
     public StudentTutorResponse plan(ActorContext actor, StudentTutorRequest request) {
         requireStudent(actor);
         KnowledgeResponse point = point(actor, request);
@@ -80,7 +80,7 @@ public class StudentTutorService {
         return result(point, generate(actor, prompt));
     }
 
-    /** Summarizes only the signed-in student's records within the selected period. */
+    /** 仅汇总已登录学生在指定时间段内的学习记录。 */
     public StudentTutorResponse report(ActorContext actor, StudentTutorRequest request) {
         StudentBO student = requireStudent(actor);
         String period = request == null ? null : request.period();

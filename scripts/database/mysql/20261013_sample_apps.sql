@@ -1,4 +1,4 @@
--- Run once on existing MySQL installations after a database backup.
+-- 备份数据库后，在现有 MySQL 数据库执行一次。
 INSERT INTO ai_app
     (id, tenant_id, owner_user_id, name, description, status,
      published_version_id, created_at, updated_at)

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
-/** Student-only exam journey. */
+/** 仅供学生使用的考试流程接口。 */
 @RestController
 @RequestMapping("/exam")
 @RequiredArgsConstructor

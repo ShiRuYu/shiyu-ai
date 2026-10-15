@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.bsc.langgraph4j.streaming.StreamingOutput;
 import reactor.core.publisher.Sinks;
 
+/** 验证图流式执行向订阅者传递模型片段和失败。 */
 class LlmGraphStreamingTest {
     @Test
     void modelFailureFailsGraphStream() throws Exception {

@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-/** Student answers keyed by the original question ID in the paper. */
+/** 以试卷中原始试题 ID 为标识的学生答案集合。 */
 public record SubmitExamRequest(@NotNull List<@Valid Answer> answers) {
-    /** One question ID and the student's answer. */
+    /** 一道试题的 ID 及学生答案。 */
     @Schema(name = "ExamSubmissionAnswer")
     public record Answer(@NotNull Long questionId, String answer) {}
 }

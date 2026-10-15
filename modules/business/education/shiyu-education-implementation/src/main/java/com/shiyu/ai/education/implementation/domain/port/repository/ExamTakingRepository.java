@@ -8,61 +8,61 @@ import java.util.List;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/** Tenant-scoped composition and attempt persistence for student exams. */
+/** 按租户隔离学生考试的试卷组成与作答记录的持久化操作。 */
 public interface ExamTakingRepository {
-    /** Load ordered active sections for a tenant's exam. */
+    /** 读取指定租户考试中按顺序排列的有效分区。 */
     List<ExamSectionBO> sections(TenantId tenantId, Long examId);
 
-    /** Load active question links for a tenant's exam. */
+    /** 读取指定租户考试中的有效题目关联。 */
     List<ExamQuestionBO> questions(TenantId tenantId, Long examId);
 
-    /** Replace the composition of an unpublished exam. */
+    /** 清除未发布考试的现有试卷组成，以便重新编排。 */
     void deleteComposition(TenantId tenantId, Long examId);
 
-    /** Insert an ordered section and return its identifier. */
+    /** 插入按顺序排列的分区并返回其标识。 */
     Long insertSection(TenantId tenantId, Long examId, String name, int orderNo,
             BigDecimal scorePerQuestion);
 
-    /** Link one confidential question to a section. */
+    /** 将一道保密题目关联到分区。 */
     void insertQuestionLink(TenantId tenantId, Long examId, Long sectionId,
             Long questionId, int orderNo, BigDecimal score);
 
-    /** Find the student's single attempt for this exam. */
+    /** 查询该学生在本次考试中的唯一作答记录。 */
     Attempt findAttemptByExamStudent(TenantId tenantId, Long examId, Long studentId);
 
-    /** Find an attempt within the current tenant. */
+    /** 在当前租户内按标识查询作答记录。 */
     Attempt findAttemptById(TenantId tenantId, Long attemptId);
 
-    /** List the student's attempts, including completed and expired exams. */
+    /** 列出学生的作答记录，包括已完成和已过期的考试。 */
     List<Attempt> findAttemptsByStudent(TenantId tenantId, Long studentId);
 
-    /** Find a bounded batch of overdue attempts after an optional global attempt ID cursor. */
+    /** 从可选的全局作答记录 ID 游标之后，按数量上限查询逾期作答记录。 */
     List<DueAttempt> findDueAttempts(LocalDateTime now, Long afterAttemptId, int limit);
 
-    /** Create an attempt before snapshotting its questions. */
+    /** 创建作答记录，然后保存其题目快照。 */
     Attempt insertAttempt(TenantId tenantId, Attempt attempt);
 
-    /** Store the answer-key snapshot for one attempt question. */
+    /** 保存一道作答题目的标准答案快照。 */
     void insertAttemptQuestion(TenantId tenantId, AttemptQuestion question);
 
-    /** Read the immutable question snapshots and any saved student answers. */
+    /** 读取不可变的题目快照及已保存的学生答案。 */
     List<AttemptQuestion> attemptQuestions(TenantId tenantId, Long attemptId);
 
-    /** Lock a live attempt before saving or finalizing; the deadline predicate is enforced in SQL. */
+    /** 保存或结束作答前锁定有效的作答记录；截止时间条件由 SQL 检查。 */
     int claimAttempt(TenantId tenantId, Long attemptId, String targetStatus,
             LocalDateTime now, boolean beforeDeadline);
 
-    /** Save one unscored answer while its owning attempt is locked and active. */
+    /** 在所属作答记录已锁定且有效时，保存一道尚未计分的答案。 */
     void saveDraftAnswer(TenantId tenantId, Long attemptQuestionId, String answer);
 
-    /** Store an answer and its server-calculated awarded score. */
+    /** 保存答案及服务端计算的得分。 */
     void saveAnswer(TenantId tenantId, Long attemptQuestionId, String answer, BigDecimal score);
 
-    /** Complete a previously claimed attempt exactly once. */
+    /** 将先前已锁定的作答记录恰好完成一次。 */
     int finishAttempt(TenantId tenantId, Long attemptId, BigDecimal score,
             LocalDateTime submittedAt, String finalStatus);
 
-    /** Immutable attempt state scoped by tenant, exam, and student. */
+    /** 按租户、考试和学生限定的不可变作答状态。 */
     record Attempt(
             Long id,
             Long examId,
@@ -74,10 +74,10 @@ public interface ExamTakingRepository {
             BigDecimal score,
             BigDecimal totalScore) {}
 
-    /** Tenant and attempt identity for background expiry settlement. */
+    /** 供后台处理逾期作答使用的租户及作答记录标识。 */
     record DueAttempt(TenantId tenantId, Long attemptId) {}
 
-    /** Immutable exam question snapshot with the student's current answer. */
+    /** 包含学生当前答案的不可变考试题目快照。 */
     record AttemptQuestion(
             Long id,
             Long attemptId,

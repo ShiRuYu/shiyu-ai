@@ -89,6 +89,8 @@ class ToolExecutionPipelineTest {
 
         assertEquals(ToolExecutionPipeline.Result.Status.COMPLETED,
                 pipeline.execute(first, approved, args -> calls.incrementAndGet()).status());
+        assertEquals("COMPLETED",
+                approvals.require(pending.approval().id(), new TenantId(1), 2).status().name());
         assertThrows(IllegalStateException.class,
                 () -> pipeline.execute(first, approved, args -> calls.incrementAndGet()));
         assertEquals(1, calls.get());

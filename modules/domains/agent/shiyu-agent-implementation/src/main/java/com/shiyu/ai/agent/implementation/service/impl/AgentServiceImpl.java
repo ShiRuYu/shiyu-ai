@@ -11,13 +11,14 @@ import com.shiyu.ai.agent.implementation.graph.AgentGraphConfigValidator;
 import com.shiyu.ai.agent.implementation.port.repository.AgentAdminRepository;
 import com.shiyu.ai.agent.implementation.service.AgentService;
 import com.shiyu.ai.kernel.context.ActorContext;
+import com.shiyu.ai.common.foundation.tx.TransactionContext;
+import com.shiyu.ai.common.foundation.tx.TransactionHook;
+import com.shiyu.ai.common.foundation.tx.TransactionHookExecutor;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.time.LocalDateTime;
@@ -204,15 +205,14 @@ public class AgentServiceImpl implements AgentService {
     @Override
     public void evictRuntimeCache(ActorContext actor, String agentId) {
         cacheManager.evictTenant(actor.tenantId(), agentId);
-        if (TransactionSynchronizationManager.isActualTransactionActive()
-                && TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(
-                    new TransactionSynchronization() {
-                        @Override
-                        public void afterCompletion(int status) {
-                            cacheManager.evictTenant(actor.tenantId(), agentId);
-                        }
-                    });
+        if (TransactionContext.isTransactionActive()
+                && TransactionContext.isSynchronizationActive()) {
+            TransactionHookExecutor.register(new TransactionHook() {
+                @Override
+                public void afterCompletion() {
+                    cacheManager.evictTenant(actor.tenantId(), agentId);
+                }
+            });
         }
     }
 

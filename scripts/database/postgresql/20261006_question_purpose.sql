@@ -1,4 +1,4 @@
--- Apply to a database using the preceding baseline before this revision.
+-- 部署此版本前，在采用上一版基线的数据库执行此脚本。
 BEGIN;
 ALTER TABLE edu_question ADD COLUMN IF NOT EXISTS purpose VARCHAR(20) DEFAULT 'PRACTICE' NOT NULL;
 UPDATE edu_question AS question SET purpose='EXAM_PRIVATE'

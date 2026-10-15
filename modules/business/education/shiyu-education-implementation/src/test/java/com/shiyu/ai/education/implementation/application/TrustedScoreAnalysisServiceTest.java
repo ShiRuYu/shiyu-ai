@@ -22,7 +22,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 import org.junit.jupiter.api.Test;
 
-/** Ensures client flags cannot substitute for a tenant-owned graded practice fact. */
+/** 确保客户端标记无法替代当前租户已评分的练习事实。 */
 class TrustedScoreAnalysisServiceTest {
     private final StudentRepository students = mock(StudentRepository.class);
     private final QuestionRepository questions = mock(QuestionRepository.class);

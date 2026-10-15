@@ -25,7 +25,7 @@ import java.util.List;
 import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.Test;
 
-/** Verifies that the expiry worker can discover due attempts in every tenant. */
+/** 验证逾期处理任务能够发现各租户的逾期作答记录。 */
 class ExamTakingRepositoryImplTest {
     @Test
     void findsDueAttemptsAcrossTenantsWithoutLeavingFilteringDisabled() {

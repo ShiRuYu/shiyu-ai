@@ -9,12 +9,12 @@ import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.util.List;
 
-/** Ordered sections and scored questions of an exam draft. */
+/** 考试草稿中按顺序排列的章节及设置分值的试题。 */
 public record ExamCompositionRequest(@NotEmpty List<@Valid Section> sections) {
-    /** Named section in a draft exam. */
+    /** 考试草稿中具有名称的章节。 */
     @Schema(name = "ExamCompositionSection")
     public record Section(@NotBlank String name, @NotEmpty List<@Valid Question> questions) {}
-    /** Confidential question and its assigned score. */
+    /** 保密试题及其分配的分值。 */
     @Schema(name = "ExamCompositionQuestion")
     public record Question(@NotNull Long questionId, @NotNull @Positive BigDecimal score) {}
 }

@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Applies ability analysis once, using only a verified server-graded practice record. */
+/** 仅依据经过核验的服务端评分练习记录，执行一次能力分析。 */
 @Service
 @RequiredArgsConstructor
 public class TrustedScoreAnalysisService {
@@ -23,7 +23,7 @@ public class TrustedScoreAnalysisService {
     private final StudyRecordRepository records;
     private final AbilityService abilities;
 
-    /** Analyzes a tenant-owned record for the signed-in student, once per record. */
+    /** 分析已登录学生在所属租户内的记录，每条记录只处理一次。 */
     @Transactional(rollbackFor = Exception.class)
     public Analysis analyze(ActorContext actor, Long recordId) {
         if (actor == null || actor.tenantId() == null || actor.userId() == null
@@ -67,6 +67,6 @@ public class TrustedScoreAnalysisService {
         return new Analysis(recordId, record.getScore(), record.getKnowledgeId(), true);
     }
 
-    /** Trusted score and whether this call applied it to the ability profile. */
+    /** 可信分数，以及本次调用是否已将其应用到能力画像。 */
     public record Analysis(Long recordId, Double score, Long knowledgeId, boolean applied) {}
 }

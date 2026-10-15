@@ -191,7 +191,7 @@ public class ConversationService {
                 parts, toolCall, sourceMessageId, true);
     }
 
-    /** Saves a reply on an earlier branch without changing the selected active turn. */
+    /** 在先前的分支上保存回复，同时保持当前选中的活跃轮次不变。 */
     public ConversationMessage appendMessagePreservingLeaf(
             Conversation conversation,
             String parentMessageId,

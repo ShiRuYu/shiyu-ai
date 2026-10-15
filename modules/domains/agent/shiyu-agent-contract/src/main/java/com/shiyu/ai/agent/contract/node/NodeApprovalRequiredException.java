@@ -1,6 +1,6 @@
 package com.shiyu.ai.agent.contract.node;
 
-/** Signals that a node has requested approval before performing its side effect. */
+/** 表示节点在执行有副作用的操作前请求审批。 */
 public final class NodeApprovalRequiredException extends RuntimeException {
     @java.io.Serial private static final long serialVersionUID = 1L;
 

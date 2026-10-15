@@ -26,7 +26,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 
-/** Verifies that app executions retain messages and expose an early run ID. */
+/** 验证应用执行保留消息，并在早期提供运行标识。 */
 class AgentConversationServiceTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(7), new UserId(9), false);

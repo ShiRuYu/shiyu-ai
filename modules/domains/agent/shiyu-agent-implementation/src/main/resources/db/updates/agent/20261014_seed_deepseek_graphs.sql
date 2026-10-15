@@ -1,4 +1,4 @@
--- Route legacy system agents to DeepSeek while preserving other graph changes.
+-- 将旧版系统 Agent 路由至 DeepSeek，同时保留图配置中的其他更改。
 
 UPDATE "PUBLIC"."AGENT_VERSION"
 SET "GRAPH_CONFIG" = REPLACE("GRAPH_CONFIG", '"platform":"SILICON_FLOW","modelName":"Qwen/Qwen3-8B"', '"platform":"DEEPSEEK","modelName":"deepseek-flash"')

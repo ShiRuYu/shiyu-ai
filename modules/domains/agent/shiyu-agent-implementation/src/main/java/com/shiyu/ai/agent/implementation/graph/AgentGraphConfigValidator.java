@@ -9,11 +9,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Validates the graph structure shared by publication and version activation. */
+/** 校验发布和版本激活共用的图结构。 */
 public final class AgentGraphConfigValidator {
     private AgentGraphConfigValidator() {}
 
-    /** Rejects malformed or structurally invalid persisted graph JSON. */
+    /** 判断持久化的图 JSON 是否格式正确且结构有效。 */
     public static boolean isValidJson(String graphConfig) {
         if (graphConfig == null || graphConfig.isBlank()) return false;
         try {
@@ -26,7 +26,7 @@ public final class AgentGraphConfigValidator {
         }
     }
 
-    /** Returns structural errors and unreachable-node warnings for a draft graph. */
+    /** 返回草稿图的结构错误和不可达节点警告。 */
     public static GraphValidationVO validate(GraphConfigRequest request) {
         try {
             if (request == null) {

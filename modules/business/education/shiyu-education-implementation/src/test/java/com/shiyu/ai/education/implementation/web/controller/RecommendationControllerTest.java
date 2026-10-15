@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
-/** Keeps hybrid advice grounded in the signed-in actor and supplies a useful fallback. */
+/** 确保混合推荐建议基于当前登录用户，并提供可用的兜底结果。 */
 class RecommendationControllerTest {
     private final RecommendationService recommendations = mock(RecommendationService.class);
     private final ChatEngine model = mock(ChatEngine.class);

@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
-/** Exercises the global expiry scan against the actual H2 runtime schema. */
+/** 使用实际的 H2 运行时表结构验证全局审批过期扫描。 */
 class JdbcToolApprovalExpiryQueryTest {
     @Test
     void selectsOnlyOverdueApprovalsOnOwnedRunningRuns() {

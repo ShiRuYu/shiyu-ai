@@ -423,7 +423,7 @@ class UsageRecordRepositoryImplTest {
         verify(mapper).aggregateByMonth(1, 9L);
     }
 
-    /** Exercises the portable SQL aggregation path without a live PostgreSQL connection. */
+    /** 无需连接实际 PostgreSQL，即可验证可移植 SQL 聚合路径。 */
     private static final class PortableRepository extends UsageRecordRepositoryImpl {
         private PortableRepository(UsageRecordMapper mapper, ModelCatalogPort catalog,
                 boolean allTenants) {

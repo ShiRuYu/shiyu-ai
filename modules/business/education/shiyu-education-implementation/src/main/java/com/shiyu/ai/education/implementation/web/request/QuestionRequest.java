@@ -38,7 +38,7 @@ public class QuestionRequest implements Serializable {
     @NotBlank(message = "题目类型不能为空")
     private String type;
 
-    /** PRACTICE or EXAM_PRIVATE. A missing value creates a public practice question. */
+    /** 题目用途为 PRACTICE 或 EXAM_PRIVATE；未填写时创建公开练习题。 */
     @Pattern(regexp = "PRACTICE|EXAM_PRIVATE", message = "题目用途无效")
     @Schema(allowableValues = {"PRACTICE", "EXAM_PRIVATE"})
     private String purpose;

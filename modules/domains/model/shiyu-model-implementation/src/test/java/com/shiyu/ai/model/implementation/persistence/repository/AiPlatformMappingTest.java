@@ -8,7 +8,7 @@ import com.shiyu.ai.model.implementation.persistence.dataobject.AiPlatformDO;
 import com.shiyu.ai.model.implementation.persistence.dataobject.AiPlatformDOToAiPlatformBOMapperImpl;
 import org.junit.jupiter.api.Test;
 
-/** Verifies that the platform protocol survives the persistence mapping round trip. */
+/** 验证平台协议经过持久化映射往返后保持不变。 */
 class AiPlatformMappingTest {
     @Test
     void keepsSelectedAdapterTypeAcrossPersistenceMapping() throws Exception {

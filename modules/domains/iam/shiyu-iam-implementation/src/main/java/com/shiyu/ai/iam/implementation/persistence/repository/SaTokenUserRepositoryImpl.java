@@ -46,7 +46,7 @@ public class SaTokenUserRepositoryImpl
                     return user.getId();
                 }
             } catch (RuntimeException ignored) {
-                // A damaged legacy extInfo cannot authenticate a token.
+                // 损坏的旧版 extInfo 不能用于令牌认证。
             }
         }
         return null;

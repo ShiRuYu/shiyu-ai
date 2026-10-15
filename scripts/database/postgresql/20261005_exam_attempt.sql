@@ -1,4 +1,4 @@
--- Apply once to an existing PostgreSQL baseline-4 database before deploying this revision.
+-- 部署此版本前，在已有基线版本 4 的 PostgreSQL 数据库执行一次。
 BEGIN;
 UPDATE edu_exam SET del_flag=0 WHERE del_flag IS NULL;
 UPDATE edu_course SET del_flag=0 WHERE del_flag IS NULL;

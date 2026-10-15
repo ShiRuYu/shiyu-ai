@@ -1,4 +1,4 @@
--- Idempotent upgrade for H2 databases already marked with baseline 4.
+-- 对已标记为基线版本 4 的 H2 数据库执行幂等升级。
 UPDATE EDU_EXAM SET DEL_FLAG=0 WHERE DEL_FLAG IS NULL;
 UPDATE EDU_COURSE SET DEL_FLAG=0 WHERE DEL_FLAG IS NULL;
 UPDATE EDU_QUESTION SET DEL_FLAG=0 WHERE DEL_FLAG IS NULL;

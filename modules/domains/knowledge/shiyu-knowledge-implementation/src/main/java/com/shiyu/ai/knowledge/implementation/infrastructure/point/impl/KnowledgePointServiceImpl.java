@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class KnowledgePointServiceImpl implements KnowledgePointService, KnowledgePointPort {
 
-    /** Space metadata used to restrict student tutoring to published tenant education spaces. */
+    /** 空间元数据，用于将学生辅导限定在租户已发布的教育空间内。 */
     private final KnowledgeEnterpriseRepository enterpriseRepository;
 
     /**

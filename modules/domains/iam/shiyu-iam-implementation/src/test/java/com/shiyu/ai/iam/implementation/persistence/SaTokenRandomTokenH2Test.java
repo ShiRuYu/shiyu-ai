@@ -29,7 +29,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.UUID;
 
-/** Verifies that the database can find the exact owner of a persisted random token. */
+/** 验证数据库能够准确查找已持久化随机令牌的所属用户。 */
 class SaTokenRandomTokenH2Test {
     @Test
     void persistedRandomTokenResolvesWithoutAnInMemoryReverseIndex() {

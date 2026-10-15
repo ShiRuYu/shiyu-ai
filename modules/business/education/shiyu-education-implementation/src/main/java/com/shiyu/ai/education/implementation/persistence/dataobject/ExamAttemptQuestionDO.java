@@ -9,7 +9,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
-/** Immutable question snapshot plus the student's submitted answer. */
+/** 不可变的题目快照及学生提交的答案。 */
 @Data
 @Table("edu_exam_attempt_question")
 public class ExamAttemptQuestionDO {

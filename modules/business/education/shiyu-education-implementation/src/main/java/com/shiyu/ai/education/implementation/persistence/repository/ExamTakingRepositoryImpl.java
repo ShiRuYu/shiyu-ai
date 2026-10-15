@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/** Loads only active composition rows from the current tenant. */
+/** 仅加载当前租户有效的试卷组成记录。 */
 @Component
 @RequiredArgsConstructor
 public class ExamTakingRepositoryImpl implements ExamTakingRepository {

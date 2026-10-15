@@ -36,7 +36,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Covers student ownership, snapshot scoring, and deadline transitions. */
+/** 覆盖学生归属校验、题目快照计分及截止时间状态转换。 */
 class ExamTakingServiceTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(9L), new UserId(37L), false);

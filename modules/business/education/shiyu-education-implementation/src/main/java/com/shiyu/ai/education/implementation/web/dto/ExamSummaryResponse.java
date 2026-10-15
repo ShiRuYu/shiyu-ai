@@ -3,7 +3,7 @@ package com.shiyu.ai.education.implementation.web.dto;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-/** Student-visible exam details and the authenticated student's own attempt state. */
+/** 学生可见的考试详情及已认证学生本人的作答状态。 */
 public record ExamSummaryResponse(
         Long examId,
         String name,

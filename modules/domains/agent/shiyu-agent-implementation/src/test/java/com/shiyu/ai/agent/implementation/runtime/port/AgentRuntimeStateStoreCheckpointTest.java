@@ -18,7 +18,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.Map;
 
-/** Verifies a persisted execution retains its checkpoint identity across restart. */
+/** 验证持久化的执行在重启后仍保留其检查点标识。 */
 class AgentRuntimeStateStoreCheckpointTest {
     @Test
     void savesAndRestoresLatestCheckpointIdentity() {

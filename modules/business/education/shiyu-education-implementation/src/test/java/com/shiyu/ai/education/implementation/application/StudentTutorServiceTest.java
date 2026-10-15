@@ -31,7 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-/** Verifies that tutor prompts use tenant-visible sources and current-student facts. */
+/** 验证辅导提示词仅使用租户可见资料及当前学生事实。 */
 class StudentTutorServiceTest {
     private final StudentRepository students = mock(StudentRepository.class);
     private final StudyRecordRepository records = mock(StudyRecordRepository.class);

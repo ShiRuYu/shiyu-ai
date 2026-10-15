@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Validates and publishes a complete, objectively scored exam. */
+/** 校验并发布完整且按客观题规则评分的考试。 */
 @Service
 @RequiredArgsConstructor
 public class ExamPublishingService {

@@ -303,7 +303,7 @@ public class AgentLoader {
             merged.putAll(dto.getConfig());
         }
 
-        // Graph topology and factory type come from the outer node definition.
+        // 图拓扑和工厂类型由外层节点定义提供。
         merged.put("nodeId", nodeId);
         merged.put("nodeType", dto.getNodeType());
 
