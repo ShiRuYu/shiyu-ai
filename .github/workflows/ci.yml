@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ShiRuYu/shiyu-ui
-          ref: ${{ vars.SHIYU_UI_REF || 'main' }}
+          ref: ${{ vars.SHIYU_UI_REF || github.event.pull_request.head.ref || 'main' }}
           token: ${{ secrets.CONTRACTS_READ_TOKEN || github.token }}
           path: shiyu-ui
           persist-credentials: false
