@@ -23,19 +23,19 @@ import org.springframework.stereotype.Component;
 @Component
 public final class ToolApprovalExpirySweeper {
     private final ToolApprovalRepository repository;
-    private final ToolApprovalService approvals;
+    private final ToolApprovalTransitionService transitions;
     private final AiRuntimeService runs;
     private final AgentRuntime agents;
     private final ObjectProvider<AgentConversationCompletionPort> completions;
 
     public ToolApprovalExpirySweeper(
             ToolApprovalRepository repository,
-            ToolApprovalService approvals,
+            ToolApprovalTransitionService transitions,
             AiRuntimeService runs,
             AgentRuntime agents,
             ObjectProvider<AgentConversationCompletionPort> completions) {
         this.repository = repository;
-        this.approvals = approvals;
+        this.transitions = transitions;
         this.runs = runs;
         this.agents = agents;
         this.completions = completions;
@@ -59,7 +59,7 @@ public final class ToolApprovalExpirySweeper {
     }
 
     private void expireAndCancel(ToolApproval candidate, TenantId tenant) {
-        ToolApproval approval = approvals.decide(
+        ToolApproval approval = transitions.decide(
                 candidate.id(), tenant, candidate.ownerUserId(), ToolApprovalStatus.REJECTED);
         if (approval.status() != ToolApprovalStatus.EXPIRED) return;
 

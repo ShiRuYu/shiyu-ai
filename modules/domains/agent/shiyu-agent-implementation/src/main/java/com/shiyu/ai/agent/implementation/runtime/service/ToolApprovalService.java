@@ -86,7 +86,6 @@ public class ToolApprovalService {
      */
     public List<ToolApproval> list(String runId, TenantId tenantId, long ownerUserId) {
         TenantId tenant = requireTenant(tenantId);
-        approvals.expirePending(tenant, ownerUserId);
         return approvals.list(runId, tenant, ownerUserId);
     }
 
@@ -99,7 +98,6 @@ public class ToolApprovalService {
      */
     public List<ToolApproval> listAll(TenantId tenantId, long ownerUserId) {
         TenantId tenant = requireTenant(tenantId);
-        approvals.expirePending(tenant, ownerUserId);
         return approvals.listAll(tenant, ownerUserId);
     }
 
@@ -113,7 +111,6 @@ public class ToolApprovalService {
      */
     public ToolApproval require(String id, TenantId tenantId, long ownerUserId) {
         TenantId tenant = requireTenant(tenantId);
-        approvals.expirePending(tenant, ownerUserId);
         return approvals
                 .find(id, tenant, ownerUserId)
                 .orElseThrow(() -> new IllegalArgumentException("approval not found"));
@@ -192,7 +189,6 @@ public class ToolApprovalService {
         if (status != ToolApprovalStatus.APPROVED && status != ToolApprovalStatus.REJECTED) {
             throw new IllegalArgumentException("approval decision must be APPROVED or REJECTED");
         }
-        approvals.expirePending(tenant, ownerUserId);
         ToolApproval current =
                 approvals
                         .find(id, tenant, ownerUserId)

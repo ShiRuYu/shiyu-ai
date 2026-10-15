@@ -24,6 +24,39 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 class ToolExecutionPipelineTest {
     @Test
+    void approvalFinalizationFailureDoesNotRecordToolSuccessAsFailure() {
+        AiRuntimeService runtime =
+                new AiRuntimeService(new InMemoryAiRunRepository(), new InMemoryAiAppRepository());
+        AiRun run = runtime.startRun(
+                new AiRunContext(new TenantId(1), 2, null, null, null, null, null, null, Map.of()),
+                AiRunSource.AGENT, "agent-1", "model", "write");
+        ToolApprovalService approvals = new ToolApprovalService(new InMemoryToolApprovalRepository()) {
+            @Override
+            public com.shiyu.ai.agent.implementation.runtime.model.ToolApproval completeClaimed(
+                    String id, TenantId tenantId, long ownerUserId) {
+                throw new IllegalStateException("approval store unavailable");
+            }
+        };
+        ToolExecutionPipeline pipeline = new ToolExecutionPipeline(runtime, approvals);
+        var request = new ToolExecutionPipeline.Request("filesystem.write", Map.of("path", "a"),
+                "write", true, null);
+        String approvalId = pipeline.execute(run, request, args -> "done").approval().id();
+        approvals.decide(approvalId, new TenantId(1), 2, ToolApprovalStatus.APPROVED);
+
+        assertThrows(IllegalStateException.class, () -> pipeline.execute(
+                run,
+                new ToolExecutionPipeline.Request("filesystem.write", Map.of("path", "a"),
+                        "write", true, approvalId),
+                args -> "done"));
+
+        var completedEvents = runtime.events(run.id(), new TenantId(1), 2, -1, 100).stream()
+                .filter(event -> event.type() == AiRunEventType.TOOL_COMPLETED)
+                .toList();
+        assertEquals(1, completedEvents.size());
+        assertTrue(completedEvents.get(0).payload().contains("\"success\":true"));
+    }
+
+    @Test
     void passesApprovalIdAsStableOperationIdToTheExecutor() {
         AiRuntimeService runtime =
                 new AiRuntimeService(new InMemoryAiRunRepository(), new InMemoryAiAppRepository());

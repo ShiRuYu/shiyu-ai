@@ -14,6 +14,8 @@
 
 旧版内置 Agent 图仍使用 SILICON_FLOW/Qwen 时，PostgreSQL 执行 `postgresql/20261014_seed_deepseek_graphs.sql`，MySQL 执行 `mysql/20261014_seed_deepseek_graphs.sql`。脚本只替换九个系统图中的旧平台与模型字段，并同步更新 11 条内置 Agent 的旧模型说明；图内其他定制内容及非系统图保持原样。H2 启动时自动执行。执行前备份数据库，执行后核对 `agent_version` 中系统图的模型配置。
 
+旧版外部数据库还需同步教育增补和 DeepSeek 模型目录。MySQL 依次执行 `mysql/20261005_exam_attempt.sql`、`mysql/20261006_question_purpose.sql`、`mysql/20261007_practice_submission.sql`、`mysql/20261007_demo_education_access.sql` 和 `mysql/20261011_deepseek_flash.sql`；PostgreSQL 依次执行 `postgresql/20261005_exam_attempt.sql`、`postgresql/20261006_question_purpose.sql`、`postgresql/20261007_practice_submission.sql`、`postgresql/20261007_demo_education_access.sql` 和 `postgresql/20261011_deepseek_flash.sql`。先备份数据库，并在执行教育 DDL 时停用相关写入。旧库完成后核对考试作答表、练习提交列、`DEMO_EDU_MATH` 访问模式，以及 DeepSeek 模型名 `deepseek-flash` 和 `deepseek-v4-pro`。新 PostgreSQL 基线已包含这些更新；H2 在启动时自动应用资源增补。
+
 ## 使用方式
 
 客户端从环境变量读取连接信息，密码不要写入命令行或仓库：

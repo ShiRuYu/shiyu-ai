@@ -152,8 +152,8 @@ class AgentNodeExecutionTest {
         };
         AiRuntimeService runtime = new AiRuntimeService(
                 new InMemoryAiRunRepository(), new InMemoryAiAppRepository());
-        ToolApprovalService approvals =
-                new ToolApprovalService(new InMemoryToolApprovalRepository());
+        InMemoryToolApprovalRepository approvalRepository = new InMemoryToolApprovalRepository();
+        ToolApprovalService approvals = new ToolApprovalService(approvalRepository);
         ToolExecutionPipeline pipeline = new ToolExecutionPipeline(runtime, approvals);
         AiRun run = runtime.startRun(
                 new AiRunContext(new TenantId(1), 2, null, null, null, null, null, null, Map.of()),
@@ -164,12 +164,58 @@ class AgentNodeExecutionTest {
                 .config(ToolCallConfig.builder().toolName("external.write").build())
                 .build();
 
+        Map<String, Object> actionArguments = Map.of(
+                "path", "a",
+                "apiKey", "test-secret-value",
+                "headers", Map.of(
+                        "Cookie", "cookie-test-secret",
+                        "sessionId", "session-test-secret",
+                        "jwt", "jwt-test.secret.token"),
+                "url", "https://user:url-password@api.example/action?access_token=url-test-secret&x_sig=url-sig-secret&assignment_id=123&mode=read",
+                "content", "Authorization: Bearer text-bearer-test-secret",
+                "basicAuthText", "Authorization: Basic dXNlcjpwYXNz",
+                "digestAuthText", "Authorization: Digest username=alice, realm=api, nonce=digest-nonce-secret, response=digest-response-secret",
+                "auth", "Basic auth-field-test-secret",
+                "headerText", "Cookie: sid=cookie-sid-secret; csrf=cookie-csrf-secret");
+        Map<String, Object> firstCall = new java.util.HashMap<>(actionArguments);
+        firstCall.put("_aiRun", run);
         NodeApprovalRequiredException pending = assertThrows(NodeApprovalRequiredException.class,
-                () -> invoke(node, trustedInput(Map.of("_aiRun", run, "path", "a"))));
+                () -> invoke(node, trustedInput(firstCall)));
+        ToolApproval requested = approvalRepository.find(
+                pending.approvalId(), new TenantId(1), 2).orElseThrow();
+        Map<String, Object> envelope = com.shiyu.ai.common.foundation.utils.JSONUtils
+                .parseMap(requested.argumentsRedacted());
+        Map<String, Object> summary = com.shiyu.ai.common.foundation.utils.JSONUtils
+                .parseMap(String.valueOf(envelope.get("summary")));
+        assertEquals("a", summary.get("path"));
+        assertEquals("[redacted]", summary.get("apiKey"));
+        Map<?, ?> redactedHeaders = (Map<?, ?>) summary.get("headers");
+        assertEquals("[redacted]", redactedHeaders.get("Cookie"));
+        assertEquals("[redacted]", redactedHeaders.get("sessionId"));
+        assertEquals("[redacted]", redactedHeaders.get("jwt"));
+        String redactedUrl = String.valueOf(summary.get("url"));
+        assertTrue(redactedUrl.contains("mode=read"));
+        assertTrue(redactedUrl.contains("assignment_id=123"));
+        assertFalse(requested.argumentsRedacted().contains("url-password"));
+        assertFalse(requested.argumentsRedacted().contains("url-test-secret"));
+        assertFalse(requested.argumentsRedacted().contains("url-sig-secret"));
+        assertFalse(requested.argumentsRedacted().contains("text-bearer-test-secret"));
+        assertFalse(requested.argumentsRedacted().contains("dXNlcjpwYXNz"));
+        assertFalse(requested.argumentsRedacted().contains("digest-nonce-secret"));
+        assertFalse(requested.argumentsRedacted().contains("digest-response-secret"));
+        assertFalse(requested.argumentsRedacted().contains("cookie-csrf-secret"));
+        assertEquals("[redacted]", summary.get("auth"));
+        assertFalse(requested.argumentsRedacted().contains("auth-field-test-secret"));
+        assertFalse(requested.argumentsRedacted().contains("cookie-test-secret"));
+        assertFalse(requested.argumentsRedacted().contains("session-test-secret"));
+        assertFalse(requested.argumentsRedacted().contains("jwt-test.secret.token"));
+        assertFalse(requested.argumentsRedacted().contains("test-secret-value"));
         approvals.decide(pending.approvalId(), new TenantId(1), 2, ToolApprovalStatus.APPROVED);
 
-        NodeOutput output = invoke(node, trustedInput(Map.of(
-                "_aiRun", run, "_toolApprovalId", pending.approvalId(), "path", "a")));
+        Map<String, Object> approvedCall = new java.util.HashMap<>(actionArguments);
+        approvedCall.put("_aiRun", run);
+        approvedCall.put("_toolApprovalId", pending.approvalId());
+        NodeOutput output = invoke(node, trustedInput(approvedCall));
 
         assertTrue(output.isSuccess());
         assertNotNull(received.get());

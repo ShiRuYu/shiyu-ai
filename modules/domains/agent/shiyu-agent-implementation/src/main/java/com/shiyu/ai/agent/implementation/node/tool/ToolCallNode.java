@@ -31,6 +31,27 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ToolCallNode extends BaseNode {
 
+    private static final java.util.regex.Pattern URL_USER_INFO =
+            java.util.regex.Pattern.compile("(?i)(https?://)[^/@\\s]+@");
+    private static final java.util.regex.Pattern SENSITIVE_QUERY_PARAMETER =
+            java.util.regex.Pattern.compile(
+                    "(?i)([?&][^=&#]*(?:password|passwd|passphrase|secret|token|api[_-]?key|access[_-]?key|authorization|credential|cookie|session|jwt|signature)[^=&#]*=)[^&#]*");
+    private static final java.util.regex.Pattern SHORT_SIGNATURE_QUERY_PARAMETER =
+            java.util.regex.Pattern.compile("(?i)([?&](?:sig|[a-z0-9]+[_-]sig)=)[^&#]*");
+    private static final java.util.regex.Pattern COOKIE_HEADER =
+            java.util.regex.Pattern.compile("(?i)(\\bcookie\\s*[:=]\\s*)[^\\r\\n]+");
+    private static final java.util.regex.Pattern AUTHORIZATION_VALUE =
+            java.util.regex.Pattern.compile("(?i)(\\b(?:authorization|auth)[\"']?\\s*[:=]\\s*)[^\\r\\n]+");
+    private static final java.util.regex.Pattern BEARER_TOKEN =
+            java.util.regex.Pattern.compile("(?i)\\bbearer\\s+[a-z0-9._~+/-]{8,}={0,2}");
+    private static final java.util.regex.Pattern SENSITIVE_ASSIGNMENT =
+            java.util.regex.Pattern.compile(
+                    "(?i)(\\b(?:auth|password|passwd|passphrase|secret|token|api[_-]?key|access[_-]?key|authorization|credential|cookie|session(?:[_-]?id)?|jwt|private[_-]?key|signature|sig)[\"']?\\s*[:=]\\s*)(?:\"[^\"]*\"|'[^']*'|[^\\s,;&}]+)");
+    private static final java.util.regex.Pattern JWT_VALUE =
+            java.util.regex.Pattern.compile("\\beyJ[a-zA-Z0-9_-]{5,}\\.[a-zA-Z0-9_-]{5,}\\.[a-zA-Z0-9_-]{5,}\\b");
+    private static final java.util.regex.Pattern API_KEY_VALUE =
+            java.util.regex.Pattern.compile("(?i)\\bsk-[a-z0-9_-]{16,}\\b");
+
     /**
      * 配置，表示当前对象中的对应属性。
      */
@@ -187,7 +208,7 @@ public class ToolCallNode extends BaseNode {
                         new ToolExecutionPipeline.Request(
                                 toolName,
                                 parameters,
-                                "{\"tool\":\"" + toolName.replace("\"", "") + "\"}",
+                                JSONUtils.toJsonString(redactArguments(parameters)),
                                 highRisk,
                                 input.getParameter("_toolApprovalId",
                                         input.getParameter(AgentGraphCheckpointSaver.APPROVAL_ID_KEY,
@@ -382,6 +403,63 @@ public class ToolCallNode extends BaseNode {
         }
 
         return raw;
+    }
+
+    private static java.util.Map<String, Object> redactArguments(
+            java.util.Map<String, Object> arguments) {
+        java.util.Map<String, Object> redacted = new java.util.TreeMap<>();
+        arguments.forEach((key, value) -> redacted.put(key, redactArgument(key, value)));
+        return redacted;
+    }
+
+    private static Object redactArgument(String key, Object value) {
+        String normalizedKey = key.replaceAll("[^A-Za-z0-9]", "").toLowerCase(java.util.Locale.ROOT);
+        if (normalizedKey.contains("password")
+                || normalizedKey.equals("auth")
+                || normalizedKey.contains("passwd")
+                || normalizedKey.contains("passphrase")
+                || normalizedKey.contains("secret")
+                || normalizedKey.contains("token")
+                || normalizedKey.contains("apikey")
+                || normalizedKey.contains("accesskey")
+                || normalizedKey.contains("authorization")
+                || normalizedKey.contains("credential")
+                || normalizedKey.contains("privatekey")
+                || normalizedKey.contains("cookie")
+                || normalizedKey.contains("session")
+                || normalizedKey.contains("jwt")
+                || normalizedKey.contains("bearer")
+                || normalizedKey.contains("signature")
+                || normalizedKey.endsWith("sig")) {
+            return "[redacted]";
+        }
+        if (value instanceof java.util.Map<?, ?> nested) {
+            java.util.Map<String, Object> redacted = new java.util.TreeMap<>();
+            nested.forEach((nestedKey, nestedValue) -> {
+                String name = String.valueOf(nestedKey);
+                redacted.put(name, redactArgument(name, nestedValue));
+            });
+            return redacted;
+        }
+        if (value instanceof java.util.Collection<?> collection) {
+            return collection.stream().map(item -> redactArgument("", item)).toList();
+        }
+        if (value instanceof String text) {
+            return redactText(text);
+        }
+        return value;
+    }
+
+    private static String redactText(String text) {
+        String redacted = URL_USER_INFO.matcher(text).replaceAll("$1[redacted]@");
+        redacted = SENSITIVE_QUERY_PARAMETER.matcher(redacted).replaceAll("$1[redacted]");
+        redacted = SHORT_SIGNATURE_QUERY_PARAMETER.matcher(redacted).replaceAll("$1[redacted]");
+        redacted = COOKIE_HEADER.matcher(redacted).replaceAll("$1[redacted]");
+        redacted = AUTHORIZATION_VALUE.matcher(redacted).replaceAll("$1[redacted]");
+        redacted = BEARER_TOKEN.matcher(redacted).replaceAll("Bearer [redacted]");
+        redacted = SENSITIVE_ASSIGNMENT.matcher(redacted).replaceAll("$1\"[redacted]\"");
+        redacted = JWT_VALUE.matcher(redacted).replaceAll("[redacted]");
+        return API_KEY_VALUE.matcher(redacted).replaceAll("[redacted]");
     }
 
     /**

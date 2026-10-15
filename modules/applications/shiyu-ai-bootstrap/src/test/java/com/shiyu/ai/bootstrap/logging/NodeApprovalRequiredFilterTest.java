@@ -88,6 +88,12 @@ class NodeApprovalRequiredFilterTest {
             AgentCancellationLogContext.mark(Thread.currentThread());
             try {
                 assertEquals(Filter.Result.DENY, filter.filter(interrupted));
+                assertEquals(Filter.Result.DENY, filter.filter(event(
+                        Level.ERROR,
+                        "org.bsc.langgraph4j.graph.execution",
+                        "graph execution interrupted",
+                        new InterruptedException("cancelled"),
+                        threadId)));
                 assertEquals(Filter.Result.NEUTRAL, filter.filter(event(
                         Level.ERROR,
                         "org.bsc.langgraph4j",

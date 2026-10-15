@@ -31,13 +31,18 @@ public final class AgentCancellationFilter extends AbstractFilter {
     @Override
     public Result filter(LogEvent event) {
         if (event == null
-                || !LANGGRAPH_LOGGER.equals(event.getLoggerName())
+                || !isLangGraphLogger(event.getLoggerName())
                 || !Level.ERROR.equals(event.getLevel())
                 || !AgentCancellationLogContext.isMarked(event.getThreadId())
                 || !hasInterruptedException(event.getThrown())) {
             return Result.NEUTRAL;
         }
         return Result.DENY;
+    }
+
+    private static boolean isLangGraphLogger(String loggerName) {
+        return LANGGRAPH_LOGGER.equals(loggerName)
+                || (loggerName != null && loggerName.startsWith(LANGGRAPH_LOGGER + "."));
     }
 
     private static boolean hasInterruptedException(Throwable error) {

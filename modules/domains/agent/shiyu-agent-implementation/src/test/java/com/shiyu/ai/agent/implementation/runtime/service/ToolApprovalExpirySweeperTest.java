@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import com.shiyu.ai.agent.contract.runtime.AiRun;
+import com.shiyu.ai.agent.contract.runtime.AiRunEventType;
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 import com.shiyu.ai.agent.implementation.runtime.adapter.inmemory.InMemoryToolApprovalRepository;
@@ -37,10 +38,12 @@ class ToolApprovalExpirySweeperTest {
                 "CALCULATOR", "{}", ToolApprovalStatus.APPROVED,
                 created, Instant.now(), created.plusSeconds(300));
         when(repository.findOverdueRunning(any(), eq(100))).thenReturn(java.util.List.of(candidate));
+        when(approvals.require("approval-1", new TenantId(7), 9)).thenReturn(approved);
         when(approvals.decide("approval-1", new TenantId(7), 9, ToolApprovalStatus.REJECTED))
                 .thenReturn(approved);
 
-        new ToolApprovalExpirySweeper(repository, approvals, runs, agents, provider).sweep();
+        new ToolApprovalExpirySweeper(repository,
+                new ToolApprovalTransitionService(approvals, runs), runs, agents, provider).sweep();
 
         verifyNoInteractions(runs, agents);
     }
@@ -68,7 +71,8 @@ class ToolApprovalExpirySweeperTest {
         when(agents.getExecution(actor, "exec-1")).thenReturn(finished);
         when(finished.getStatus()).thenReturn(ExecutionStatus.COMPLETED);
 
-        new ToolApprovalExpirySweeper(repository, new ToolApprovalService(repository),
+        new ToolApprovalExpirySweeper(repository,
+                new ToolApprovalTransitionService(new ToolApprovalService(repository), runs),
                 runs, agents, provider).sweep();
 
         verify(agents, never()).cancel(any(), anyString());
@@ -96,7 +100,8 @@ class ToolApprovalExpirySweeperTest {
         when(run.executionId()).thenReturn("exec-2");
         when(agents.getStatus(actor, "exec-2")).thenReturn(ExecutionStatus.PAUSED);
 
-        new ToolApprovalExpirySweeper(repository, new ToolApprovalService(repository),
+        new ToolApprovalExpirySweeper(repository,
+                new ToolApprovalTransitionService(new ToolApprovalService(repository), runs),
                 runs, agents, provider).sweep();
 
         verify(agents).cancel(actor, "exec-2");
@@ -126,13 +131,16 @@ class ToolApprovalExpirySweeperTest {
         when(agents.getExecution(actor, "exec-1")).thenReturn(cancelled);
         when(cancelled.getStatus()).thenReturn(ExecutionStatus.CANCELLED);
 
-        new ToolApprovalExpirySweeper(repository, new ToolApprovalService(repository),
+        new ToolApprovalExpirySweeper(repository,
+                new ToolApprovalTransitionService(new ToolApprovalService(repository), runs),
                 runs, agents, provider).sweep();
 
         assertEquals(ToolApprovalStatus.EXPIRED,
                 repository.find("approval-1", actor.tenantId(), 9).orElseThrow().status());
         verify(agents).cancel(actor, "exec-1");
         verify(completion).completeApprovedRun(actor, run, cancelled);
+        verify(runs).append(eq(run), eq(AiRunEventType.TOOL_APPROVAL_DECIDED),
+                argThat(payload -> payload.contains("EXPIRED")), eq(true));
     }
 
     @Test
@@ -146,8 +154,10 @@ class ToolApprovalExpirySweeperTest {
         @SuppressWarnings("unchecked")
         ObjectProvider<AgentConversationCompletionPort> provider = mock(ObjectProvider.class);
 
-        new ToolApprovalExpirySweeper(repository, new ToolApprovalService(repository),
-                mock(AiRuntimeService.class), agents, provider).sweep();
+        AiRuntimeService runs = mock(AiRuntimeService.class);
+        new ToolApprovalExpirySweeper(repository,
+                new ToolApprovalTransitionService(new ToolApprovalService(repository), runs),
+                runs, agents, provider).sweep();
 
         verifyNoInteractions(agents);
     }

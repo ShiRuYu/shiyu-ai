@@ -99,16 +99,9 @@ public final class ToolExecutionPipeline {
         }
         ToolExecutionContext executionContext = new ToolExecutionContext(
                 approval == null ? request.approvalId() : approval.id());
+        Object value;
         try {
-            Object value = executor.apply(request.arguments(), executionContext);
-            String payload =
-                    "{\"toolName\":\"" + escape(request.toolName()) + "\",\"success\":true}";
-            runtime.append(run, AiRunEventType.TOOL_COMPLETED, payload, true);
-            if (approval != null) {
-                approval = approvals.completeClaimed(
-                        approval.id(), run.tenantId(), run.ownerUserId().value());
-            }
-            return Result.completed(value, approval);
+            value = executor.apply(request.arguments(), executionContext);
         } catch (RuntimeException ex) {
             runtime.append(
                     run,
@@ -117,6 +110,14 @@ public final class ToolExecutionPipeline {
                     true);
             throw ex;
         }
+        String payload =
+                "{\"toolName\":\"" + escape(request.toolName()) + "\",\"success\":true}";
+        runtime.append(run, AiRunEventType.TOOL_COMPLETED, payload, true);
+        if (approval != null) {
+            approval = approvals.completeClaimed(
+                    approval.id(), run.tenantId(), run.ownerUserId().value());
+        }
+        return Result.completed(value, approval);
     }
 
     /**

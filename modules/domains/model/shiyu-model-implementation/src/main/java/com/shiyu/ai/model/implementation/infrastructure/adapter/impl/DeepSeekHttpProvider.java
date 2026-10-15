@@ -246,7 +246,7 @@ public final class DeepSeekHttpProvider {
                                                                 .providerRequestId(requestId)
                                                                 .build());
                                             String text = string(delta.get("content"));
-                                            if (!text.isBlank()) {
+                                            if (!text.isEmpty()) {
                                                 visibleContent.append(text);
                                                 sink.next(
                                                         ChatResponse.builder()

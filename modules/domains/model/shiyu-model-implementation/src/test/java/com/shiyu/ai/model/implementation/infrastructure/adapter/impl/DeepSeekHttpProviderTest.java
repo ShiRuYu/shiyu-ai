@@ -76,6 +76,28 @@ class DeepSeekHttpProviderTest {
         assertEquals("deepseek-flash", events.get(events.size() - 1).getModel());
     }
 
+    @Test
+    void preservesWhitespaceOnlyContentDeltas() {
+        server.createContext("/v1/chat/completions", exchange -> {
+            byte[] response = ("data: {\"choices\":[{\"delta\":{\"content\":\"Hello\"}}]}\n\n"
+                    + "data: {\"choices\":[{\"delta\":{\"content\":\" \"}}]}\n\n"
+                    + "data: {\"choices\":[{\"delta\":{\"content\":\"world\"},\"finish_reason\":\"stop\"}]}\n\n"
+                    + "data: [DONE]\n\n").getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "text/event-stream");
+            exchange.sendResponseHeaders(200, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+
+        List<ChatResponse> events = provider().stream(request()).collectList().block();
+
+        assertNotNull(events);
+        assertEquals("Hello world", events.stream()
+                .filter(event -> "DELTA".equals(event.getEventType()))
+                .map(ChatResponse::getContent)
+                .reduce("", String::concat));
+    }
+
     @BeforeEach
     void setUp() throws Exception {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
