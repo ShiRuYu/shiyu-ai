@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,7 +19,20 @@ import org.springframework.context.annotation.Configuration;
  */
 @Slf4j
 @Configuration
+@EnableConfigurationProperties(BillingPricingProperties.class)
 public class UsageAutoConfiguration {
+
+    /**
+     * Provides model rates from application configuration when no adapter overrides them.
+     *
+     * @param properties configured per-model pricing.
+     * @return a provider that returns {@code null} for models without configured prices.
+     */
+    @Bean
+    @ConditionalOnMissingBean(BillingPriceProvider.class)
+    public BillingPriceProvider billingPriceProvider(BillingPricingProperties properties) {
+        return new ConfiguredBillingPriceProvider(properties);
+    }
 
     /**
      * 执行 用量 Auto 相关业务数据，并返回处理结果。

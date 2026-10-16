@@ -28,6 +28,7 @@
 ## 使用前提与示例
 
 - **前提**：治理 schema 和价格/配额规则已准备；普通统计请求须有可信当前租户。平台统计还需 IAM 实现提供 `PlatformUsageAccess`，并满足默认租户身份、有效角色、非委派及 `platform:usage:read` 专用权限。
+- **模型定价**：可通过 `shiyu.governance.usage.pricing.models` 配置 `platform`、精确 `model`、`prompt-per-token`、`completion-per-token` 和 `version`。单价单位为 USD/token；未配置的模型会保留 Token 用量，但费用记为未知。汇总中只要有未计价调用，`total_cost` 就为 `null`，并通过 `unknown_cost_calls` 返回未计价数量。
 - **使用**：`/api/governance/usage/**` 只返回当前租户的概览、周期、模型与 LLM/Embedding 用量；有平台权限的主体改用 `/api/governance/platform/usage/**` 获取全局只读统计。业务生成通过治理 contract 申请、结算和记录用量，不直接写统计表。
 - **注意**：普通接口不存在通过客户端参数切换全平台视图的能力；平台统计权限与租户内 `super` 不是同一件事。
 

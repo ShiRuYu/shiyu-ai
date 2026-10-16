@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 封装 用量 Measurement 相关的不可变数据及其字段约束。
+ * 封装一次用量及其 Token 数；价格未知时，{@code cost} 为 {@code null}。
  */
 public record UsageMeasurement(
         UsageSourceType sourceType,
@@ -31,7 +31,6 @@ public record UsageMeasurement(
     public UsageMeasurement {
         Objects.requireNonNull(sourceType, "sourceType must not be null");
         Objects.requireNonNull(sourceId, "sourceId must not be null");
-        Objects.requireNonNull(cost, "cost must not be null");
         Objects.requireNonNull(attributes, "attributes must not be null");
         if (sourceId.isBlank()) {
             throw new IllegalArgumentException("sourceId must not be blank");
@@ -39,7 +38,7 @@ public record UsageMeasurement(
         if (inputTokens < 0 || outputTokens < 0) {
             throw new IllegalArgumentException("token counts must not be negative");
         }
-        if (cost.signum() < 0) {
+        if (cost != null && cost.signum() < 0) {
             throw new IllegalArgumentException("cost must not be negative");
         }
         if (latencyMs < 0) {

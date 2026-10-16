@@ -223,6 +223,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
         result.put("total_calls", longValue(valueIgnoreCase(raw, "total_calls")));
         result.put("total_tokens", llmOverview.get("total_tokens"));
         result.put("total_cost", llmOverview.get("total_cost"));
+        result.put("unknown_cost_calls", llmOverview.get("unknown_cost_calls"));
         result.put("avg_latency_ms", valueIgnoreCase(raw, "avg_latency_ms"));
         result.put("platform_count", modelCatalog.countEnabledPlatforms());
         result.put("model_count", modelCatalog.countEnabledModels());
@@ -562,12 +563,12 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
 
     private static BigDecimal decimalValue(Object value) {
         if (value == null) {
-            return BigDecimal.ZERO;
+            return null;
         }
         try {
             return new BigDecimal(String.valueOf(value));
         } catch (NumberFormatException ignored) {
-            return BigDecimal.ZERO;
+            return null;
         }
     }
 
@@ -600,6 +601,7 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
          * totalCost 属性，保存当前对象中的业务数据或协作依赖。
          */
         private BigDecimal totalCost = BigDecimal.ZERO;
+        private long unknownCostCalls;
 
         void addLlm(UsageRecordDO record, Map<String, Object> extInfo) {
             addLatency(record);
@@ -609,7 +611,28 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
                             : longValue(record.getInputTokens())
                                     + longValue(record.getOutputTokens());
             totalTokens += recordTokens;
-            totalCost = totalCost.add(decimalValue(extInfo.get("cost")));
+            BigDecimal recordCost = decimalValue(extInfo.get("cost"));
+            boolean legacyFallbackPrice =
+                    !extInfo.containsKey("costKnown")
+                            && recordTokens > 0
+                            && recordCost != null
+                            && BigDecimal.ZERO.compareTo(recordCost) == 0
+                            && "local-model-pricing"
+                                    .equalsIgnoreCase(
+                                            String.valueOf(extInfo.get("pricingVersion")));
+            boolean costKnown =
+                    extInfo.containsKey("costKnown")
+                            ? booleanValue(extInfo.get("costKnown"))
+                            : recordCost != null
+                                    && !legacyFallbackPrice
+                                    && !"CONVERSATION_GENERATION"
+                                            .equalsIgnoreCase(
+                                                    String.valueOf(extInfo.get("sourceType")));
+            if (costKnown && recordCost != null) {
+                totalCost = totalCost.add(recordCost);
+            } else {
+                unknownCostCalls++;
+            }
         }
 
         void addEmbedding(UsageRecordDO record, Map<String, Object> extInfo) {
@@ -638,10 +661,15 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("call_count", calls);
             row.put("total_tokens", totalTokens);
-            row.put("total_cost", totalCost);
+            row.put("total_cost", unknownCostCalls == 0 ? totalCost : null);
+            row.put("unknown_cost_calls", unknownCostCalls);
             row.put("avg_latency_ms", averageLatency());
             return row;
         }
+    }
+
+    private static boolean booleanValue(Object value) {
+        return Boolean.TRUE.equals(value) || "true".equalsIgnoreCase(String.valueOf(value));
     }
 
     /**

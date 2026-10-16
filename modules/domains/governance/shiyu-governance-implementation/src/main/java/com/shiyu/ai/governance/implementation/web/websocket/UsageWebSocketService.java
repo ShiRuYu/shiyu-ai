@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -39,22 +40,23 @@ public class UsageWebSocketService implements UsageRealtimePublisher {
             int promptTokens,
             int completionTokens,
             long latencyMs,
-            double cost) {
+            Double cost) {
         if (handler.getActiveSessionCount() == 0) return;
 
+        Map<String, Object> data = new HashMap<>();
+        data.put("platform", platform);
+        data.put("model", model);
+        data.put("promptTokens", promptTokens);
+        data.put("completionTokens", completionTokens);
+        data.put("totalTokens", promptTokens + completionTokens);
+        data.put("latencyMs", latencyMs);
+        data.put("cost", cost);
+        data.put("costKnown", cost != null);
         Map<String, Object> payload =
                 Map.of(
                         "type", "USAGE_RECORD",
                         "timestamp", System.currentTimeMillis(),
-                        "data",
-                                Map.of(
-                                        "platform", platform,
-                                        "model", model,
-                                        "promptTokens", promptTokens,
-                                        "completionTokens", completionTokens,
-                                        "totalTokens", promptTokens + completionTokens,
-                                        "latencyMs", latencyMs,
-                                        "cost", cost));
+                        "data", data);
         broadcastSafely(payload);
         log.debug(
                 "已推送 LLM 用量记录: platform={}, model={}, totalTokens={}",

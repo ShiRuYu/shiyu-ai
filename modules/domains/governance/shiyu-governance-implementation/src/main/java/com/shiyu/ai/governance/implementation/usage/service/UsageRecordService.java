@@ -50,9 +50,6 @@ public class UsageRecordService implements UsageGovernance {
      */
     public UsageRecordService(UsageRecordRepository usageRecordRepository) {
         this.usageRecordRepository = usageRecordRepository;
-        ModelPricing defaultPricing = ModelPricing.defaultOpenAI();
-        pricingMap.put(
-                defaultPricing.getPlatform() + ":" + defaultPricing.getModel(), defaultPricing);
     }
 
     /**
@@ -84,6 +81,18 @@ public class UsageRecordService implements UsageGovernance {
         }
 
         UsageMeasurement measurement = envelope.event();
+        String usageType = measurement.attributes().getOrDefault("usageType", "METERED");
+        String platform = measurement.attributes().getOrDefault("platform", "UNKNOWN");
+        String model = measurement.attributes().getOrDefault("model", "UNKNOWN");
+        BigDecimal cost = measurement.cost();
+        String pricingVersion = measurement.attributes().get("pricingVersion");
+        if (cost == null && "LLM".equalsIgnoreCase(usageType)) {
+            PricedCost pricedCost =
+                    calculateCost(
+                            platform, model, measurement.inputTokens(), measurement.outputTokens());
+            cost = pricedCost.amount();
+            pricingVersion = pricedCost.version();
+        }
         Map<String, Object> payload = new java.util.HashMap<>();
         measurement.attributes().forEach(payload::put);
         payload.put("sourceType", measurement.sourceType().name());
@@ -91,10 +100,15 @@ public class UsageRecordService implements UsageGovernance {
         payload.put("inputTokens", measurement.inputTokens());
         payload.put("outputTokens", measurement.outputTokens());
         payload.put("totalTokens", measurement.inputTokens() + measurement.outputTokens());
-        payload.put("cost", measurement.cost());
+        payload.put("cost", cost);
+        payload.put("costKnown", cost != null);
+        if (pricingVersion == null) {
+            payload.remove("pricingVersion");
+        } else {
+            payload.put("pricingVersion", pricingVersion);
+        }
         payload.put("latencyMs", measurement.latencyMs());
 
-        String usageType = measurement.attributes().getOrDefault("usageType", "METERED");
         String sessionId = measurement.attributes().get("sessionId");
         UsageRecordBO record =
                 buildRecord(
@@ -109,7 +123,7 @@ public class UsageRecordService implements UsageGovernance {
         record.setCorrelationId(envelope.correlationId().value());
         record.setInputTokens(measurement.inputTokens());
         record.setOutputTokens(measurement.outputTokens());
-        record.setCost(measurement.cost());
+        record.setCost(cost == null ? BigDecimal.ZERO : cost);
         record.setOccurredAt(
                 LocalDateTime.ofInstant(envelope.occurredAt(), java.time.ZoneOffset.UTC));
 
@@ -117,12 +131,12 @@ public class UsageRecordService implements UsageGovernance {
         if (inserted) {
             if ("LLM".equalsIgnoreCase(usageType)) {
                 publishUsageEvent(
-                        measurement.attributes().getOrDefault("platform", "UNKNOWN"),
-                        measurement.attributes().getOrDefault("model", "UNKNOWN"),
+                        platform,
+                        model,
                         safeInt(measurement.inputTokens()),
                         safeInt(measurement.outputTokens()),
                         measurement.latencyMs(),
-                        measurement.cost().doubleValue());
+                        cost == null ? null : cost.doubleValue());
             } else if ("EMBEDDING".equalsIgnoreCase(usageType)) {
                 publishEmbeddingEvent(
                         measurement.attributes().getOrDefault("model", "UNKNOWN"),
@@ -181,35 +195,19 @@ public class UsageRecordService implements UsageGovernance {
             Long userId,
             String sessionId,
             String generationRunId) {
-        ModelPricing pricing =
-                pricingMap.getOrDefault(
-                        platform + ":" + model, new ModelPricing(platform, model, 0.0, 0.0));
-        BillingPriceProvider.PriceSnapshot snapshot =
-                billingPriceProvider == null ? null : billingPriceProvider.price(platform, model);
-        double cost =
-                snapshot == null
-                        ? pricing.calculateCost(promptTokens, completionTokens)
-                        : snapshot.promptPerToken()
-                                .multiply(BigDecimal.valueOf(promptTokens))
-                                .add(
-                                        snapshot.completionPerToken()
-                                                .multiply(BigDecimal.valueOf(completionTokens)))
-                                .doubleValue();
+        PricedCost pricedCost = calculateCost(platform, model, promptTokens, completionTokens);
+        BigDecimal cost = pricedCost.amount();
 
         int totalTokens = promptTokens + completionTokens;
-        Map<String, Object> usage =
-                new java.util.HashMap<>(
-                        Map.of(
-                                "platform", platform,
-                                "model", model,
-                                "promptTokens", promptTokens,
-                                "completionTokens", completionTokens,
-                                "totalTokens", totalTokens,
-                                "cost", cost,
-                                "pricingVersion",
-                                        snapshot == null
-                                                ? "local-model-pricing"
-                                                : snapshot.version()));
+        Map<String, Object> usage = new java.util.HashMap<>();
+        usage.put("platform", platform);
+        usage.put("model", model);
+        usage.put("promptTokens", promptTokens);
+        usage.put("completionTokens", completionTokens);
+        usage.put("totalTokens", totalTokens);
+        usage.put("cost", cost);
+        usage.put("costKnown", cost != null);
+        if (pricedCost.version() != null) usage.put("pricingVersion", pricedCost.version());
         if (generationRunId != null && !generationRunId.isBlank())
             usage.put("generationRunId", generationRunId);
         String extInfo = JSONUtils.toJsonString(usage);
@@ -223,7 +221,7 @@ public class UsageRecordService implements UsageGovernance {
         record.setCorrelationId(UUID.randomUUID().toString());
         record.setInputTokens((long) promptTokens);
         record.setOutputTokens((long) completionTokens);
-        record.setCost(BigDecimal.valueOf(cost));
+        record.setCost(cost == null ? BigDecimal.ZERO : cost);
         record.setOccurredAt(record.getCreateTime());
 
         usageRecordRepository.insert(record);
@@ -235,7 +233,13 @@ public class UsageRecordService implements UsageGovernance {
                 cost,
                 latencyMs);
 
-        publishUsageEvent(platform, model, promptTokens, completionTokens, latencyMs, cost);
+        publishUsageEvent(
+                platform,
+                model,
+                promptTokens,
+                completionTokens,
+                latencyMs,
+                cost == null ? null : cost.doubleValue());
     }
 
     /** 记录 Embedding 用量 */
@@ -328,7 +332,7 @@ public class UsageRecordService implements UsageGovernance {
             int promptTokens,
             int completionTokens,
             long latencyMs,
-            double cost) {
+            Double cost) {
         if (realtimePublisher != null) {
             try {
                 realtimePublisher.publishUsageRecord(
@@ -360,6 +364,33 @@ public class UsageRecordService implements UsageGovernance {
     private static int safeInt(long value) {
         return (int) Math.min(Integer.MAX_VALUE, Math.max(0, value));
     }
+
+    private PricedCost calculateCost(
+            String platform, String model, long promptTokens, long completionTokens) {
+        BillingPriceProvider.PriceSnapshot snapshot =
+                billingPriceProvider == null ? null : billingPriceProvider.price(platform, model);
+        if (snapshot != null) {
+            BigDecimal cost =
+                    snapshot.promptPerToken()
+                            .multiply(BigDecimal.valueOf(promptTokens))
+                            .add(
+                                    snapshot.completionPerToken()
+                                            .multiply(BigDecimal.valueOf(completionTokens)));
+            return new PricedCost(cost, snapshot.version());
+        }
+
+        ModelPricing pricing = pricingMap.get(platform + ":" + model);
+        if (pricing != null) {
+            return new PricedCost(
+                    BigDecimal.valueOf(
+                            pricing.calculateCost(
+                                    safeInt(promptTokens), safeInt(completionTokens))),
+                    "local-model-pricing");
+        }
+        return new PricedCost(null, null);
+    }
+
+    private record PricedCost(BigDecimal amount, String version) {}
 
     private static int safeInt(String value) {
         if (value == null || value.isBlank()) return 0;

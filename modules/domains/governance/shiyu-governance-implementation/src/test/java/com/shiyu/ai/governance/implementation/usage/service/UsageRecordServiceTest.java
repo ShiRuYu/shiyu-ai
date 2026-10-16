@@ -164,7 +164,7 @@ class UsageRecordServiceTest {
                         any(Integer.class),
                         any(Integer.class),
                         any(Long.class),
-                        any(Double.class));
+                        any());
     }
 
     @Test
@@ -209,7 +209,7 @@ class UsageRecordServiceTest {
                         any(Integer.class),
                         any(Integer.class),
                         any(Long.class),
-                        any(Double.class));
+                        any());
         service.setRealtimePublisher(publisher);
         service.recordUsage("OPENAI", "gpt", 2, 3, 5, new TenantId(9L), 7L, "session", "run-1");
         verify(repository).insert(any(UsageRecordBO.class));
@@ -304,6 +304,105 @@ class UsageRecordServiceTest {
     }
 
     @Test
+    void calculatesConversationCostFromTheConfiguredModelPrice() {
+        when(repository.insertIfAbsent(any())).thenReturn(true);
+        BillingPriceProvider pricing = mock(BillingPriceProvider.class);
+        when(pricing.price("DEEPSEEK", "deepseek-flash"))
+                .thenReturn(
+                        new BillingPriceProvider.PriceSnapshot(
+                                "DEEPSEEK",
+                                "deepseek-flash",
+                                new BigDecimal("0.001"),
+                                new BigDecimal("0.002"),
+                                "price-v1"));
+        service.setBillingPriceProvider(pricing);
+        UsageRealtimePublisher publisher = mock(UsageRealtimePublisher.class);
+        service.setRealtimePublisher(publisher);
+
+        ActorContext actor = new ActorContext(new TenantId(9), new UserId(7), false);
+        UsageMeasurement measurement =
+                new UsageMeasurement(
+                        UsageSourceType.CONVERSATION_GENERATION,
+                        "generation-priced",
+                        3,
+                        4,
+                        null,
+                        20,
+                        Map.of(
+                                "usageType",
+                                "LLM",
+                                "platform",
+                                "DEEPSEEK",
+                                "model",
+                                "deepseek-flash"));
+        DomainEventEnvelope<UsageMeasurement> envelope =
+                new DomainEventEnvelope<>(
+                        actor.tenantId(),
+                        actor.userId(),
+                        new CorrelationId("corr-priced"),
+                        Instant.parse("2026-08-24T04:00:00Z"),
+                        measurement);
+
+        assertEquals(UsageRecordResult.RECORDED, service.record(actor, envelope));
+
+        var captured = org.mockito.ArgumentCaptor.forClass(UsageRecordBO.class);
+        verify(repository).insertIfAbsent(captured.capture());
+        UsageRecordBO record = captured.getValue();
+        assertEquals(new BigDecimal("0.011"), record.getCost());
+        assertTrue(record.getExtInfo().contains("\"costKnown\":true"));
+        assertTrue(record.getExtInfo().contains("\"pricingVersion\":\"price-v1\""));
+        verify(publisher).publishUsageRecord("DEEPSEEK", "deepseek-flash", 3, 4, 20, 0.011);
+    }
+
+    @Test
+    void recordsUnknownConversationCostInsteadOfPresentingThePlaceholderAsZero() {
+        when(repository.insertIfAbsent(any())).thenReturn(true);
+        ActorContext actor = new ActorContext(new TenantId(9), new UserId(7), false);
+        UsageMeasurement measurement =
+                new UsageMeasurement(
+                        UsageSourceType.CONVERSATION_GENERATION,
+                        "generation-unpriced",
+                        3,
+                        4,
+                        null,
+                        20,
+                        Map.of(
+                                "usageType",
+                                "LLM",
+                                "platform",
+                                "LOCAL",
+                                "model",
+                                "unknown-model"));
+        DomainEventEnvelope<UsageMeasurement> envelope =
+                new DomainEventEnvelope<>(
+                        actor.tenantId(),
+                        actor.userId(),
+                        new CorrelationId("corr-unpriced"),
+                        Instant.parse("2026-08-24T04:00:00Z"),
+                        measurement);
+
+        assertEquals(UsageRecordResult.RECORDED, service.record(actor, envelope));
+
+        var captured = org.mockito.ArgumentCaptor.forClass(UsageRecordBO.class);
+        verify(repository).insertIfAbsent(captured.capture());
+        UsageRecordBO record = captured.getValue();
+        assertEquals(BigDecimal.ZERO, record.getCost());
+        assertTrue(record.getExtInfo().contains("\"cost\":null"));
+        assertTrue(record.getExtInfo().contains("\"costKnown\":false"));
+    }
+
+    @Test
+    void marksLegacyRecordUsageUnknownWhenNoModelPriceIsConfigured() {
+        service.recordUsage(
+                "DEEPSEEK", "unknown-model", 3, 4, 20, new TenantId(9), 7L, "session", "run");
+
+        var captured = org.mockito.ArgumentCaptor.forClass(UsageRecordBO.class);
+        verify(repository).insert(captured.capture());
+        assertTrue(captured.getValue().getExtInfo().contains("\"cost\":null"));
+        assertTrue(captured.getValue().getExtInfo().contains("\"costKnown\":false"));
+    }
+
+    @Test
     void rejectsNullContractArgumentsBeforeTouchingPersistence() {
         ActorContext actor = new ActorContext(new TenantId(9), new UserId(7), false);
         assertThrows(NullPointerException.class, () -> service.record(null, null));
@@ -342,7 +441,7 @@ class UsageRecordServiceTest {
         service.registerPricing(
                 new com.shiyu.ai.governance.implementation.usage.model.ModelPricing(
                         "LOCAL", "model", 0.1, 0.2));
-        assertEquals(2, service.getPricingCount());
+        assertEquals(1, service.getPricingCount());
         UsageRealtimePublisher publisher = mock(UsageRealtimePublisher.class);
         service.setRealtimePublisher(publisher);
         service.recordUsage("LOCAL", "model", 1, 2, 3, new TenantId(9L), 7L, "session", " ");

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.shiyu.ai.governance.implementation.usage.config.UsageAutoConfiguration;
+import com.shiyu.ai.governance.implementation.usage.config.BillingPricingProperties;
 import com.shiyu.ai.governance.implementation.usage.persistence.UsagePersistenceConfiguration;
 import com.shiyu.ai.governance.implementation.usage.port.BillingPriceProvider;
 import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
@@ -37,9 +38,10 @@ class GovernanceConfigurationTest {
         UsageRecordService service =
                 configuration.usageRecordService(repository, publisher, pricing);
         assertNotNull(service);
-        assertEquals(1, service.getPricingCount());
+        assertEquals(0, service.getPricingCount());
         assertSame(service, configuration.usageGovernance(service));
         assertNotNull(configuration.usageRecordService(repository, null, null));
+        assertNotNull(configuration.billingPriceProvider(new BillingPricingProperties()));
     }
 
     @Test

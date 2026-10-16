@@ -54,4 +54,20 @@ class UsageWebSocketServiceTest {
         service.publishEmbeddingUsage("embed", 1, 1, 1, 1);
         service.pushDailyAggregate(1);
     }
+
+    @Test
+    void publishesUnknownCostAsNullWithAnExplicitStatus() {
+        UsageWebSocketHandler handler = mock(UsageWebSocketHandler.class);
+        when(handler.getActiveSessionCount()).thenReturn(1);
+        UsageWebSocketService service = new UsageWebSocketService(handler);
+
+        service.publishUsageRecord("DEEPSEEK", "deepseek-chat", 3, 4, 20, null);
+
+        verify(handler)
+                .broadcast(
+                        argThat(
+                                payload ->
+                                        payload.contains("\"cost\":null")
+                                                && payload.contains("\"costKnown\":false")));
+    }
 }

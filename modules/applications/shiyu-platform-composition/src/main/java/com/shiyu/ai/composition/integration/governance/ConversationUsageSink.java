@@ -13,7 +13,6 @@ import com.shiyu.ai.kernel.event.DomainEventEnvelope;
 
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Map;
 
@@ -63,7 +62,7 @@ public class ConversationUsageSink implements GenerationUsageSink {
                         run.id(),
                         safe(run.promptTokens()),
                         safe(run.completionTokens()),
-                        BigDecimal.ZERO,
+                        null,
                         Math.max(0L, run.latencyMs()),
                         Map.of(
                                 "usageType",

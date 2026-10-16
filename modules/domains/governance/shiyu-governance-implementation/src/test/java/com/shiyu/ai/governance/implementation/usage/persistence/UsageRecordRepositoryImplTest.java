@@ -2,6 +2,7 @@ package com.shiyu.ai.governance.implementation.usage.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -116,6 +117,62 @@ class UsageRecordRepositoryImplTest {
 
         assertEquals(94L, repository.aggregateByModel().getFirst().get("total_tokens"));
         assertEquals(94L, repository.getOverview().get("total_tokens"));
+    }
+
+    @Test
+    void excludesUnknownConversationCostsFromTotalsAndReportsTheirCount() {
+        when(mapper.selectLlmRecords(anyLong()))
+                .thenReturn(
+                        List.of(
+                                record(
+                                        "LLM",
+                                        "{\"platform\":\"DEEPSEEK\",\"model\":\"deepseek-flash\","
+                                                + "\"totalTokens\":7,\"cost\":null,"
+                                                + "\"costKnown\":false}",
+                                        20)));
+
+        Map<String, Object> overview = repository.getOverview();
+        Map<String, Object> model = repository.aggregateByModel().getFirst();
+
+        assertNull(overview.get("total_cost"));
+        assertEquals(1L, overview.get("unknown_cost_calls"));
+        assertNull(model.get("total_cost"));
+        assertEquals(1L, model.get("unknown_cost_calls"));
+    }
+
+    @Test
+    void treatsLegacyConversationRecordsWithoutPricingMetadataAsUnknown() {
+        when(mapper.selectLlmRecords(anyLong()))
+                .thenReturn(
+                        List.of(
+                                record(
+                                        "LLM",
+                                        "{\"sourceType\":\"CONVERSATION_GENERATION\","
+                                                + "\"totalTokens\":7,\"cost\":0}",
+                                        20)));
+
+        Map<String, Object> overview = repository.getOverview();
+
+        assertNull(overview.get("total_cost"));
+        assertEquals(1L, overview.get("unknown_cost_calls"));
+    }
+
+    @Test
+    void treatsLegacyZeroFallbackPricingAsUnknownWhenTokensWereUsed() {
+        when(mapper.selectLlmRecords(anyLong()))
+                .thenReturn(
+                        List.of(
+                                record(
+                                        "LLM",
+                                        "{\"platform\":\"DEEPSEEK\",\"model\":\"unknown-model\","
+                                                + "\"totalTokens\":7,\"cost\":0,"
+                                                + "\"pricingVersion\":\"local-model-pricing\"}",
+                                        20)));
+
+        Map<String, Object> overview = repository.getOverview();
+
+        assertNull(overview.get("total_cost"));
+        assertEquals(1L, overview.get("unknown_cost_calls"));
     }
 
     @Test
@@ -330,7 +387,8 @@ class UsageRecordRepositoryImplTest {
         Map<String, Object> overview = repository.getOverview();
         assertEquals(5L, overview.get("total_calls"));
         assertEquals(2L, overview.get("total_tokens"));
-        assertEquals(new BigDecimal("0.1"), overview.get("total_cost"));
+        assertNull(overview.get("total_cost"));
+        assertEquals(1L, overview.get("unknown_cost_calls"));
 
         when(mapper.selectLlmTodayByTenantId(eq(9L), any())).thenReturn(null);
         assertEquals(0L, repository.sumLlmTodayTokensByTenantId(new TenantId(9L)));
