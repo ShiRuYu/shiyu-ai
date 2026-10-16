@@ -9,14 +9,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-/** Provides the model prices explicitly configured by the application operator. */
+/** 根据应用显式配置查询模型单价，未配置时返回未知费用。 */
 public final class ConfiguredBillingPriceProvider implements BillingPriceProvider {
     private final Map<String, PriceSnapshot> prices;
 
     /**
-     * Loads configured prices and validates their model keys and nonnegative rates.
+     * 加载模型价格配置，并校验模型标识和非负单价。
      *
-     * @param properties application model pricing settings.
+     * @param properties 应用中的模型价格配置。
      */
     public ConfiguredBillingPriceProvider(BillingPricingProperties properties) {
         Objects.requireNonNull(properties, "properties must not be null");
@@ -46,11 +46,11 @@ public final class ConfiguredBillingPriceProvider implements BillingPriceProvide
     }
 
     /**
-     * Finds the configured price using a case-insensitive platform and exact model name.
+     * 按平台忽略大小写、按模型名称精确匹配价格。
      *
-     * @param platform provider platform.
-     * @param model provider model identifier.
-     * @return the configured price, or {@code null} when no price exists.
+     * @param platform 模型服务平台。
+     * @param model 模型标识。
+     * @return 已配置的价格；未配置时返回 {@code null}。
      */
     @Override
     public PriceSnapshot price(String platform, String model) {

@@ -23,10 +23,10 @@ import org.springframework.context.annotation.Configuration;
 public class UsageAutoConfiguration {
 
     /**
-     * Provides model rates from application configuration when no adapter overrides them.
+     * 未提供自定义价格服务时，使用应用配置创建模型价格查询器。
      *
-     * @param properties configured per-model pricing.
-     * @return a provider that returns {@code null} for models without configured prices.
+     * @param properties 各模型的价格配置。
+     * @return 未配置价格的模型返回 {@code null} 的价格查询器。
      */
     @Bean
     @ConditionalOnMissingBean(BillingPriceProvider.class)

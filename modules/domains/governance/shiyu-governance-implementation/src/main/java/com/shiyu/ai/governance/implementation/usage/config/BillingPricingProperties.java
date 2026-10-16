@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Optional per-token USD prices used to calculate model usage costs. */
+/** 用于计算模型用量费用的按 Token 计价配置。 */
 @Getter
 @Setter
 @ConfigurationProperties(prefix = "shiyu.governance.usage.pricing")
@@ -18,6 +18,7 @@ public class BillingPricingProperties {
 
     @Getter
     @Setter
+    /** 单个模型的输入和输出 Token 单价。 */
     public static class ModelPrice {
         private String platform;
         private String model;

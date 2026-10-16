@@ -390,6 +390,7 @@ public class UsageRecordService implements UsageGovernance {
         return new PricedCost(null, null);
     }
 
+    /** 一次用量计算得到的费用和费率版本。 */
     private record PricedCost(BigDecimal amount, String version) {}
 
     private static int safeInt(String value) {

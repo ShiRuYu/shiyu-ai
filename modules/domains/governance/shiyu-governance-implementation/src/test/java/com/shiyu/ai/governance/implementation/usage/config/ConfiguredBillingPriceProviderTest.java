@@ -15,6 +15,7 @@ import com.shiyu.ai.governance.implementation.usage.config.UsageAutoConfiguratio
 import com.shiyu.ai.governance.implementation.usage.port.BillingPriceProvider;
 import com.shiyu.ai.governance.implementation.usage.port.repository.UsageRecordRepository;
 
+/** 验证模型价格配置的读取、匹配和校验。 */
 class ConfiguredBillingPriceProviderTest {
     @Test
     void resolvesConfiguredPricesByPlatformAndModel() {
