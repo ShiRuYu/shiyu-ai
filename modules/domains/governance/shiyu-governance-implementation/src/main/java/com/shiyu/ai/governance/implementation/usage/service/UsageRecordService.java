@@ -90,6 +90,7 @@ public class UsageRecordService implements UsageGovernance {
         payload.put("sourceId", measurement.sourceId());
         payload.put("inputTokens", measurement.inputTokens());
         payload.put("outputTokens", measurement.outputTokens());
+        payload.put("totalTokens", measurement.inputTokens() + measurement.outputTokens());
         payload.put("cost", measurement.cost());
         payload.put("latencyMs", measurement.latencyMs());
 

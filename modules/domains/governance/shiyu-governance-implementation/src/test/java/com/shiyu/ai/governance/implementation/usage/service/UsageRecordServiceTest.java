@@ -3,6 +3,7 @@ package com.shiyu.ai.governance.implementation.usage.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -129,6 +130,7 @@ class UsageRecordServiceTest {
         assertEquals("corr-1", record.getCorrelationId());
         assertEquals(4L, record.getInputTokens());
         assertEquals(6L, record.getOutputTokens());
+        assertTrue(record.getExtInfo().contains("\"totalTokens\":10"));
     }
 
     @Test
