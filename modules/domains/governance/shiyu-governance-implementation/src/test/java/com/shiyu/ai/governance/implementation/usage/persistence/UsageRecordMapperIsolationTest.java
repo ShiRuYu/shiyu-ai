@@ -42,11 +42,14 @@ class UsageRecordMapperIsolationTest {
                     "CREATE TABLE governance_usage_record ("
                             + "id VARCHAR(64), tenant_id BIGINT, usage_type VARCHAR(32), "
                             + "latency_ms BIGINT, user_id BIGINT, session_id VARCHAR(128), "
-                            + "ext_info VARCHAR(2000), create_time TIMESTAMP)");
+                            + "ext_info VARCHAR(2000), create_time TIMESTAMP, "
+                            + "input_tokens BIGINT, output_tokens BIGINT)");
             statement.execute(
-                    "INSERT INTO governance_usage_record VALUES "
-                            + "('one', 1, 'LLM', 10, 7, NULL, NULL, CURRENT_TIMESTAMP),"
-                            + "('two', 2, 'LLM', 20, 8, NULL, NULL, CURRENT_TIMESTAMP)");
+                    "INSERT INTO governance_usage_record "
+                            + "(id, tenant_id, usage_type, latency_ms, user_id, session_id, "
+                            + "ext_info, create_time, input_tokens, output_tokens) VALUES "
+                            + "('one', 1, 'LLM', 10, 7, NULL, NULL, CURRENT_TIMESTAMP, 49, 45),"
+                            + "('two', 2, 'LLM', 20, 8, NULL, NULL, CURRENT_TIMESTAMP, 10, 20)");
         }
 
         Configuration configuration =
@@ -59,6 +62,9 @@ class UsageRecordMapperIsolationTest {
         try (var session = sessionFactory.openSession()) {
             Map<String, Object> overview = session.getMapper(UsageRecordMapper.class).getOverview(1L);
             assertEquals(1L, ((Number) overview.get("TOTAL_CALLS")).longValue());
+            var record = session.getMapper(UsageRecordMapper.class).selectLlmRecords(1L).getFirst();
+            assertEquals(49L, record.getInputTokens());
+            assertEquals(45L, record.getOutputTokens());
         }
     }
 }

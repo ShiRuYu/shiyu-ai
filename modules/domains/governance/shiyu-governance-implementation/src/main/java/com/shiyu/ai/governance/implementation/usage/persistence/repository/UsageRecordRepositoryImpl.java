@@ -603,7 +603,12 @@ public class UsageRecordRepositoryImpl implements UsageRecordRepository {
 
         void addLlm(UsageRecordDO record, Map<String, Object> extInfo) {
             addLatency(record);
-            totalTokens += longValue(extInfo.get("totalTokens"));
+            long recordTokens =
+                    extInfo.containsKey("totalTokens")
+                            ? longValue(extInfo.get("totalTokens"))
+                            : longValue(record.getInputTokens())
+                                    + longValue(record.getOutputTokens());
+            totalTokens += recordTokens;
             totalCost = totalCost.add(decimalValue(extInfo.get("cost")));
         }
 

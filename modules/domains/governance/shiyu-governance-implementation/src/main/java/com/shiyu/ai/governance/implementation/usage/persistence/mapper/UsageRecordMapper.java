@@ -23,6 +23,7 @@ public interface UsageRecordMapper extends BaseMapperFlex<UsageRecordDO> {
     String RECORD_COLUMNS =
             "id, usage_type AS usageType, latency_ms AS latencyMs, "
                     + "user_id AS userId, session_id AS sessionId, ext_info AS extInfo, "
+                    + "input_tokens AS inputTokens, output_tokens AS outputTokens, "
                     + "tenant_id AS tenantId, "
                     + "create_time AS createTime";
 

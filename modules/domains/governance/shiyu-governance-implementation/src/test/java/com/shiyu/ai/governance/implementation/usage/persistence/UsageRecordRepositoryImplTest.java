@@ -107,6 +107,18 @@ class UsageRecordRepositoryImplTest {
     }
 
     @Test
+    void aggregatesPersistedTokenColumnsWhenExtInfoHasNoTotalTokens() {
+        UsageRecordDO record =
+                record("LLM", "{\"platform\":\"deepseek\",\"model\":\"deepseek-flash\"}", 10);
+        record.setInputTokens(49L);
+        record.setOutputTokens(45L);
+        when(mapper.selectLlmRecords(anyLong())).thenReturn(List.of(record));
+
+        assertEquals(94L, repository.aggregateByModel().getFirst().get("total_tokens"));
+        assertEquals(94L, repository.getOverview().get("total_tokens"));
+    }
+
+    @Test
     void normalizesOverviewAliasesAndIncludesConfiguredCatalogCounts() {
         when(mapper.getOverview(anyLong())).thenReturn(Map.of("TOTAL_CALLS", 3L, "AVG_LATENCY_MS", 12.5));
         when(mapper.selectLlmRecords(anyLong()))
