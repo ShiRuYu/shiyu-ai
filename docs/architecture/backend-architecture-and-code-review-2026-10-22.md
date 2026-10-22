@@ -5,13 +5,15 @@
 **审查范围：** `shiyu-ai` 后端 Maven reactor 及其生产源码、架构规则和相关测试源码。
 
 **基线提交：** `a49c0c61`
-**方法：** 静态源码与依赖审查；未修改代码，未运行构建、测试或服务。
+**初次审查方法：** 静态源码与依赖审查；当时未修改代码，未运行构建、测试或服务。后续整改与验证记录见“整改复核”。
 
 ## 结论摘要
 
 后端采用模块化单体，平台领域以 Contract 和 Implementation 分层，业务由启动模块装配，公共基础设施提供 Web、持久化、线程、存储和向量能力。对 POM 依赖及 Java import 的静态扫描未发现模块依赖环、跨领域 Implementation 直接引用或 Contract 引入架构规则所禁止的框架依赖。
 
 本轮确认 **3 项 P1、6 项 P2**。优先关注生成取消与配额生命周期、模型故障状态恢复，以及检索和考试历史在数据增长后的资源成本。没有足够证据支持 P0 级结论。
+
+**整改复核：** 3 项 P1 与 6 项 P2 均已按当前支持的单实例运行方式完成代码整改和定向测试。生成取消、超时回收和模型熔断均覆盖了本地执行路径。配额、路由健康和索引协调仍含进程内状态；部署手册明确指出水平扩展需先完成存储改造，因此多实例运行仍不受支持。客户端断开测试不能证明真实供应商停止计算或计费。具体验证边界见下文。
 
 ## 架构与依赖方向
 
@@ -69,6 +71,22 @@ HTTP 认证与租户解析
 | **P2** | [ExamTakingService.java](../../modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/application/ExamTakingService.java)；[ExamTakingRepositoryImpl.java](../../modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/persistence/repository/ExamTakingRepositoryImpl.java) | 历史查询先读取学生所有作答，再逐条查询考试并处理过期记录，最后在内存中分页；查询开销随完整历史增长。 | 在 Repository 层实现数据库分页，并批量读取关联考试。 | 中 |
 | **P2（条件性）** | [MagmaConsolidationWorker.java](../../modules/domains/memory/shiyu-memory-implementation/src/main/java/com/shiyu/ai/memory/implementation/persistence/service/MagmaConsolidationWorker.java)；[H2 Memory baseline](../../modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/schema/memory/12_memory_magma.sql) | Worker 租约固定 60 秒，完成或失败更新只按 Job ID 定位；若处理超过租期，旧 Worker 与接管者可能同时写入。H2 基线中关系边仅以随机 ID 为主键，先查后插不能单独保证跨实例幂等。 | 增加租约 owner/token 并在状态更新时校验；为关系边使用数据库幂等约束或等价 upsert。 | 中 |
 
+## 整改复核（2026-10-22）
+
+以下状态针对当前工作区的后续改动；实现目前未提交、未推送。测试结果只代表列出的定向测试。
+
+| 原发现 | 当前状态 | 源码改动与验证边界 |
+| --- | --- | --- |
+| P1 生成取消没有停止 Provider | **当前支持的单实例路径已修复** | `GenerationRunner` 保存并 dispose 活跃 Reactor 订阅，取消接口及超时回收都会通知当前实例的 Runner；Model 为 OpenAI 兼容和 Ollama 流式适配器加入可取消的 JDK HTTP 客户端，DeepSeek 中断流读取并关闭响应体。Model 定向测试使用本地 SSE 服务验证 OpenAI 兼容和 DeepSeek 流取消会断开 HTTP 连接。多实例运行不受支持；真实供应商收到断开后是否停止计算或计费未验证。 |
+| P1 超时回收未释放配额预留 | **当前支持的单实例路径已修复** | 新增回收调度器；Repository 只返回通过状态 CAS 成功回收的记录，调度器先取消本地 Provider 流，再释放配额。`QuotaGenerationAdmission` 在配额释放/结算成功后才移除本地预留，并串行处理同一 run 的并发终结；新增释放异常后重试测试。多实例运行不受支持，跨副本配额句柄共享未实现。 |
+| P1 模型失败状态不恢复且跨租户影响 | **当前支持的单实例路由已修复** | ModelRouter 将路由熔断状态按租户隔离；连续失败后冷却 30 秒允许单个探测，成功会清除失败状态。Model 定向测试验证阈值、租户隔离和恢复。路由健康仍存于进程内存，管理接口展示的全局 Provider 健康值不能代表每个租户；多实例运行不受支持。 |
+| P2 模型路由 timeout/maxTokens 未生效 | **已在应用调用边界应用** | 路由执行读取 `timeoutMs` 并传入同步超时或流超时，同时按策略、Provider 上限和请求上限计算输出 Token 上限。Model 定向测试通过。应用超时或取消订阅不保证 Provider 端请求一定终止，需按 Provider 适配器验证。 |
+| P2 Memory 初始候选可超过 Token 预算 | **已修复** | 初始 anchors 与后续图扩展使用同一预算边界，超预算候选不会进入结果；Memory 定向测试通过。Token 数仍由项目的估算方法计算。 |
+| P2 Knowledge 发布后同步重建索引、失败无持久重试 | **当前支持的单实例路径已修复** | 发布、归档、回滚和删除事务写入 `INDEX_REBUILD` 持久任务；Worker 使用状态和版本 CAS 领取任务，支持心跳、超时恢复和有界重试；索引重建锁按租户与空间隔离。Knowledge 定向测试通过。索引文件仍为本地资源，水平扩展前需改为共享索引存储并验证任务协调。 |
+| P2 Knowledge 混合检索全空间读取 chunks | **已修复** | 混合检索按候选 ID 批量读取，并同时限定租户、空间和未删除记录；Knowledge 定向测试通过。 |
+| P2 Education 历史查询全量读取并逐条查考试 | **已修复** | Repository 在数据库分页查询中关联同租户且未删除的考试，因此结果和 total 都受关联条件约束；Service 批量读取当前页考试，并以游标批次处理到期作答。Education 定向测试通过。 |
+| P2 Memory 巩固任务租约竞争及关系边重复 | **已修复** | 完成/失败更新要求任务仍为 `RUNNING`、租约值匹配且未过期；关系边 ID 基于租户和关系内容稳定生成，并通过 `JdbcDialect.upsert` 写入。Memory 定向测试通过；PostgreSQL、MySQL 和 H2 服务器均未在本轮实际运行。 |
+
 ## 建议的回归场景
 
 - 取消生成后确认上游停止，并校验真实请求数、Token 用量和租户并发额度保持一致。
@@ -80,12 +98,13 @@ HTTP 认证与租户解析
 
 ## 验证范围与限制
 
-- **已检查：** 31 个 Maven 子模块依赖、生产源码之间的模块级 Java import、架构测试规则，以及生成、Agent/工具、模型路由、Knowledge、Memory、Education 等代表性业务调用链。
-- **静态结果：** 未发现 Maven 模块依赖环；未发现跨领域 Implementation 直接 import 或 Contract 依赖架构规则所禁止的框架包。
-- **未执行：** Maven 构建、单元/集成/架构测试、服务启动、真实模型调用、多实例故障注入及生产数据库验证。上述 findings 是由源码路径推导出的风险，不应理解为已复现的线上事故。
-- **部署边界：** 当前配额与模型健康状态由进程内存维护。对单实例的本地开发场景，这意味着重启后重新计数；不能据此保证多实例之间的额度或模型健康状态一致。
+- **初次审查已检查：** 31 个 Maven 子模块依赖、生产源码之间的模块级 Java import、架构测试规则，以及生成、Agent/工具、模型路由、Knowledge、Memory、Education 等代表性业务调用链。
+- **初次静态结果：** 未发现 Maven 模块依赖环；未发现跨领域 Implementation 直接 import 或 Contract 依赖架构规则所禁止的框架包。
+- **后续定向验证：** Conversation 16 项、Model 60 项、Knowledge 16 项、Education 53 项、Memory 41 项、配额释放重试 1 项测试通过，共 187 项。Conversation 与 Model 测试在本轮再次运行；Knowledge、Education、Memory 和配额重试结果来自此前针对性运行。未运行完整 Maven reactor 或架构测试套件。
+- **未验证：** 服务启动、真实模型 Provider 请求及供应商侧是否停止计费、多实例竞争/故障恢复、生产数据库。Memory 的 H2/PostgreSQL/MySQL upsert 经过 SQL 生成测试，但未连接真实数据库。原报告 findings 是源码风险判断，不代表线上事故。
+- **部署边界：** [部署运维手册](../部署运维手册.md)将 H2 与本地索引标为单实例架构，并要求水平扩展前完成外部数据库、分布式缓存/会话和共享对象存储改造。当前配额预留、取消句柄、模型路由健康状态及索引协调使用进程内数据，不应直接部署为多实例服务。
 - **工具可用性：** `brooks-health` 所依赖的共享规则文件在当前本机技能目录中缺失，因此本报告不使用该技能的健康评分。
 
 ## 技能
 
-本次使用已安装的 `karpathy-guidelines` 约束审查方式；检查后没有为本次静态审查重复安装技能。
+初次审查使用已安装的 `karpathy-guidelines` 约束审查方式；后续修复使用 `test-driven-development` 和 `systematic-debugging`。没有为本次工作重复安装技能。
