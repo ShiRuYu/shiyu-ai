@@ -20,6 +20,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 验证 模型 Router 相关功能、边界条件、异常路径和协作行为。
@@ -78,9 +83,9 @@ class ModelRouterTest {
                         1000,
                         true,
                         1000));
-        router.markFailure("p", "fast", "timeout");
-        router.markFailure("p", "fast", "timeout");
-        router.markFailure("p", "fast", "timeout");
+        router.markFailure(tenant(1), "p", "fast", "timeout");
+        router.markFailure(tenant(1), "p", "fast", "timeout");
+        router.markFailure(tenant(1), "p", "fast", "timeout");
         assertEquals("configured", router.choose("p1", tenant(1), Set.of("chat")).model());
     }
 
@@ -157,6 +162,101 @@ class ModelRouterTest {
                                 ignored -> {
                                     throw new IllegalStateException("down");
                                 }));
+    }
+
+    @Test
+    void isolatesRoutedHealthByTenantAndResetsItAfterCooldownProbeSucceeds() {
+        MutableClock clock = new MutableClock(Instant.parse("2026-01-01T00:00:00Z"));
+        ModelRouter router = new ModelRouter(clock, Duration.ofSeconds(30));
+        router.register(new ModelProviderCapabilities("p", "fast", Set.of("chat"), 100));
+        router.savePolicy(
+                new ModelRoutePolicy(
+                        "tenant-1", 1, "tenant one", List.of("p:fast"), 1000, true, 1000));
+        router.savePolicy(
+                new ModelRoutePolicy(
+                        "tenant-2", 2, "tenant two", List.of("p:fast"), 1000, true, 1000));
+
+        for (int attempt = 0; attempt < 3; attempt++) {
+            assertThrows(
+                    IllegalStateException.class,
+                    () ->
+                            router.executeWithFallback(
+                                    "tenant-1",
+                                    tenant(1),
+                                    Set.of("chat"),
+                                    ignored -> {
+                                        throw new IllegalStateException("provider down");
+                                    }));
+        }
+
+        assertFalse(router.health("p", "fast", tenant(1)).healthy());
+        assertTrue(router.health("p", "fast", tenant(2)).healthy());
+        assertEquals(1, router.candidates("tenant-2", tenant(2), Set.of("chat")).size());
+        assertTrue(router.candidates("tenant-1", tenant(1), Set.of("chat")).isEmpty());
+
+        clock.advance(Duration.ofSeconds(31));
+        assertEquals(1, router.candidates("tenant-1", tenant(1), Set.of("chat")).size());
+        assertEquals(
+                "recovered",
+                router.executeWithFallback(
+                        "tenant-1", tenant(1), Set.of("chat"), ignored -> "recovered"));
+        assertEquals(0, router.health("p", "fast", tenant(1)).consecutiveFailures());
+    }
+
+    @Test
+    void fallsBackWhenAProviderAttemptExceedsTheRouteTimeout() {
+        ModelRouter router = new ModelRouter();
+        router.register(new ModelProviderCapabilities("p", "slow", Set.of("chat"), 100));
+        router.register(new ModelProviderCapabilities("p", "fast", Set.of("chat"), 100));
+        router.savePolicy(
+                new ModelRoutePolicy(
+                        "timeout", 1, "timeout", List.of("p:slow", "p:fast"), 25, true, 1000));
+
+        String model =
+                router.executeWithFallback(
+                        "timeout",
+                        tenant(1),
+                        Set.of("chat"),
+                        candidate -> {
+                            if ("slow".equals(candidate.model())) {
+                                try {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException interrupted) {
+                                    Thread.currentThread().interrupt();
+                                    throw new IllegalStateException(interrupted);
+                                }
+                            }
+                            return candidate.model();
+                        });
+
+        assertEquals("fast", model);
+    }
+
+    private static final class MutableClock extends Clock {
+        private final AtomicReference<Instant> current;
+
+        private MutableClock(Instant current) {
+            this.current = new AtomicReference<>(current);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneId.of("UTC");
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return current.get();
+        }
+
+        private void advance(Duration duration) {
+            current.updateAndGet(value -> value.plus(duration));
+        }
     }
 
     @Test

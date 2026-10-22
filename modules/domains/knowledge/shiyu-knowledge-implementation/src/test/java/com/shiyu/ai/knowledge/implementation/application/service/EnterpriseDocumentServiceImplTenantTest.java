@@ -42,9 +42,9 @@ import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeIngestionJobB
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
-import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
@@ -73,7 +73,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         mock(KnowledgeAuditService.class),
                         mock(KnowledgeDocumentRelationService.class),
                         mock(DocumentIngestionService.class),
-                        mock(KnowledgeIndexService.class),
                         mock(TransactionTemplateExecutor.class),
                         mock(StorageMetadataStore.class),
                         mock(ObjectStorage.class));
@@ -103,7 +102,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         mock(KnowledgeAuditService.class),
                         mock(KnowledgeDocumentRelationService.class),
                         mock(DocumentIngestionService.class),
-                        mock(KnowledgeIndexService.class),
                         mock(TransactionTemplateExecutor.class),
                         mock(StorageMetadataStore.class),
                         mock(ObjectStorage.class));
@@ -130,7 +128,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         mock(KnowledgeAuditService.class),
                         mock(KnowledgeDocumentRelationService.class),
                         mock(DocumentIngestionService.class),
-                        mock(KnowledgeIndexService.class),
                         mock(TransactionTemplateExecutor.class),
                         mock(StorageMetadataStore.class),
                         mock(ObjectStorage.class));
@@ -199,7 +196,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         audit,
                         mock(KnowledgeDocumentRelationService.class),
                         mock(DocumentIngestionService.class),
-                        mock(KnowledgeIndexService.class),
                         mock(TransactionTemplateExecutor.class),
                         metadata,
                         mock(ObjectStorage.class));
@@ -237,7 +233,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         mock(KnowledgeAuditService.class),
                         mock(KnowledgeDocumentRelationService.class),
                         mock(DocumentIngestionService.class),
-                        mock(KnowledgeIndexService.class),
                         mock(TransactionTemplateExecutor.class),
                         metadata,
                         mock(ObjectStorage.class));
@@ -281,7 +276,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         audit,
                         mock(KnowledgeDocumentRelationService.class),
                         mock(DocumentIngestionService.class),
-                        mock(KnowledgeIndexService.class),
                         mock(TransactionTemplateExecutor.class),
                         mock(StorageMetadataStore.class),
                         mock(ObjectStorage.class));
@@ -303,7 +297,6 @@ class EnterpriseDocumentServiceImplTenantTest {
         KnowledgeAuditService audit = mock(KnowledgeAuditService.class);
         KnowledgeDocumentRelationService relations = mock(KnowledgeDocumentRelationService.class);
         DocumentIngestionService ingestion = mock(DocumentIngestionService.class);
-        KnowledgeIndexService index = mock(KnowledgeIndexService.class);
         TransactionTemplateExecutor tx = mock(TransactionTemplateExecutor.class);
         StorageMetadataStore metadata = mock(StorageMetadataStore.class);
         ObjectStorage storage = mock(ObjectStorage.class);
@@ -320,7 +313,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         audit,
                         relations,
                         ingestion,
-                        index,
                         tx,
                         metadata,
                         storage);
@@ -333,7 +325,7 @@ class EnterpriseDocumentServiceImplTenantTest {
         verify(relations).removeDocumentRelations(actor(1L), 10L);
         verify(documents).deleteById(new TenantId(1L), 10L);
         verify(storage).delete("objects/doc");
-        verify(index).rebuild(new TenantId(1L), 5L);
+        verify(enterprise).insertJob(eq(new TenantId(1L)), any(KnowledgeIngestionJobBO.class));
     }
 
     @Test
@@ -384,7 +376,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         audit,
                         mock(KnowledgeDocumentRelationService.class),
                         mock(DocumentIngestionService.class),
-                        mock(KnowledgeIndexService.class),
                         mock(TransactionTemplateExecutor.class),
                         metadata,
                         mock(ObjectStorage.class));
@@ -419,7 +410,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         mock(KnowledgeAuditService.class),
                         mock(KnowledgeDocumentRelationService.class),
                         mock(DocumentIngestionService.class),
-                        mock(KnowledgeIndexService.class),
                         mock(TransactionTemplateExecutor.class),
                         mock(StorageMetadataStore.class),
                         mock(ObjectStorage.class));
@@ -452,7 +442,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         mock(KnowledgeAuditService.class),
                         relations,
                         mock(DocumentIngestionService.class),
-                        mock(KnowledgeIndexService.class),
                         mock(TransactionTemplateExecutor.class),
                         mock(StorageMetadataStore.class),
                         mock(ObjectStorage.class));
@@ -470,6 +459,41 @@ class EnterpriseDocumentServiceImplTenantTest {
     }
 
     @Test
+    void publishingQueuesDurableIndexRebuildJobForTheSameTenantAndSpace() {
+        KnowledgeDocumentRepository documents = mock(KnowledgeDocumentRepository.class);
+        KnowledgeEnterpriseRepository enterprise = mock(KnowledgeEnterpriseRepository.class);
+        KnowledgeDocumentBO document = document(10L, 5L, 9L, "REVIEWING", "READY");
+        KnowledgeDocumentVersionBO version = version(9L, 10L, 1, "REVIEWING", "READY");
+        when(documents.selectById(new TenantId(1L), 10L)).thenReturn(document);
+        when(enterprise.findVersion(new TenantId(1L), 9L)).thenReturn(version);
+        EnterpriseDocumentServiceImpl service =
+                new EnterpriseDocumentServiceImpl(
+                        documents,
+                        enterprise,
+                        mock(KnowledgeSpaceService.class),
+                        mock(KnowledgeAuditService.class),
+                        mock(KnowledgeDocumentRelationService.class),
+                        mock(DocumentIngestionService.class),
+                        mock(TransactionTemplateExecutor.class),
+                        mock(StorageMetadataStore.class),
+                        mock(ObjectStorage.class));
+
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.publish(actor(1L), 10L, "publish");
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        ArgumentCaptor<KnowledgeIngestionJobBO> job =
+                ArgumentCaptor.forClass(KnowledgeIngestionJobBO.class);
+        verify(enterprise).insertJob(eq(new TenantId(1L)), job.capture());
+        assertEquals("INDEX_REBUILD", job.getValue().getJobType());
+        assertEquals(5L, job.getValue().getSpaceId());
+        assertEquals("PENDING", job.getValue().getJobStatus());
+    }
+
+    @Test
     void coversExistingJobWithoutPreviousDocumentRollbackArchiveAndCleanupFailures()
             throws Exception {
         KnowledgeDocumentRepository documents = mock(KnowledgeDocumentRepository.class);
@@ -478,7 +502,6 @@ class EnterpriseDocumentServiceImplTenantTest {
         KnowledgeAuditService audit = mock(KnowledgeAuditService.class);
         KnowledgeDocumentRelationService relations = mock(KnowledgeDocumentRelationService.class);
         DocumentIngestionService ingestion = mock(DocumentIngestionService.class);
-        KnowledgeIndexService index = mock(KnowledgeIndexService.class);
         TransactionTemplateExecutor tx = mock(TransactionTemplateExecutor.class);
         StorageMetadataStore metadata = mock(StorageMetadataStore.class);
         ObjectStorage storage = mock(ObjectStorage.class);
@@ -515,7 +538,6 @@ class EnterpriseDocumentServiceImplTenantTest {
                         audit,
                         relations,
                         ingestion,
-                        index,
                         tx,
                         metadata,
                         storage);
@@ -600,10 +622,9 @@ class EnterpriseDocumentServiceImplTenantTest {
                 .delete("objects/failing-delete");
         service.delete(actor, 40L);
         verify(metadata, never()).markObjectDeleted(anyLong(), anyString());
-        doThrow(new IllegalStateException("index unavailable"))
-                .when(index)
-                .rebuild(new TenantId(1L), 5L);
-        assertThrows(ServiceException.class, () -> service.delete(actor, 40L));
+        service.delete(actor, 40L);
+        verify(enterprise, atLeast(1))
+                .insertJob(eq(new TenantId(1L)), any(KnowledgeIngestionJobBO.class));
     }
 
     private static KnowledgeDocumentBO document(

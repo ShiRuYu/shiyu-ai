@@ -379,7 +379,7 @@ class MagmaMemoryServiceTest {
                         null,
                         2,
                         10,
-                        1,
+                        2,
                         MemoryQueryIntent.TEMPORAL);
         when(semanticIndex.search(query, 2))
                 .thenReturn(List.of(new MemoryPath(anchor, 1, List.of())));
@@ -412,6 +412,38 @@ class MagmaMemoryServiceTest {
                         semanticIndex,
                         (tenant, namespace, subjectType, subjectId, sourceType, sourceId) -> false);
         assertThrows(IllegalArgumentException.class, () -> denied.trace(TENANT, "denied-trace"));
+    }
+
+    @Test
+    void appliesTokenBudgetToInitialAnchorsAndKeepsSmallerMatches() {
+        MemoryEvent oversized =
+                event(
+                        "oversized-anchor",
+                        MemoryEventStatus.ACTIVE,
+                        "progress " + "x".repeat(80));
+        MemoryEvent fitting = event("fitting-anchor", MemoryEventStatus.ACTIVE, "progress");
+        MemoryQuery query =
+                new MemoryQuery(
+                        TENANT,
+                        "magma",
+                        "USER",
+                        "7",
+                        "progress",
+                        Set.of(GraphType.SEMANTIC),
+                        null,
+                        null,
+                        1,
+                        10,
+                        2,
+                        MemoryQueryIntent.SEMANTIC);
+        when(repository.findByNamespace(TENANT, "magma", 1000))
+                .thenReturn(List.of(oversized, fitting));
+
+        List<MemoryPath> paths = service.retrieve(query);
+
+        assertEquals(
+                List.of("fitting-anchor"),
+                paths.stream().map(path -> path.event().id()).toList());
     }
 
     @Test
@@ -679,6 +711,10 @@ class MagmaMemoryServiceTest {
     }
 
     private static MemoryEvent event(String id, MemoryEventStatus status) {
+        return event(id, status, "progress");
+    }
+
+    private static MemoryEvent event(String id, MemoryEventStatus status, String content) {
         return new MemoryEvent(
                 id,
                 TENANT,
@@ -686,7 +722,7 @@ class MagmaMemoryServiceTest {
                 "USER",
                 "7",
                 "STUDY",
-                "progress",
+                content,
                 OCCURRED_AT,
                 "conversation",
                 "source-1",

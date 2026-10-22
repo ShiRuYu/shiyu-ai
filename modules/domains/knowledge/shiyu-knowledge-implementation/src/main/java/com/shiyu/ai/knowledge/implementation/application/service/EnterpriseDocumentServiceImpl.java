@@ -9,7 +9,6 @@ import com.shiyu.ai.knowledge.implementation.application.EnterpriseDocumentServi
 
 import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.common.foundation.exception.ServiceException;
-import com.shiyu.ai.common.foundation.tx.TransactionHookExecutor;
 import com.shiyu.ai.common.foundation.tx.TransactionTemplateExecutor;
 import com.shiyu.ai.common.storage.api.*;
 import com.shiyu.ai.common.storage.backup.*;
@@ -32,7 +31,6 @@ import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeReviewRecordB
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDocumentRepository;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
-import com.shiyu.ai.knowledge.implementation.infrastructure.index.service.KnowledgeIndexService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,10 +76,6 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
      * ingestionService 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final DocumentIngestionService ingestionService;
-    /**
-     * 索引服务，表示当前对象中的对应属性。
-     */
-    private final KnowledgeIndexService indexService;
     /**
      * transactionTemplateExecutor 属性，保存当前对象中的业务数据或协作依赖。
      */
@@ -398,7 +392,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         auditService.record(
                 actor, document.getSpaceId(), "DOCUMENT", documentId, "ROLLBACK", versionId);
         if (wasPublished) {
-            scheduleIndexRebuild(actor.tenantId(), document.getSpaceId());
+            enqueueIndexRebuild(actor.tenantId(), document.getSpaceId());
         }
         return toView(document);
     }
@@ -434,6 +428,7 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
                                     documentId,
                                     "DELETE",
                                     null);
+                            enqueueIndexRebuild(actor.tenantId(), document.getSpaceId());
                             return new DeletionContext(
                                     document.getTenantId(),
                                     document.getSpaceId(),
@@ -452,22 +447,6 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
             }
             if (physicalDeleted && deletion.tenantId() != null) {
                 storageMetadataStore.markObjectDeleted(deletion.tenantId(), deletion.objectKey());
-            }
-        }
-        if (deletion.tenantId() != null && deletion.spaceId() != null) {
-            try {
-                indexService.rebuild(
-                        new com.shiyu.ai.kernel.context.TenantId(deletion.tenantId()),
-                        deletion.spaceId());
-            } catch (RuntimeException exception) {
-                log.error(
-                        "Document deleted but space index rebuild failed: documentIdPresent={},"
-                                + " spaceIdPresent={}, errorType={}, errorMessageLength={}",
-                        documentId != null,
-                        deletion.spaceId() != null,
-                        exception.getClass().getSimpleName(),
-                        exception.getMessage() == null ? 0 : exception.getMessage().length());
-                throw new ServiceException("文档已删除，但空间索引重建失败，请稍后在索引任务中重试");
             }
         }
     }
@@ -526,22 +505,24 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         enterpriseRepository.insertReview(actor.tenantId(), review);
         auditService.record(actor, document.getSpaceId(), "DOCUMENT", documentId, action, comment);
         if ("PUBLISHED".equals(target) || "ARCHIVED".equals(target)) {
-            scheduleIndexRebuild(actor.tenantId(), document.getSpaceId());
+            enqueueIndexRebuild(actor.tenantId(), document.getSpaceId());
         }
         return toView(document);
     }
 
-    private void scheduleIndexRebuild(com.shiyu.ai.kernel.context.TenantId tenantId, Long spaceId) {
-        TransactionHookExecutor.register(
-                new com.shiyu.ai.common.foundation.tx.TransactionHook() {
-                    /**
-                     * {@code afterCommit} 执行当前类型定义的业务操作。
-                     */
-                    @Override
-                    public void afterCommit() {
-                        indexService.rebuild(tenantId, spaceId);
-                    }
-                });
+    private void enqueueIndexRebuild(com.shiyu.ai.kernel.context.TenantId tenantId, Long spaceId) {
+        KnowledgeIngestionJobBO job = new KnowledgeIngestionJobBO();
+        job.setJobKey("INDEX_REBUILD:" + spaceId + ":" + java.util.UUID.randomUUID());
+        job.setJobType("INDEX_REBUILD");
+        job.setSpaceId(spaceId);
+        job.setJobStatus("PENDING");
+        job.setStage("QUEUED");
+        job.setProgress(0);
+        job.setAttempts(0);
+        job.setMaxAttempts(3);
+        job.setLockVersion(0L);
+        job.setDelFlag(0);
+        enterpriseRepository.insertJob(tenantId, job);
     }
 
     private KnowledgeDocumentBO requireDocument(ActorContext actor, Long documentId) {

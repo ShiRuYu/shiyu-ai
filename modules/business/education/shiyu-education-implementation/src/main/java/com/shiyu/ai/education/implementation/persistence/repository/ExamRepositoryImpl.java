@@ -37,6 +37,18 @@ public class ExamRepositoryImpl
                 ExamBO.class);
     }
 
+    @Override
+    public List<ExamBO> selectByIds(TenantId tenantId, List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        return MapstructUtils.convert(
+                examMapper.selectListByQuery(
+                        QueryWrapper.create()
+                                .eq("tenant_id", tenantId.value())
+                                .in("id", ids)
+                                .eq("del_flag", 0)),
+                ExamBO.class);
+    }
+
     public PageData<ExamBO> selectPage(TenantId tenantId, int pageNum, int pageSize) {
         com.mybatisflex.core.paginate.Page<ExamDO> page =
                 examMapper.paginate(

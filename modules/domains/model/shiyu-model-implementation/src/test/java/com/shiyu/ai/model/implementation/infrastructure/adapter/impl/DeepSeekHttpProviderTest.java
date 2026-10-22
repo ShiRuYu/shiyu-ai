@@ -11,9 +11,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -21,6 +25,52 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 class DeepSeekHttpProviderTest {
     private HttpServer server;
+
+    @Test
+    void cancellingStreamClosesTheProviderHttpConnection() throws Exception {
+        CountDownLatch requestStarted = new CountDownLatch(1);
+        CountDownLatch partialReceived = new CountDownLatch(1);
+        CountDownLatch clientDisconnected = new CountDownLatch(1);
+        server.createContext(
+                "/v1/chat/completions",
+                exchange -> {
+                    exchange.getResponseHeaders().set("Content-Type", "text/event-stream");
+                    exchange.sendResponseHeaders(200, 0);
+                    requestStarted.countDown();
+                    try (OutputStream body = exchange.getResponseBody()) {
+                        body.write(
+                                ("data: {\"id\":\"chunk-1\",\"choices\":[{\"delta\":{\"content\":\"hello\"},\"finish_reason\":null}]}\n\n")
+                                        .getBytes(StandardCharsets.UTF_8));
+                        body.flush();
+                        while (true) {
+                            body.write(": heartbeat\n\n".getBytes(StandardCharsets.UTF_8));
+                            body.flush();
+                            Thread.sleep(50);
+                        }
+                    } catch (IOException disconnected) {
+                        clientDisconnected.countDown();
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        clientDisconnected.countDown();
+                    }
+                });
+
+        var subscription =
+                provider()
+                        .stream(request())
+                        .subscribe(
+                                event -> {
+                                    if ("DELTA".equals(event.getEventType()))
+                                        partialReceived.countDown();
+                                });
+
+        assertTrue(requestStarted.await(2, TimeUnit.SECONDS));
+        assertTrue(partialReceived.await(2, TimeUnit.SECONDS));
+        subscription.dispose();
+        assertTrue(
+                clientDisconnected.await(2, TimeUnit.SECONDS),
+                "cancelling the stream must close the provider HTTP connection");
+    }
 
     @Test
     void usesDeepSeekFlashWhenNeitherProviderNorRequestNamesAModel() {

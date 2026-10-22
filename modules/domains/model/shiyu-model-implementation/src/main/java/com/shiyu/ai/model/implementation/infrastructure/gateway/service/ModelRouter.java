@@ -10,11 +10,17 @@ import com.shiyu.ai.kernel.context.TenantId;
 
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 /**
@@ -23,14 +29,24 @@ import java.util.function.Function;
 @SuppressWarnings("this-escape")
 @Service
 public class ModelRouter {
+    private static final int FAILURE_THRESHOLD = 3;
     private final Map<String, ModelProviderCapabilities> capabilities = new ConcurrentHashMap<>();
     private final Map<String, ModelRoutePolicy> policies = new ConcurrentHashMap<>();
     private final Map<String, ProviderHealth> health = new ConcurrentHashMap<>();
+    private final Map<RouteHealthKey, RouteHealth> routeHealth = new ConcurrentHashMap<>();
+    private final Clock clock;
+    private final Duration healthCooldown;
 
     /**
      * {@code ModelRouter} 创建并初始化当前类型实例。
      */
     public ModelRouter() {
+        this(Clock.systemUTC(), Duration.ofSeconds(30));
+    }
+
+    public ModelRouter(Clock clock, Duration healthCooldown) {
+        this.clock = java.util.Objects.requireNonNull(clock, "clock");
+        this.healthCooldown = java.util.Objects.requireNonNull(healthCooldown, "healthCooldown");
         ModelProviderCapabilities configured =
                 new ModelProviderCapabilities(
                         "default",
@@ -103,10 +119,11 @@ public class ModelRouter {
      */
     public void register(ModelProviderCapabilities value) {
         capabilities.put(key(value.provider(), value.model()), value);
+        Instant now = clock.instant();
         health.put(
                 key(value.provider(), value.model()),
                 new ProviderHealth(
-                        value.provider(), value.model(), true, 0, Instant.now(), "registered"));
+                        value.provider(), value.model(), true, 0, now, "registered"));
     }
 
     /**
@@ -192,7 +209,7 @@ public class ModelRouter {
                 .map(capabilities::get)
                 .filter(java.util.Objects::nonNull)
                 .filter(c -> requiredFeatures == null || c.features().containsAll(requiredFeatures))
-                .filter(c -> health(c.provider(), c.model()).healthy())
+                .filter(c -> routeHealth(c.provider(), c.model(), tenantId).healthy())
                 .toList();
     }
 
@@ -214,18 +231,47 @@ public class ModelRouter {
         RuntimeException last = null;
         for (ModelProviderCapabilities candidate :
                 candidates(policyId, tenantId, requiredFeatures)) {
+            if (!tryAcquire(tenantId, candidate)) continue;
             try {
-                T result = call.apply(candidate);
+                T result = invokeWithTimeout(call, candidate, policy.timeoutMs());
+                markSuccess(tenantId, candidate);
                 if (result != null) return result;
             } catch (RuntimeException ex) {
                 last = ex;
-                markFailure(candidate.provider(), candidate.model(), ex.getClass().getSimpleName());
+                markFailure(
+                        tenantId,
+                        candidate.provider(),
+                        candidate.model(),
+                        ex.getClass().getSimpleName());
                 if (!policy.fallbackOnError()) throw ex;
             }
         }
         throw last == null
                 ? new IllegalStateException("no healthy model matches required capabilities")
                 : last;
+    }
+
+    private <T> T invokeWithTimeout(
+            Function<ModelProviderCapabilities, T> call,
+            ModelProviderCapabilities candidate,
+            int timeoutMs) {
+        FutureTask<T> task = new FutureTask<>(() -> call.apply(candidate));
+        Thread.ofVirtual().name("model-route-" + candidate.provider() + "-" + candidate.model()).start(task);
+        try {
+            return task.get(timeoutMs, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException timeout) {
+            task.cancel(true);
+            throw new IllegalStateException("model route provider attempt timed out", timeout);
+        } catch (InterruptedException interrupted) {
+            task.cancel(true);
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("model route provider attempt interrupted", interrupted);
+        } catch (ExecutionException failed) {
+            Throwable cause = failed.getCause();
+            if (cause instanceof RuntimeException runtime) throw runtime;
+            if (cause instanceof Error error) throw error;
+            throw new IllegalStateException("model route provider attempt failed", cause);
+        }
     }
 
     /**
@@ -238,7 +284,60 @@ public class ModelRouter {
     public ProviderHealth health(String provider, String model) {
         return health.getOrDefault(
                 key(provider, model),
-                new ProviderHealth(provider, model, false, 0, Instant.now(), "unknown model"));
+                new ProviderHealth(provider, model, false, 0, clock.instant(), "unknown model"));
+    }
+
+    public ProviderHealth health(String provider, String model, TenantId tenantId) {
+        return routeHealth(provider, model, tenantId);
+    }
+
+    public boolean tryAcquire(TenantId tenantId, ModelProviderCapabilities candidate) {
+        if (tenantId == null || candidate == null) return false;
+        RouteHealthKey healthKey = routeKey(tenantId, candidate.provider(), candidate.model());
+        Instant now = clock.instant();
+        java.util.concurrent.atomic.AtomicBoolean acquired =
+                new java.util.concurrent.atomic.AtomicBoolean();
+        routeHealth.compute(
+                healthKey,
+                (ignored, current) -> {
+                    if (current == null || current.openUntil() == null) {
+                        acquired.set(true);
+                        return current;
+                    }
+                    if (current.openUntil().isAfter(now) || current.probeInFlight()) return current;
+                    acquired.set(true);
+                    return new RouteHealth(
+                            current.consecutiveFailures(),
+                            now,
+                            current.message(),
+                            current.openUntil(),
+                            true);
+                });
+        return acquired.get();
+    }
+
+    public void markSuccess(TenantId tenantId, ModelProviderCapabilities candidate) {
+        if (tenantId != null && candidate != null) {
+            routeHealth.remove(routeKey(tenantId, candidate.provider(), candidate.model()));
+        }
+    }
+
+    public void markFailure(
+            TenantId tenantId, String provider, String model, String message) {
+        if (tenantId == null) {
+            markFailure(provider, model, message);
+            return;
+        }
+        RouteHealthKey healthKey = routeKey(tenantId, provider, model);
+        Instant now = clock.instant();
+        routeHealth.compute(
+                healthKey,
+                (ignored, current) -> {
+                    int failures = current == null ? 1 : current.consecutiveFailures() + 1;
+                    Instant openUntil =
+                            failures >= FAILURE_THRESHOLD ? now.plus(healthCooldown) : null;
+                    return new RouteHealth(failures, now, message, openUntil, false);
+                });
     }
 
     /**
@@ -255,8 +354,21 @@ public class ModelRouter {
                 (ignored, old) -> {
                     int failures = old == null ? 1 : old.consecutiveFailures() + 1;
                     return new ProviderHealth(
-                            provider, model, failures < 3, failures, Instant.now(), message);
+                            provider, model, failures < FAILURE_THRESHOLD, failures, clock.instant(), message);
                 });
+    }
+
+    private ProviderHealth routeHealth(String provider, String model, TenantId tenantId) {
+        if (tenantId == null) return health(provider, model);
+        RouteHealth state = routeHealth.get(routeKey(tenantId, provider, model));
+        if (state != null) return state.toProviderHealth(provider, model, clock.instant());
+        boolean registered = capabilities.containsKey(key(provider, model));
+        return new ProviderHealth(
+                provider, model, registered, 0, clock.instant(), registered ? "registered" : "unknown model");
+    }
+
+    private RouteHealthKey routeKey(TenantId tenantId, String provider, String model) {
+        return new RouteHealthKey(tenantId.value(), key(provider, model));
     }
 
     private String key(String provider, String model) {
@@ -265,5 +377,23 @@ public class ModelRouter {
 
     private String parse(String model) {
         return model.contains(":") ? model : key("default", model);
+    }
+
+    private record RouteHealthKey(long tenantId, String modelKey) {}
+
+    private record RouteHealth(
+            int consecutiveFailures,
+            Instant checkedAt,
+            String message,
+            Instant openUntil,
+            boolean probeInFlight) {
+        private boolean healthy(Instant now) {
+            return openUntil == null || (!probeInFlight && !openUntil.isAfter(now));
+        }
+
+        private ProviderHealth toProviderHealth(String provider, String model, Instant now) {
+            return new ProviderHealth(
+                    provider, model, healthy(now), consecutiveFailures, checkedAt, message);
+        }
     }
 }

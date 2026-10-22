@@ -40,6 +40,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -78,6 +81,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
      * rrfK 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final int rrfK;
+    private final ConcurrentMap<RebuildKey, RebuildLock> rebuildLocks = new ConcurrentHashMap<>();
 
     /**
      * 执行 Embedded 索引 相关业务操作，并维护必要的状态和协作关系。
@@ -123,8 +127,20 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
      * @return 返回 Embedded 索引 相关操作生成的结果数据。
      */
     @Override
-    public synchronized long rebuild(TenantId tenant, Long spaceId) {
+    public long rebuild(TenantId tenant, Long spaceId) {
         long tenantId = requireTenant(tenant);
+        RebuildKey key = new RebuildKey(tenantId, spaceId);
+        RebuildLock lock = retainLock(key);
+        lock.lock.lock();
+        try {
+            return rebuildLocked(tenant, spaceId, tenantId);
+        } finally {
+            lock.lock.unlock();
+            releaseLock(key, lock);
+        }
+    }
+
+    private long rebuildLocked(TenantId tenant, Long spaceId, long tenantId) {
         KnowledgeSpaceBO space = enterpriseRepository.findSpaceByTenant(tenant, spaceId);
         if (space == null) throw new ServiceException("知识空间不存在: " + spaceId);
         if (!Long.valueOf(tenantId).equals(space.getTenantId()))
@@ -375,8 +391,9 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
             item.vector = hit.score();
             item.rrf += 1D / (rrfK + i + 1);
         }
+        List<Long> candidateIds = merged.keySet().stream().toList();
         Map<Long, KnowledgeChunkBO> chunks =
-                chunkRepository.findBySpace(tenantId, spaceId).stream()
+                chunkRepository.findByIds(tenantId, spaceId, candidateIds).stream()
                         .collect(Collectors.toMap(KnowledgeChunkBO::getId, Function.identity()));
         List<MutableHit> ranked = new ArrayList<>(merged.values());
         ranked.sort(Comparator.comparingDouble((MutableHit item) -> item.rrf).reversed());
@@ -440,6 +457,26 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     private long requireTenant(TenantId tenantId) {
         if (tenantId == null) throw new IllegalArgumentException("tenantId is required");
         return tenantId.value();
+    }
+
+    private RebuildLock retainLock(RebuildKey key) {
+        return rebuildLocks.compute(
+                key,
+                (ignored, existing) -> {
+                    RebuildLock lock = existing == null ? new RebuildLock() : existing;
+                    lock.references++;
+                    return lock;
+                });
+    }
+
+    private void releaseLock(RebuildKey key, RebuildLock lock) {
+        rebuildLocks.computeIfPresent(
+                key,
+                (ignored, current) -> {
+                    if (current != lock) return current;
+                    current.references--;
+                    return current.references == 0 ? null : current;
+                });
     }
 
     private List<HybridHit> keywordHits(
@@ -522,6 +559,13 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
      * 封装 索引 Key 相关的不可变数据及其字段约束。
      */
     record IndexKey(Long tenantId, Long spaceId, Long version) {}
+
+    private record RebuildKey(Long tenantId, Long spaceId) {}
+
+    private static final class RebuildLock {
+        private final ReentrantLock lock = new ReentrantLock();
+        private int references;
+    }
 
     /**
      * 提供 Mutable Hit 所属基础设施的适配、存储或运行支持。

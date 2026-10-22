@@ -21,11 +21,15 @@ import com.shiyu.ai.model.contract.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -62,6 +66,8 @@ public class GenerationRunner {
      * 提示词服务，表示当前对象中的对应属性。
      */
     private final ConversationPromptService promptService;
+    private final ConcurrentMap<String, GenerationExecution> activeExecutions =
+            new ConcurrentHashMap<>();
 
     /**
      * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
@@ -227,8 +233,14 @@ public class GenerationRunner {
                                                                 .sum())
                         .sum();
         admission.reserve(actor, created, estimatedPromptTokens);
+        GenerationExecution execution = new GenerationExecution();
+        if (activeExecutions.putIfAbsent(created.id(), execution) != null) {
+            admission.release(actor, created);
+            throw new IllegalStateException("generation is already running");
+        }
         GenerationRun running = created.transition(GenerationStatus.RUNNING);
         if (generations.update(running, created.version()) != 1) {
+            activeExecutions.remove(created.id(), execution);
             admission.release(actor, created);
             throw new IllegalStateException("generation is already running");
         }
@@ -304,6 +316,7 @@ public class GenerationRunner {
                         stepId,
                         null);
             } catch (RuntimeException runtimeFailure) {
+                activeExecutions.remove(created.id(), execution);
                 finishFailure(
                         state,
                         runtimeState,
@@ -313,6 +326,10 @@ public class GenerationRunner {
                         runtimeFailure);
                 return;
             }
+        }
+        if (execution.isCancelled()) {
+            activeExecutions.remove(created.id(), execution);
+            return;
         }
         StringBuilder answer = new StringBuilder();
         try {
@@ -327,7 +344,9 @@ public class GenerationRunner {
                                     .messages(messages)
                                     .build());
             if (stream == null) throw new IllegalStateException("chat engine returned no stream");
-            stream.subscribe(
+            Disposable subscription =
+                    stream.doFinally(ignored -> activeExecutions.remove(created.id(), execution))
+                            .subscribe(
                     value ->
                             onEvent(
                                     value,
@@ -353,9 +372,17 @@ public class GenerationRunner {
                                     ownerUserId,
                                     nextSequence,
                                     answer.toString()));
+            execution.attach(subscription);
         } catch (Throwable error) {
+            activeExecutions.remove(created.id(), execution);
             finishFailure(state, runtimeState, tenantValue, ownerUserId, nextSequence, error);
         }
+    }
+
+    /** 取消正在运行的 Provider 流。持久化终态由调用方负责。 */
+    public void cancel(String generationId) {
+        GenerationExecution execution = activeExecutions.get(generationId);
+        if (execution != null) execution.cancel();
     }
 
     private void onEvent(
@@ -803,6 +830,26 @@ public class GenerationRunner {
 
     private static ActorContext actor(long tenantId, long ownerUserId) {
         return new ActorContext(new TenantId(tenantId), new UserId(ownerUserId), false);
+    }
+
+    private static final class GenerationExecution {
+        private final AtomicBoolean cancelled = new AtomicBoolean();
+        private final AtomicReference<Disposable> subscription = new AtomicReference<>();
+
+        private void cancel() {
+            cancelled.set(true);
+            Disposable current = subscription.get();
+            if (current != null) current.dispose();
+        }
+
+        private void attach(Disposable value) {
+            subscription.set(value);
+            if (cancelled.get()) value.dispose();
+        }
+
+        private boolean isCancelled() {
+            return cancelled.get();
+        }
     }
 
     /**

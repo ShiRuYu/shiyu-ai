@@ -73,6 +73,20 @@ public class KnowledgeChunkRepositoryImpl
                 KnowledgeChunkBO.class);
     }
 
+    @Override
+    public List<KnowledgeChunkBO> findByIds(TenantId tenantId, Long spaceId, List<Long> ids) {
+        requireTenant(tenantId);
+        if (ids == null || ids.isEmpty()) return List.of();
+        return MapstructUtils.convert(
+                mapper.selectListByQuery(
+                        QueryWrapper.create()
+                                .eq(KnowledgeChunkDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeChunkDO::getSpaceId, spaceId)
+                                .eq(KnowledgeChunkDO::getDelFlag, 0)
+                                .in(KnowledgeChunkDO::getId, ids)),
+                KnowledgeChunkBO.class);
+    }
+
     public void assignDefaultSpace(TenantId tenantId, Long spaceId) {
         requireTenant(tenantId);
         List<KnowledgeChunkDO> records =

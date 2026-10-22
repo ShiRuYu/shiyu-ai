@@ -162,24 +162,35 @@ public class ExamTakingService {
         if (pageNum < 1 || pageSize < 1 || pageSize > 100) {
             throw new ServiceException("分页参数无效");
         }
-        List<ExamSummaryResponse> entries = taking.findAttemptsByStudent(
-                actor.tenantId(), student.getId()).stream()
-                .map(attempt -> {
-                    ExamBO exam = exams.selectById(actor.tenantId(), attempt.examId());
-                    if (exam == null) return null;
-                    if ("STARTED".equals(attempt.status()) && attempt.deadlineAt() != null
-                            && !LocalDateTime.now(clock).isBefore(attempt.deadlineAt())) {
-                        finalizeExpired(actor.tenantId(), attempt, LocalDateTime.now(clock));
-                        var settled = taking.findAttemptById(actor.tenantId(), attempt.id());
-                        if (settled == null) throw new ServiceException("考试记录不存在");
-                        return summarize(exam, settled);
-                    }
-                    return summarize(exam, attempt);
-                })
-                .filter(Objects::nonNull).toList();
-        int from = (int) Math.min(entries.size(), (long) (pageNum - 1) * pageSize);
-        int to = Math.min(entries.size(), from + pageSize);
-        return new PageData<>(entries.subList(from, to), entries.size());
+        settleExpiredAttempts(actor.tenantId(), student.getId());
+        PageData<ExamTakingRepository.Attempt> attemptsPage = taking.findHistoryPageByStudent(
+                actor.tenantId(), student.getId(), pageNum, pageSize);
+        List<Long> examIds = attemptsPage.getItems().stream()
+                .map(ExamTakingRepository.Attempt::examId).distinct().toList();
+        Map<Long, ExamBO> examsById = new HashMap<>();
+        for (ExamBO exam : exams.selectByIds(actor.tenantId(), examIds)) {
+            examsById.put(exam.getId(), exam);
+        }
+        List<ExamSummaryResponse> entries = new ArrayList<>();
+        for (ExamTakingRepository.Attempt attempt : attemptsPage.getItems()) {
+            ExamBO exam = examsById.get(attempt.examId());
+            if (exam != null) entries.add(summarize(exam, attempt));
+        }
+        return new PageData<>(entries, attemptsPage.getTotal());
+    }
+
+    private void settleExpiredAttempts(TenantId tenantId, Long studentId) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        Long afterAttemptId = null;
+        while (true) {
+            List<ExamTakingRepository.Attempt> expired = taking.findExpiredAttemptsByStudent(
+                    tenantId, studentId, now, afterAttemptId, 100);
+            if (expired.isEmpty()) return;
+            for (ExamTakingRepository.Attempt attempt : expired) {
+                finalizeExpired(tenantId, attempt, now);
+                afterAttemptId = attempt.id();
+            }
+        }
     }
 
     /** 结算由可信后台任务选出的一条到期作答记录。 */

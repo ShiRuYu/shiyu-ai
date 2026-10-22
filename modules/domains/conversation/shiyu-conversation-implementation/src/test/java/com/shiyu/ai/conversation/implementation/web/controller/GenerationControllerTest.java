@@ -30,8 +30,9 @@ import java.util.Optional;
 class GenerationControllerTest {
     private final GenerationRepository generations = mock(GenerationRepository.class);
     private final GenerationAdmission admission = mock(GenerationAdmission.class);
+    private final GenerationRunner runner = mock(GenerationRunner.class);
     private final GenerationController controller =
-            new GenerationController(generations, admission);
+            new GenerationController(generations, admission, null, runner);
     private final Instant now = Instant.now();
 
     @BeforeEach
@@ -70,6 +71,7 @@ class GenerationControllerTest {
         when(generations.nextEventSequence("g1", new TenantId(7))).thenReturn(3);
 
         assertTrue(controller.cancel("g1").isSuccess());
+        verify(runner).cancel("g1");
         verify(generations)
                 .appendEvent(
                         argThat(

@@ -85,7 +85,7 @@ class ModelRouterDeepCoverageTest {
                                 throw new IllegalStateException("down");
                             return candidate.model();
                         }));
-        assertEquals(1, router.health("custom", "first").consecutiveFailures());
+        assertEquals(1, router.health("custom", "first", tenant(1L)).consecutiveFailures());
 
         router.savePolicy(
                 new ModelRoutePolicy(

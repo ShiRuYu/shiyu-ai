@@ -8,6 +8,7 @@ import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.conversation.contract.api.GenerationAdmission;
 import com.shiyu.ai.conversation.contract.model.GenerationRun;
 import com.shiyu.ai.conversation.contract.model.GenerationStatus;
+import com.shiyu.ai.conversation.implementation.application.GenerationRunner;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
 import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository;
 import com.shiyu.ai.kernel.context.ActorContext;
@@ -46,6 +47,7 @@ public class GenerationController {
      * runtime 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final AiRuntimePort runtime;
+    private final GenerationRunner runner;
 
     /**
      * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
@@ -54,7 +56,7 @@ public class GenerationController {
      * @param admission 用于完成本次业务处理的 admission 参数。
      */
     public GenerationController(GenerationRepository generations, GenerationAdmission admission) {
-        this(generations, admission, null);
+        this(generations, admission, null, null);
     }
 
     /**
@@ -64,14 +66,23 @@ public class GenerationController {
      * @param admission 用于完成本次业务处理的 admission 参数。
      * @param runtime 用于完成本次业务处理的 runtime 参数。
      */
-    @Autowired
     public GenerationController(
             GenerationRepository generations,
             GenerationAdmission admission,
             AiRuntimePort runtime) {
+        this(generations, admission, runtime, null);
+    }
+
+    @Autowired
+    public GenerationController(
+            GenerationRepository generations,
+            GenerationAdmission admission,
+            AiRuntimePort runtime,
+            GenerationRunner runner) {
         this.generations = generations;
         this.admission = admission;
         this.runtime = runtime;
+        this.runner = runner;
     }
 
     /**
@@ -230,6 +241,7 @@ public class GenerationController {
         if (generations.update(cancelled, g.version()) != 1)
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.CONFLICT, "generation was modified");
+        if (runner != null) runner.cancel(id);
         if (runtime == null) {
             generations.appendEvent(
                     new GenerationEvent(

@@ -3,6 +3,7 @@ package com.shiyu.ai.model.implementation.infrastructure.adapter.impl;
 import com.shiyu.ai.model.implementation.domain.model.PlatformAdapterType;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.AbstractModelAdapter;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformConfig;
+import com.shiyu.ai.model.implementation.infrastructure.chat.cancellation.CancellableJdkHttpClientBuilder;
 
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
@@ -97,6 +98,7 @@ public class OllamaPlatformAdapter extends AbstractModelAdapter {
             return null;
         }
         return OllamaStreamingChatModel.builder()
+                .httpClientBuilder(new CancellableJdkHttpClientBuilder())
                 .baseUrl(baseUrl)
                 .modelName(modelName)
                 .temperature(temperature)
@@ -170,6 +172,7 @@ public class OllamaPlatformAdapter extends AbstractModelAdapter {
             return null;
         }
         return OllamaStreamingChatModel.builder()
+                .httpClientBuilder(new CancellableJdkHttpClientBuilder())
                 .baseUrl(config.getBaseUrl())
                 .modelName(modelName)
                 .temperature(config.getTemperature())

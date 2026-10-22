@@ -288,7 +288,7 @@ public class MagmaMemoryService
                 events.put(event.id(), event);
             }
         }
-        List<MemoryPath> anchors =
+        List<MemoryPath> rankedAnchors =
                 events.entrySet().stream()
                         .sorted(
                                 Comparator.<Map.Entry<String, MemoryEvent>>comparingDouble(
@@ -302,6 +302,8 @@ public class MagmaMemoryService
                                                 e.getValue() == null ? 0 : rrf.get(e.getKey()),
                                                 List.of()))
                         .toList();
+        List<MemoryPath> anchors =
+                withinTokenBudget(rankedAnchors, query.maxNodes(), query.maxTokens());
         List<MemoryPath> result = beam(anchors, query);
         String traceId = UUID.randomUUID().toString();
         Map<GraphType, Double> weights =
@@ -341,6 +343,21 @@ public class MagmaMemoryService
         return new MemoryRetrievalResult(result, traceId);
     }
 
+    private List<MemoryPath> withinTokenBudget(
+            List<MemoryPath> candidates, int maxNodes, int maxTokens) {
+        List<MemoryPath> selected = new ArrayList<>();
+        long usedTokens = 0;
+        for (MemoryPath candidate : candidates) {
+            if (selected.size() >= maxNodes) break;
+            int candidateTokens = tokenCount(candidate.event().content());
+            if (usedTokens + candidateTokens <= maxTokens) {
+                selected.add(candidate);
+                usedTokens += candidateTokens;
+            }
+        }
+        return List.copyOf(selected);
+    }
+
     private boolean matches(MemoryQuery query, MemoryEvent event) {
         if (event.status() != MemoryEventStatus.ACTIVE
                 || !query.namespace().equals(event.namespace())) return false;
@@ -366,8 +383,8 @@ public class MagmaMemoryService
         List<MemoryPath> frontier = new ArrayList<>(anchors);
         for (MemoryPath path : frontier) best.put(path.event().id(), path);
         int tokenBudget = query.maxTokens();
-        int[] usedTokens = {
-            anchors.stream().mapToInt(path -> tokenCount(path.event().content())).sum()
+        long[] usedTokens = {
+            anchors.stream().mapToLong(path -> tokenCount(path.event().content())).sum()
         };
         for (int depth = 0;
                 depth < query.maxDepth() && !frontier.isEmpty() && best.size() < query.maxNodes();
@@ -388,8 +405,7 @@ public class MagmaMemoryService
                                         event -> {
                                             if (!best.containsKey(event.id())) {
                                                 int candidateTokens = tokenCount(event.content());
-                                                if (usedTokens[0] + candidateTokens <= tokenBudget
-                                                        || best.isEmpty()) {
+                                                if (usedTokens[0] + candidateTokens <= tokenBudget) {
                                                     double graphWeight =
                                                             graphWeight(query.intent(), graph);
                                                     MemoryPath candidate =

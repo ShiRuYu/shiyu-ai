@@ -427,6 +427,7 @@ public class KnowledgeEnterpriseRepositoryImpl
                                                 .eq(
                                                         KnowledgeIngestionJobDO::getJobStatus,
                                                         "PENDING")
+                                                .eq(KnowledgeIngestionJobDO::getJobType, "INGEST")
                                                 .eq(KnowledgeIngestionJobDO::getDelFlag, 0)
                                                 .orderBy(
                                                         KnowledgeIngestionJobDO::getCreateTime,
@@ -444,11 +445,162 @@ public class KnowledgeEnterpriseRepositoryImpl
                                                 .eq(
                                                         KnowledgeIngestionJobDO::getJobStatus,
                                                         "RUNNING")
+                                                .eq(KnowledgeIngestionJobDO::getJobType, "INGEST")
                                                 .lt(
                                                         KnowledgeIngestionJobDO::getHeartbeatTime,
                                                         heartbeatBefore)
                                                 .eq(KnowledgeIngestionJobDO::getDelFlag, 0))),
                 KnowledgeIngestionJobBO.class);
+    }
+
+    @Override
+    public List<KnowledgeIngestionJobBO> pollPendingIndexRebuildJobs(int limit) {
+        if (limit < 1) return List.of();
+        return MapstructUtils.convert(
+                TenantQueryExecutor.readAcrossTenants(
+                        () ->
+                                jobMapper.selectListByQuery(
+                                        QueryWrapper.create()
+                                                .eq(
+                                                        KnowledgeIngestionJobDO::getJobType,
+                                                        "INDEX_REBUILD")
+                                                .eq(
+                                                        KnowledgeIngestionJobDO::getJobStatus,
+                                                        "PENDING")
+                                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0)
+                                                .orderBy(
+                                                        KnowledgeIngestionJobDO::getCreateTime,
+                                                        true)
+                                                .limit(0, Math.min(limit, 100)))),
+                KnowledgeIngestionJobBO.class);
+    }
+
+    @Override
+    public KnowledgeIngestionJobBO claimIndexRebuildJob(TenantId tenantId, Long jobId) {
+        requireTenant(tenantId);
+        KnowledgeIngestionJobBO job = findJob(tenantId, jobId);
+        if (job == null || !"INDEX_REBUILD".equals(job.getJobType())
+                || !"PENDING".equals(job.getJobStatus())) return null;
+        long currentVersion = job.getLockVersion() == null ? 0L : job.getLockVersion();
+        long nextVersion = currentVersion + 1;
+        LocalDateTime now = LocalDateTime.now();
+        KnowledgeIngestionJobDO update = new KnowledgeIngestionJobDO();
+        update.setJobStatus("RUNNING");
+        update.setStage("BUILDING");
+        update.setProgress(1);
+        update.setAttempts((job.getAttempts() == null ? 0 : job.getAttempts()) + 1);
+        update.setErrorMessage(null);
+        update.setStartedTime(now);
+        update.setHeartbeatTime(now);
+        update.setFinishedTime(null);
+        update.setLockVersion(nextVersion);
+        int affected =
+                jobMapper.updateByQuery(
+                        update,
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, jobId)
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INDEX_REBUILD")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "PENDING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, currentVersion)
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
+        if (affected != 1) return null;
+        job.setJobStatus("RUNNING");
+        job.setStage("BUILDING");
+        job.setProgress(1);
+        job.setAttempts(update.getAttempts());
+        job.setErrorMessage(null);
+        job.setStartedTime(now);
+        job.setHeartbeatTime(now);
+        job.setFinishedTime(null);
+        job.setLockVersion(nextVersion);
+        return job;
+    }
+
+    @Override
+    public List<KnowledgeIngestionJobBO> findStaleIndexRebuildJobs(
+            LocalDateTime heartbeatBefore) {
+        return MapstructUtils.convert(
+                TenantQueryExecutor.readAcrossTenants(
+                        () ->
+                                jobMapper.selectListByQuery(
+                                        QueryWrapper.create()
+                                                .eq(
+                                                        KnowledgeIngestionJobDO::getJobType,
+                                                        "INDEX_REBUILD")
+                                                .eq(
+                                                        KnowledgeIngestionJobDO::getJobStatus,
+                                                        "RUNNING")
+                                                .lt(
+                                                        KnowledgeIngestionJobDO::getHeartbeatTime,
+                                                        heartbeatBefore)
+                                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0))),
+                KnowledgeIngestionJobBO.class);
+    }
+
+    @Override
+    public boolean recoverStaleIndexRebuildJob(
+            TenantId tenantId, KnowledgeIngestionJobBO job, LocalDateTime heartbeatBefore) {
+        requireTenant(tenantId);
+        if (job == null || job.getId() == null) return false;
+        long currentVersion = job.getLockVersion() == null ? 0L : job.getLockVersion();
+        int attempts = job.getAttempts() == null ? 0 : job.getAttempts();
+        int maxAttempts = job.getMaxAttempts() == null ? 3 : job.getMaxAttempts();
+        boolean retry = attempts < maxAttempts;
+        LocalDateTime now = LocalDateTime.now();
+        KnowledgeIngestionJobDO update = new KnowledgeIngestionJobDO();
+        update.setJobStatus(retry ? "PENDING" : "FAILED");
+        update.setStage(retry ? "RECOVERED" : "FAILED");
+        update.setErrorMessage("索引任务租约超时，等待恢复");
+        update.setHeartbeatTime(now);
+        update.setFinishedTime(retry ? null : now);
+        update.setLockVersion(currentVersion + 1);
+        return jobMapper.updateByQuery(
+                        update,
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, job.getId())
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INDEX_REBUILD")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, currentVersion)
+                                .lt(KnowledgeIngestionJobDO::getHeartbeatTime, heartbeatBefore)
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0))
+                == 1;
+    }
+
+    @Override
+    public boolean heartbeatIndexRebuildJob(
+            TenantId tenantId, Long jobId, Long lockVersion, LocalDateTime heartbeatTime) {
+        requireTenant(tenantId);
+        KnowledgeIngestionJobDO update = new KnowledgeIngestionJobDO();
+        update.setHeartbeatTime(heartbeatTime);
+        return jobMapper.updateByQuery(
+                        update,
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, jobId)
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INDEX_REBUILD")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, lockVersion)
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0))
+                == 1;
+    }
+
+    @Override
+    public boolean updateIndexRebuildJob(TenantId tenantId, KnowledgeIngestionJobBO job) {
+        requireTenant(tenantId);
+        if (job == null || job.getId() == null || job.getLockVersion() == null) return false;
+        job.setTenantId(tenantId.value());
+        return jobMapper.updateByQuery(
+                        MapstructUtils.convert(job, KnowledgeIngestionJobDO.class),
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, job.getId())
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INDEX_REBUILD")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, job.getLockVersion())
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0))
+                == 1;
     }
 
     public void insertAudit(TenantId tenantId, KnowledgeAuditLogBO audit) {

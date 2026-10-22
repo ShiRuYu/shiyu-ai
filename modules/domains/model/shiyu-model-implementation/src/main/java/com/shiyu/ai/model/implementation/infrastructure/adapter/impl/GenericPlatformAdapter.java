@@ -2,6 +2,7 @@ package com.shiyu.ai.model.implementation.infrastructure.adapter.impl;
 
 import com.shiyu.ai.model.implementation.infrastructure.adapter.AbstractModelAdapter;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.config.PlatformConfig;
+import com.shiyu.ai.model.implementation.infrastructure.chat.cancellation.CancellableJdkHttpClientBuilder;
 
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
@@ -126,6 +127,7 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
         }
         OpenAiStreamingChatModel.OpenAiStreamingChatModelBuilder builder =
                 OpenAiStreamingChatModel.builder()
+                        .httpClientBuilder(new CancellableJdkHttpClientBuilder())
                         .baseUrl(baseUrl)
                         .apiKey(apiKey)
                         .modelName(modelName)
@@ -206,6 +208,7 @@ public class GenericPlatformAdapter extends AbstractModelAdapter {
         }
         OpenAiStreamingChatModel.OpenAiStreamingChatModelBuilder builder =
                 OpenAiStreamingChatModel.builder()
+                        .httpClientBuilder(new CancellableJdkHttpClientBuilder())
                         .baseUrl(config.getBaseUrl())
                         .apiKey(config.getApiKey())
                         .modelName(modelName)

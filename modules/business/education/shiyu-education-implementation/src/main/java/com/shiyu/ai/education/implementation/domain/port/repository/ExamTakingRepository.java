@@ -1,5 +1,6 @@
 package com.shiyu.ai.education.implementation.domain.port.repository;
 
+import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.education.implementation.domain.model.ExamQuestionBO;
 import com.shiyu.ai.education.implementation.domain.model.ExamSectionBO;
 import com.shiyu.ai.kernel.context.TenantId;
@@ -33,8 +34,13 @@ public interface ExamTakingRepository {
     /** 在当前租户内按标识查询作答记录。 */
     Attempt findAttemptById(TenantId tenantId, Long attemptId);
 
-    /** 列出学生的作答记录，包括已完成和已过期的考试。 */
-    List<Attempt> findAttemptsByStudent(TenantId tenantId, Long studentId);
+    /** 按开始时间倒序分页读取仍关联有效考试的学生作答记录。 */
+    PageData<Attempt> findHistoryPageByStudent(
+            TenantId tenantId, Long studentId, int pageNum, int pageSize);
+
+    /** 以作答记录 ID 游标分批读取学生已到期且仍关联有效考试的作答。 */
+    List<Attempt> findExpiredAttemptsByStudent(TenantId tenantId, Long studentId,
+            LocalDateTime now, Long afterAttemptId, int limit);
 
     /** 从可选的全局作答记录 ID 游标之后，按数量上限查询逾期作答记录。 */
     List<DueAttempt> findDueAttempts(LocalDateTime now, Long afterAttemptId, int limit);

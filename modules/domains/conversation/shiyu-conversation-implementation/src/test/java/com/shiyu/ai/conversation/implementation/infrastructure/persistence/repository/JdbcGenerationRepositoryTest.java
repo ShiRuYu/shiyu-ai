@@ -59,7 +59,7 @@ class JdbcGenerationRepositoryTest {
     void persistsQueriesUpdatesAndMapsGenerationRuns() throws Exception {
         AiRunRepository runtime = mock(AiRunRepository.class);
         JdbcGenerationRepository repository =
-                new JdbcGenerationRepository(mock(DataSource.class), runtime, 5);
+                new JdbcGenerationRepository(mock(DataSource.class), runtime);
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         Field field = JdbcGenerationRepository.class.getDeclaredField("jdbc");
         field.setAccessible(true);
@@ -175,7 +175,7 @@ class JdbcGenerationRepositoryTest {
     void handlesMissingConversationDuplicateReservationAndStaleRecovery() throws Exception {
         AiRunRepository runtime = mock(AiRunRepository.class);
         JdbcGenerationRepository repository =
-                new JdbcGenerationRepository(mock(DataSource.class), runtime, 1000);
+                new JdbcGenerationRepository(mock(DataSource.class), runtime);
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         Field field = JdbcGenerationRepository.class.getDeclaredField("jdbc");
         field.setAccessible(true);
@@ -208,7 +208,7 @@ class JdbcGenerationRepositoryTest {
         assertThrows(IllegalStateException.class, () -> repository.insert(run));
         when(jdbc.query(anyString(), any(RowMapper.class), any(Object[].class)))
                 .thenReturn(List.of());
-        assertEquals(0, repository.recoverStaleGenerations(1));
+        assertTrue(repository.recoverStaleGenerations(1).isEmpty());
     }
 
     @Test
@@ -216,7 +216,7 @@ class JdbcGenerationRepositoryTest {
     void recoversStaleGenerationAndRepairsRuntimeProjection() throws Exception {
         AiRunRepository runtime = mock(AiRunRepository.class);
         JdbcGenerationRepository repository =
-                new JdbcGenerationRepository(mock(DataSource.class), runtime, 1000);
+                new JdbcGenerationRepository(mock(DataSource.class), runtime);
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         Field field = JdbcGenerationRepository.class.getDeclaredField("jdbc");
         field.setAccessible(true);
@@ -284,7 +284,11 @@ class JdbcGenerationRepositoryTest {
                         2,
                         3);
         when(runtime.find("r-stale", new TenantId(7), 8)).thenReturn(Optional.of(run));
-        assertEquals(1, repository.recoverStaleGenerations(1000));
+        List<RecoveredGeneration> recovered = repository.recoverStaleGenerations(1000);
+        assertEquals(1, recovered.size());
+        assertEquals(new TenantId(7), recovered.getFirst().tenantId());
+        assertEquals(8, recovered.getFirst().ownerUserId());
+        assertEquals(GenerationStatus.FAILED, recovered.getFirst().run().status());
         verify(runtime)
                 .updateTerminalAndAppend(
                         any(AiRun.class),
@@ -299,7 +303,7 @@ class JdbcGenerationRepositoryTest {
     void appendsEventsToLinkedRuntimeAndRejectsBlankLink() throws Exception {
         AiRunRepository runtime = mock(AiRunRepository.class);
         JdbcGenerationRepository repository =
-                new JdbcGenerationRepository(mock(DataSource.class), runtime, 1000);
+                new JdbcGenerationRepository(mock(DataSource.class), runtime);
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         Field field = JdbcGenerationRepository.class.getDeclaredField("jdbc");
         field.setAccessible(true);
@@ -361,7 +365,7 @@ class JdbcGenerationRepositoryTest {
     void mapsEveryGenerationEventTypeAndHandlesEmptyQueries() throws Exception {
         AiRunRepository runtime = mock(AiRunRepository.class);
         JdbcGenerationRepository repository =
-                new JdbcGenerationRepository(mock(DataSource.class), runtime, 1000);
+                new JdbcGenerationRepository(mock(DataSource.class), runtime);
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         Field field = JdbcGenerationRepository.class.getDeclaredField("jdbc");
         field.setAccessible(true);

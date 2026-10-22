@@ -1,6 +1,9 @@
 package com.shiyu.ai.education.implementation.persistence.repository;
 
+import static com.mybatisflex.core.query.QueryMethods.column;
+
 import com.mybatisflex.core.query.QueryWrapper;
+import com.shiyu.ai.common.foundation.api.PageData;
 import com.shiyu.ai.common.foundation.utils.MapstructUtils;
 import com.shiyu.ai.common.mybatis.tenant.TenantQueryExecutor;
 import com.shiyu.ai.education.implementation.domain.model.ExamQuestionBO;
@@ -8,6 +11,7 @@ import com.shiyu.ai.education.implementation.domain.model.ExamSectionBO;
 import com.shiyu.ai.education.implementation.domain.port.repository.ExamTakingRepository;
 import com.shiyu.ai.education.implementation.persistence.dataobject.ExamAttemptDO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.ExamAttemptQuestionDO;
+import com.shiyu.ai.education.implementation.persistence.dataobject.ExamDO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.ExamQuestionDO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.ExamSectionDO;
 import com.shiyu.ai.education.implementation.persistence.mapper.ExamAttemptMapper;
@@ -119,11 +123,27 @@ public class ExamTakingRepositoryImpl implements ExamTakingRepository {
     }
 
     @Override
-    public List<Attempt> findAttemptsByStudent(TenantId tenantId, Long studentId) {
-        return attempts.selectListByQuery(QueryWrapper.create()
-                        .eq("tenant_id", tenantId.value())
-                        .eq("student_id", studentId)
-                        .orderBy("started_at", false))
+    public PageData<Attempt> findHistoryPageByStudent(
+            TenantId tenantId, Long studentId, int pageNum, int pageSize) {
+        var page = attempts.paginate(pageNum, pageSize,
+                historyAttemptsQuery(tenantId, studentId)
+                        .orderBy(ExamAttemptDO::getStartedAt, false));
+        return new PageData<>(page.getRecords().stream()
+                .map(ExamTakingRepositoryImpl::map).toList(), page.getTotalRow());
+    }
+
+    @Override
+    public List<Attempt> findExpiredAttemptsByStudent(TenantId tenantId, Long studentId,
+            LocalDateTime now, Long afterAttemptId, int limit) {
+        Objects.requireNonNull(now, "now is required");
+        if (limit < 1) throw new IllegalArgumentException("limit must be positive");
+        QueryWrapper query = historyAttemptsQuery(tenantId, studentId)
+                .eq(ExamAttemptDO::getStatus, "STARTED")
+                .le(ExamAttemptDO::getDeadlineAt, now);
+        if (afterAttemptId != null) query.gt(ExamAttemptDO::getId, afterAttemptId);
+        return attempts.selectListByQuery(query
+                        .orderBy(ExamAttemptDO::getId, true)
+                        .limit(Math.min(limit, 100)))
                 .stream().map(ExamTakingRepositoryImpl::map).toList();
     }
 
@@ -257,6 +277,27 @@ public class ExamTakingRepositoryImpl implements ExamTakingRepository {
                 row.getSubmittedAt(),
                 row.getScore(),
                 row.getTotalScore());
+    }
+
+    private static QueryWrapper historyAttemptsQuery(TenantId tenantId, Long studentId) {
+        return QueryWrapper.create()
+                .select(
+                        column(ExamAttemptDO::getId),
+                        column(ExamAttemptDO::getExamId),
+                        column(ExamAttemptDO::getStudentId),
+                        column(ExamAttemptDO::getStatus),
+                        column(ExamAttemptDO::getStartedAt),
+                        column(ExamAttemptDO::getDeadlineAt),
+                        column(ExamAttemptDO::getSubmittedAt),
+                        column(ExamAttemptDO::getScore),
+                        column(ExamAttemptDO::getTotalScore))
+                .from(ExamAttemptDO.class)
+                .innerJoin(ExamDO.class)
+                .on(column(ExamAttemptDO::getExamId).eq(column(ExamDO::getId)))
+                .where(ExamAttemptDO::getTenantId).eq(tenantId.value())
+                .and(ExamAttemptDO::getStudentId).eq(studentId)
+                .and(column(ExamDO::getTenantId).eq(tenantId.value()))
+                .and(ExamDO::getDelFlag).eq(0);
     }
 
     private static AttemptQuestion map(ExamAttemptQuestionDO row) {

@@ -8,15 +8,13 @@ import com.shiyu.ai.conversation.contract.model.GenerationRun;
 import com.shiyu.ai.conversation.contract.model.GenerationStatus;
 import com.shiyu.ai.conversation.implementation.domain.model.GenerationEvent;
 import com.shiyu.ai.conversation.implementation.domain.model.GenerationEventType;
+import com.shiyu.ai.conversation.implementation.domain.model.RecoveredGeneration;
 import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository;
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,11 +42,6 @@ public class JdbcGenerationRepository implements GenerationRepository {
      */
     private final AiRunRepository runtimeRuns;
     /**
-     * recoveryTimeoutMs 属性，保存当前对象中的业务数据或协作依赖。
-     */
-    private final long recoveryTimeoutMs;
-
-    /**
      * 执行 Jdbc 生成 相关业务操作，并维护必要的状态和协作关系。
      *
      * @param dataSource 用于完成本次业务处理的 dataSource 参数。
@@ -55,24 +49,8 @@ public class JdbcGenerationRepository implements GenerationRepository {
      */
     public JdbcGenerationRepository(
             @Qualifier("agentDataSource") DataSource dataSource, AiRunRepository runtimeRuns) {
-        this(dataSource, runtimeRuns, 300_000L);
-    }
-
-    /**
-     * 执行 Jdbc 生成 相关业务操作，并维护必要的状态和协作关系。
-     *
-     * @param dataSource 用于完成本次业务处理的 dataSource 参数。
-     * @param runtimeRuns 用于完成本次业务处理的 runtimeRuns 参数。
-     * @param recoveryTimeoutMs 用于完成本次业务处理的 recoveryTimeoutMs 参数。
-     */
-    @Autowired
-    public JdbcGenerationRepository(
-            @Qualifier("agentDataSource") DataSource dataSource,
-            AiRunRepository runtimeRuns,
-            @Value("${shiyu.conversation.recovery-timeout-ms:300000}") long recoveryTimeoutMs) {
         this.jdbc = new JdbcTemplate(dataSource);
         this.runtimeRuns = runtimeRuns;
-        this.recoveryTimeoutMs = Math.max(1000L, recoveryTimeoutMs);
     }
 
     /**
@@ -216,24 +194,14 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * 回收过期的生成记录。
-     *
-     * @return 处理结果。
-     */
-    @Scheduled(fixedDelayString = "${shiyu.conversation.recovery-delay-ms:30000}")
-    @Transactional
-    public void recoverStaleGenerations() {
-        recoverStaleGenerations(recoveryTimeoutMs);
-    }
-
-    /**
      * 执行 Jdbc 生成 相关业务数据，并返回处理结果。
      *
      * @param timeoutMs 用于完成本次业务处理的 timeoutMs 参数。
      * @return 返回 Jdbc 生成 相关操作生成的结果数据。
      */
+    @Override
     @Transactional
-    public int recoverStaleGenerations(long timeoutMs) {
+    public List<RecoveredGeneration> recoverStaleGenerations(long timeoutMs) {
         long grace = Math.max(1000L, timeoutMs);
         Timestamp cutoff = Timestamp.from(Instant.now().minusMillis(grace));
         List<StaleGeneration> stale =
@@ -250,19 +218,17 @@ public class JdbcGenerationRepository implements GenerationRepository {
                                     run, rs.getLong("OWNER_USER_ID"), tenantId);
                         },
                         cutoff);
-        int recovered = 0;
+        List<RecoveredGeneration> recovered = new ArrayList<>();
         for (StaleGeneration abandoned : stale) {
-            if (TenantScope.withTenant(
+            TenantScope.withTenant(
                             new TenantId(abandoned.tenantId()),
                             () -> recoverOneStaleGeneration(abandoned))
-                    .booleanValue()) {
-                recovered++;
-            }
+                    .ifPresent(recovered::add);
         }
-        return recovered;
+        return List.copyOf(recovered);
     }
 
-    private boolean recoverOneStaleGeneration(StaleGeneration abandoned) {
+    private Optional<RecoveredGeneration> recoverOneStaleGeneration(StaleGeneration abandoned) {
         GenerationRun current = abandoned.run();
         GenerationRun failed = current.transition(GenerationStatus.FAILED);
         failed =
@@ -285,7 +251,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
                         failed.createdAt(),
                         Instant.now(),
                         failed.runtimeRunId());
-        if (update(failed, current.version()) != 1) return false;
+        if (update(failed, current.version()) != 1) return Optional.empty();
         if (failed.runtimeRunId() != null && !failed.runtimeRunId().isBlank()) {
             try {
                 AiRun run =
@@ -335,7 +301,9 @@ public class JdbcGenerationRepository implements GenerationRepository {
             } catch (RuntimeException ignored) {
             }
         }
-        return true;
+        return Optional.of(
+                new RecoveredGeneration(
+                        failed, new TenantId(abandoned.tenantId()), abandoned.ownerUserId()));
     }
 
     /**

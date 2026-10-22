@@ -8,6 +8,7 @@ import com.shiyu.ai.model.contract.model.ChatMessage;
 import com.shiyu.ai.model.contract.model.ChatRequest;
 import com.shiyu.ai.model.contract.model.ChatResponse;
 import com.shiyu.ai.model.implementation.domain.event.ModelCallEvent;
+import com.shiyu.ai.model.implementation.infrastructure.chat.cancellation.ProviderRequestCancellation;
 import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
 import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ModelProviderCapabilities;
 import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ModelRoutePolicy;
@@ -37,10 +38,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -188,68 +192,82 @@ public class ChatEngineImpl implements ChatEngine {
         java.util.Set<String> required = new java.util.HashSet<>(java.util.Set.of("chat"));
         if (request.getTools() != null && !request.getTools().isEmpty()) required.add("tool_calls");
         TenantId tenantId = routeTenant(request);
+        ModelRoutePolicy policy = modelRouter.requirePolicy(request.getModelRouteId(), tenantId);
         ChatResponse result =
                 modelRouter.executeWithFallback(
                         request.getModelRouteId(),
                         tenantId,
                         required,
-                        candidate -> {
-                            ChatRequest resolved =
-                                    copyWithModel(request, candidate.provider(), candidate.model());
-                            if (isDeepSeekPlatform(resolved)) {
-                                requireDeepSeekProvider();
-                                ChatResponse response =
-                                        modelManager.getDeepSeekProvider().chat(resolved);
-                                publishUsageValues(resolved, response, started);
-                                return response;
-                            }
-                            ChatModel model =
-                                    modelManager.getChatModel(
-                                            resolved.getPlatform(), resolved.getModel());
-                            if (model == null)
-                                throw new IllegalStateException("model is unavailable");
-                            var response = model.chat(nativeRequest(resolved));
-                            TokenUsage usage = response.tokenUsage();
-                            String actual =
-                                    response.modelName() == null
-                                            ? resolved.getModel()
-                                            : response.modelName();
-                            publishUsage(resolved, actual, usage, started);
-                            String content =
-                                    response.aiMessage() == null
-                                            ? ""
-                                            : Objects.toString(response.aiMessage().text(), "");
-                            int promptTokens =
-                                    usage == null ? estimateInput(resolved) : input(usage);
-                            int completionTokens =
-                                    usage == null ? estimate(content) : output(usage);
-                            List<ChatResponse.ToolCall> toolCalls =
-                                    response.aiMessage() == null
-                                            ? List.of()
-                                            : response.aiMessage().toolExecutionRequests().stream()
-                                                    .map(
-                                                            call ->
-                                                                    new ChatResponse.ToolCall(
-                                                                            call.id(),
-                                                                            call.name(),
-                                                                            call.arguments()))
-                                                    .toList();
-                            return ChatResponse.builder()
-                                    .success(true)
-                                    .eventType("COMPLETED")
-                                    .content(content)
-                                    .platform(resolved.getPlatform())
-                                    .model(actual)
-                                    .promptTokens(promptTokens)
-                                    .completionTokens(completionTokens)
-                                    .totalTokens(
-                                            usage == null
-                                                    ? promptTokens + completionTokens
-                                                    : total(usage))
-                                    .estimatedUsage(usage == null)
-                                    .toolCalls(toolCalls)
-                                    .build();
-                        });
+                        candidate ->
+                                TenantScope.withTenant(
+                                    tenantId,
+                                    () -> {
+                                        ChatRequest resolved =
+                                                routeRequest(request, candidate, policy, false);
+                                        if (isDeepSeekPlatform(resolved)) {
+                                            requireDeepSeekProvider();
+                                            ChatResponse response =
+                                                    modelManager
+                                                            .getDeepSeekProvider()
+                                                            .chat(resolved);
+                                            publishUsageValues(resolved, response, started);
+                                            return response;
+                                        }
+                                        ChatModel model =
+                                                modelManager.getChatModel(
+                                                        resolved.getPlatform(),
+                                                        resolved.getModel());
+                                        if (model == null)
+                                            throw new IllegalStateException(
+                                                    "model is unavailable");
+                                        var response = model.chat(nativeRequest(resolved));
+                                        TokenUsage usage = response.tokenUsage();
+                                        String actual =
+                                                response.modelName() == null
+                                                        ? resolved.getModel()
+                                                        : response.modelName();
+                                        publishUsage(resolved, actual, usage, started);
+                                        String content =
+                                                response.aiMessage() == null
+                                                        ? ""
+                                                        : Objects.toString(
+                                                                response.aiMessage().text(), "");
+                                        int promptTokens =
+                                                usage == null
+                                                        ? estimateInput(resolved)
+                                                        : input(usage);
+                                        int completionTokens =
+                                                usage == null ? estimate(content) : output(usage);
+                                        List<ChatResponse.ToolCall> toolCalls =
+                                                response.aiMessage() == null
+                                                        ? List.of()
+                                                        : response.aiMessage()
+                                                                .toolExecutionRequests()
+                                                                .stream()
+                                                                .map(
+                                                                        call ->
+                                                                                new ChatResponse
+                                                                                        .ToolCall(
+                                                                                        call.id(),
+                                                                                        call.name(),
+                                                                                        call.arguments()))
+                                                                .toList();
+                                        return ChatResponse.builder()
+                                                .success(true)
+                                                .eventType("COMPLETED")
+                                                .content(content)
+                                                .platform(resolved.getPlatform())
+                                                .model(actual)
+                                                .promptTokens(promptTokens)
+                                                .completionTokens(completionTokens)
+                                                .totalTokens(
+                                                        usage == null
+                                                                ? promptTokens + completionTokens
+                                                                : total(usage))
+                                                .estimatedUsage(usage == null)
+                                                .toolCalls(toolCalls)
+                                                .build();
+                                    }));
         return result;
     }
 
@@ -273,6 +291,8 @@ public class ChatEngineImpl implements ChatEngine {
                     Sinks.Many<ChatResponse> sink = Sinks.many().unicast().onBackpressureBuffer();
                     long started = System.currentTimeMillis();
                     AtomicBoolean emittedDelta = new AtomicBoolean();
+                    ProviderRequestCancellation cancellation =
+                            new ProviderRequestCancellation();
                     try {
                         ChatRequest resolved = resolveRequest(request, true);
                         if (isDeepSeekPlatform(resolved)) {
@@ -299,7 +319,10 @@ public class ChatEngineImpl implements ChatEngine {
                                         .platform(resolved.getPlatform())
                                         .model(actual)
                                         .build());
-                        model.chat(
+                        ProviderRequestCancellation.Scope cancellationScope =
+                                ProviderRequestCancellation.enter(cancellation);
+                        try {
+                            model.chat(
                                 nativeRequest(resolved),
                                 new StreamingChatResponseHandler() {
                                     /**
@@ -478,14 +501,23 @@ public class ChatEngineImpl implements ChatEngine {
                                         sink.tryEmitError(throwable);
                                     }
                                 });
+                        } finally {
+                            cancellationScope.close();
+                        }
                     } catch (Throwable throwable) {
                         sink.tryEmitError(throwable);
                     }
-                    return sink.asFlux().subscribeOn(Schedulers.boundedElastic());
+                    return sink.asFlux()
+                            .doFinally(ignored -> cancellation.cancel())
+                            .subscribeOn(Schedulers.boundedElastic());
                 }));
     }
 
     private Flux<ChatResponse> routedStream(ChatRequest request) {
+        return Flux.defer(() -> routedStreamAttempt(request));
+    }
+
+    private Flux<ChatResponse> routedStreamAttempt(ChatRequest request) {
         java.util.Set<String> required = new java.util.HashSet<>(java.util.Set.of("stream"));
         if (request.getTools() != null && !request.getTools().isEmpty()) required.add("tool_calls");
         TenantId tenantId = routeTenant(request);
@@ -509,12 +541,19 @@ public class ChatEngineImpl implements ChatEngine {
                     @Override
                     public Flux<ChatResponse> apply(Integer index) {
                         ModelProviderCapabilities candidate = candidates.get(index);
+                        if (!modelRouter.tryAcquire(tenantId, candidate)) {
+                            if (policy.fallbackOnError() && index + 1 < candidates.size())
+                                return apply(index + 1);
+                            return Flux.error(
+                                    new IllegalStateException(
+                                            "no healthy model matches required capabilities"));
+                        }
+                        ChatRequest routedRequest =
+                                routeRequest(request, candidate, policy, true);
                         Flux<ChatResponse> current =
-                                ChatEngineImpl.this.stream(
-                                                copyWithoutRoute(
-                                                        request,
-                                                        candidate.provider(),
-                                                        candidate.model()))
+                                routeTimeout(
+                                                ChatEngineImpl.this.stream(routedRequest),
+                                                policy.timeoutMs())
                                         .doOnNext(
                                                 event -> {
                                                     if ("DELTA".equals(event.getEventType())
@@ -527,9 +566,14 @@ public class ChatEngineImpl implements ChatEngine {
                                         .doOnError(
                                                 error ->
                                                         modelRouter.markFailure(
+                                                                tenantId,
                                                                 candidate.provider(),
                                                                 candidate.model(),
-                                                                error.getClass().getSimpleName()));
+                                                                error.getClass().getSimpleName()))
+                                                        .doOnComplete(
+                                                                () ->
+                                                                        modelRouter.markSuccess(
+                                                                                tenantId, candidate));
                         if (!policy.fallbackOnError() || index + 1 >= candidates.size())
                             return current;
                         return current.onErrorResume(
@@ -538,6 +582,36 @@ public class ChatEngineImpl implements ChatEngine {
                     }
                 };
         return attempt.apply(0);
+    }
+
+    private Flux<ChatResponse> routeTimeout(Flux<ChatResponse> source, int timeoutMs) {
+        return Flux.defer(
+                () -> {
+                    Instant deadline = Instant.now().plusMillis(timeoutMs);
+                    return source.timeout(
+                            Mono.delay(Duration.ofMillis(timeoutMs)),
+                            ignored -> {
+                                Duration remaining = Duration.between(Instant.now(), deadline);
+                                return Mono.delay(
+                                        remaining.isNegative() ? Duration.ZERO : remaining);
+                            });
+                });
+    }
+
+    private ChatRequest routeRequest(
+            ChatRequest request,
+            ModelProviderCapabilities candidate,
+            ModelRoutePolicy policy,
+            boolean clearRoute) {
+        ChatRequest resolved =
+                clearRoute
+                        ? copyWithoutRoute(request, candidate.provider(), candidate.model())
+                        : copyWithModel(request, candidate.provider(), candidate.model());
+        long maxOutputTokens = Math.min(policy.maxTokens(), candidate.maxOutputTokens());
+        if (request.getMaxOutputTokens() != null && request.getMaxOutputTokens() > 0)
+            maxOutputTokens = Math.min(maxOutputTokens, request.getMaxOutputTokens());
+        resolved.setMaxOutputTokens((int) maxOutputTokens);
+        return resolved;
     }
 
     private dev.langchain4j.model.chat.request.ChatRequest nativeRequest(ChatRequest request) {

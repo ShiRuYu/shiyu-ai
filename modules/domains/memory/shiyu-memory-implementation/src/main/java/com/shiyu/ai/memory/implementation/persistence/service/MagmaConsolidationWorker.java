@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import tools.jackson.core.type.TypeReference;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashSet;
@@ -64,13 +65,14 @@ public class MagmaConsolidationWorker {
                             + " ID LIMIT 10",
                         (r, n) -> r.getLong(1));
         for (Long id : ids) {
+            Timestamp leaseUntil = Timestamp.from(Instant.now().plusSeconds(60));
             int claimed =
                     jdbc.update(
                             "UPDATE MEMORY_CONSOLIDATION_JOB SET"
                                 + " STATUS='RUNNING',LEASED_UNTIL=?,UPDATED_AT=CURRENT_TIMESTAMP,ATTEMPTS=ATTEMPTS+1"
                                 + " WHERE ID=? AND STATUS IN ('PENDING','RUNNING') AND"
                                 + " (LEASED_UNTIL IS NULL OR LEASED_UNTIL<CURRENT_TIMESTAMP)",
-                            Timestamp.from(Instant.now().plusSeconds(60)),
+                            leaseUntil,
                             id);
             if (claimed == 0) continue;
             try {
@@ -88,16 +90,21 @@ public class MagmaConsolidationWorker {
                 jdbc.update(
                         "UPDATE MEMORY_CONSOLIDATION_JOB SET"
                             + " STATUS='COMPLETED',LEASED_UNTIL=NULL,UPDATED_AT=CURRENT_TIMESTAMP"
-                            + " WHERE ID=?",
-                        id);
+                            + " WHERE ID=? AND STATUS='RUNNING' AND LEASED_UNTIL=? AND"
+                            + " LEASED_UNTIL>=CURRENT_TIMESTAMP",
+                        id,
+                        leaseUntil);
             } catch (RuntimeException failure) {
                 jdbc.update(
                         "UPDATE MEMORY_CONSOLIDATION_JOB SET STATUS=CASE WHEN ATTEMPTS>=5 THEN"
                                 + " 'FAILED' ELSE 'PENDING' END,LEASED_UNTIL=NULL,AVAILABLE_AT="
                                 + dialect.retryTimestampExpression("ATTEMPTS")
-                                + ",LAST_ERROR=?,UPDATED_AT=CURRENT_TIMESTAMP WHERE ID=?",
+                                + ",LAST_ERROR=?,UPDATED_AT=CURRENT_TIMESTAMP WHERE ID=? AND"
+                                + " STATUS='RUNNING' AND LEASED_UNTIL=? AND"
+                                + " LEASED_UNTIL>=CURRENT_TIMESTAMP",
                         CONSOLIDATION_FAILURE_MESSAGE,
-                        id);
+                        id,
+                        leaseUntil);
             }
         }
     }
@@ -222,11 +229,48 @@ public class MagmaConsolidationWorker {
                         graph,
                         relation);
         if (exists != null && exists > 0) return;
+        String edgeId =
+                UUID.nameUUIDFromBytes(
+                                (tenant
+                                                + ":"
+                                                + source.length()
+                                                + ":"
+                                                + source
+                                                + ":"
+                                                + target.length()
+                                                + ":"
+                                                + target
+                                                + ":"
+                                                + graph.length()
+                                                + ":"
+                                                + graph
+                                                + ":"
+                                                + relation.length()
+                                                + ":"
+                                                + relation)
+                                        .getBytes(StandardCharsets.UTF_8))
+                        .toString();
         jdbc.update(
-                "INSERT INTO MEMORY_EDGE"
-                    + " (ID,TENANT_ID,SOURCE_NODE_ID,TARGET_NODE_ID,GRAPH_TYPE,RELATION_TYPE,DIRECTED,WEIGHT,CONFIDENCE,ORIGIN,EVIDENCE_SOURCE,ACTIVE,CREATED_AT)"
-                    + " VALUES (?,?,?,?,?,?,TRUE,?,?,?,?,TRUE,CURRENT_TIMESTAMP)",
-                UUID.randomUUID().toString(),
+                dialect.upsert(
+                        "MEMORY_EDGE",
+                        List.of(
+                                "ID",
+                                "TENANT_ID",
+                                "SOURCE_NODE_ID",
+                                "TARGET_NODE_ID",
+                                "GRAPH_TYPE",
+                                "RELATION_TYPE",
+                                "DIRECTED",
+                                "WEIGHT",
+                                "CONFIDENCE",
+                                "ORIGIN",
+                                "EVIDENCE_SOURCE",
+                                "ACTIVE",
+                                "CREATED_AT"),
+                        "?, ?, ?, ?, ?, ?, TRUE, ?, ?, ?, ?, TRUE, CURRENT_TIMESTAMP",
+                        List.of("ID"),
+                        List.of("ACTIVE", "WEIGHT", "CONFIDENCE", "ORIGIN", "EVIDENCE_SOURCE")),
+                edgeId,
                 tenant,
                 source,
                 target,

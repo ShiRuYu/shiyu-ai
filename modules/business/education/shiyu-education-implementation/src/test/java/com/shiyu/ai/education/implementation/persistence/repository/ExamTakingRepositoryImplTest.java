@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.tenant.TenantManager;
+import com.mybatisflex.core.paginate.Page;
 import com.shiyu.ai.education.implementation.domain.port.repository.ExamTakingRepository;
 import com.shiyu.ai.education.implementation.persistence.dataobject.ExamAttemptDO;
 import com.shiyu.ai.education.implementation.persistence.dataobject.ExamAttemptQuestionDO;
@@ -27,6 +28,72 @@ import org.junit.jupiter.api.Test;
 
 /** 验证逾期处理任务能够发现各租户的逾期作答记录。 */
 class ExamTakingRepositoryImplTest {
+    @Test
+    void pagesStudentHistoryInSqlAndFiltersDeletedOrCrossTenantExams() {
+        ExamAttemptMapper attempts = mock(ExamAttemptMapper.class);
+        ExamAttemptDO row = new ExamAttemptDO();
+        row.setId(91L);
+        row.setTenantId(9L);
+        row.setExamId(5L);
+        row.setStudentId(4L);
+        row.setStatus("SUBMITTED");
+        Page<ExamAttemptDO> mapperPage = new Page<>(List.of(row), 2, 10, 17);
+        when(attempts.paginate(org.mockito.ArgumentMatchers.eq(2),
+                org.mockito.ArgumentMatchers.eq(10), any(QueryWrapper.class)))
+                .thenReturn(mapperPage);
+        var repository = new ExamTakingRepositoryImpl(
+                mock(ExamSectionMapper.class), mock(ExamQuestionMapper.class), attempts,
+                mock(ExamAttemptQuestionMapper.class));
+
+        var page = repository.findHistoryPageByStudent(new TenantId(9L), 4L, 2, 10);
+
+        assertEquals(17L, page.getTotal());
+        assertEquals(List.of(91L), page.getItems().stream()
+                .map(ExamTakingRepository.Attempt::id).toList());
+        ArgumentCaptor<QueryWrapper> queries = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(attempts).paginate(org.mockito.ArgumentMatchers.eq(2),
+                org.mockito.ArgumentMatchers.eq(10), queries.capture());
+        String sql = queries.getValue().toSQL().toLowerCase();
+        assertTrue(sql.contains("inner join"));
+        assertTrue(sql.contains("edu_exam"));
+        assertTrue(sql.contains("tenant_id"));
+        assertTrue(sql.contains("student_id"));
+        assertTrue(sql.contains("del_flag"));
+        assertTrue(sql.contains("started_at"));
+    }
+
+    @Test
+    void findsExpiredStudentAttemptsInTenantScopedCursorBatches() {
+        ExamAttemptMapper attempts = mock(ExamAttemptMapper.class);
+        ExamAttemptDO row = new ExamAttemptDO();
+        row.setId(91L);
+        row.setTenantId(9L);
+        row.setExamId(5L);
+        row.setStudentId(4L);
+        row.setStatus("STARTED");
+        LocalDateTime now = LocalDateTime.now();
+        row.setDeadlineAt(now.minusMinutes(1));
+        when(attempts.selectListByQuery(any(QueryWrapper.class))).thenReturn(List.of(row));
+        var repository = new ExamTakingRepositoryImpl(
+                mock(ExamSectionMapper.class), mock(ExamQuestionMapper.class), attempts,
+                mock(ExamAttemptQuestionMapper.class));
+
+        var expired = repository.findExpiredAttemptsByStudent(
+                new TenantId(9L), 4L, now, 90L, 150);
+
+        assertEquals(List.of(91L), expired.stream()
+                .map(ExamTakingRepository.Attempt::id).toList());
+        ArgumentCaptor<QueryWrapper> queries = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(attempts).selectListByQuery(queries.capture());
+        String sql = queries.getValue().toSQL().toLowerCase();
+        assertTrue(sql.contains("tenant_id"));
+        assertTrue(sql.contains("student_id"));
+        assertTrue(sql.contains("status"));
+        assertTrue(sql.contains("deadline_at"));
+        assertTrue(sql.contains(" > 90"), sql);
+        assertTrue(sql.contains("limit 100"));
+    }
+
     @Test
     void findsDueAttemptsAcrossTenantsWithoutLeavingFilteringDisabled() {
         ExamAttemptMapper attempts = mock(ExamAttemptMapper.class);

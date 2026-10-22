@@ -271,6 +271,26 @@ public interface KnowledgeEnterpriseRepository {
      */
     List<KnowledgeIngestionJobBO> findStaleJobs(LocalDateTime heartbeatBefore);
 
+    /** 查询待处理的索引重建任务，供独立索引 Worker 领取。 */
+    List<KnowledgeIngestionJobBO> pollPendingIndexRebuildJobs(int limit);
+
+    /** 原子领取索引重建任务并递增租约版本。 */
+    KnowledgeIngestionJobBO claimIndexRebuildJob(TenantId tenantId, Long jobId);
+
+    /** 查询租约超时的索引重建任务。 */
+    List<KnowledgeIngestionJobBO> findStaleIndexRebuildJobs(LocalDateTime heartbeatBefore);
+
+    /** 仅当任务仍由预期租约持有时，恢复超时任务。 */
+    boolean recoverStaleIndexRebuildJob(
+            TenantId tenantId, KnowledgeIngestionJobBO job, LocalDateTime heartbeatBefore);
+
+    /** 仅为当前租约持有者刷新索引重建任务心跳。 */
+    boolean heartbeatIndexRebuildJob(
+            TenantId tenantId, Long jobId, Long lockVersion, LocalDateTime heartbeatTime);
+
+    /** 仅允许当前租约持有者写回索引重建任务结果。 */
+    boolean updateIndexRebuildJob(TenantId tenantId, KnowledgeIngestionJobBO job);
+
     /**
      * 创建或保存 知识 Enterprise 相关业务操作，并维护必要的状态和协作关系。
      *

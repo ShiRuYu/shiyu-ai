@@ -2,6 +2,7 @@ package com.shiyu.ai.conversation.implementation.domain.port;
 
 import com.shiyu.ai.conversation.contract.model.GenerationRun;
 import com.shiyu.ai.conversation.implementation.domain.model.GenerationEvent;
+import com.shiyu.ai.conversation.implementation.domain.model.RecoveredGeneration;
 import com.shiyu.ai.kernel.context.TenantId;
 
 import java.util.List;
@@ -94,4 +95,12 @@ public interface GenerationRepository {
      * @return 返回 生成 相关操作生成的结果数据。
      */
     int nextEventSequence(String generationId, TenantId tenantId);
+
+    /**
+     * 将超时的生成记录转为失败，并返回成功回收的运行上下文。
+     *
+     * @param timeoutMs 判定运行超时的毫秒数。
+     * @return 成功回收的生成记录及所属主体。
+     */
+    List<RecoveredGeneration> recoverStaleGenerations(long timeoutMs);
 }

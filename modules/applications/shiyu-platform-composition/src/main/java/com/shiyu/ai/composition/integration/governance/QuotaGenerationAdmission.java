@@ -59,16 +59,19 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
      */
     @Override
     public void settle(ActorContext actor, GenerationRun run) {
-        Reservation reservation = reservations.remove(run.id());
-        if (reservation != null)
-            quota.settle(
-                    actor,
-                    reservation.id(),
-                    new QuotaUsage(
-                            safe(run.promptTokens()) > 0
-                                    ? safe(run.promptTokens())
-                                    : reservation.estimatedPromptTokens(),
-                            safe(run.completionTokens())));
+        reservations.computeIfPresent(
+                run.id(),
+                (runId, reservation) -> {
+                    quota.settle(
+                            actor,
+                            reservation.id(),
+                            new QuotaUsage(
+                                    safe(run.promptTokens()) > 0
+                                            ? safe(run.promptTokens())
+                                            : reservation.estimatedPromptTokens(),
+                                    safe(run.completionTokens())));
+                    return null;
+                });
     }
 
     /**
@@ -79,8 +82,12 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
      */
     @Override
     public void release(ActorContext actor, GenerationRun run) {
-        Reservation reservation = reservations.remove(run.id());
-        if (reservation != null) quota.release(actor, reservation.id());
+        reservations.computeIfPresent(
+                run.id(),
+                (runId, reservation) -> {
+                    quota.release(actor, reservation.id());
+                    return null;
+                });
     }
 
     private static int safe(long value) {

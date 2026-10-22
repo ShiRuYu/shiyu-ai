@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 验证 生成 Runner Stream 相关功能、边界条件、异常路径和协作行为。
@@ -184,6 +185,42 @@ class GenerationRunnerStreamTest {
                 .appendEvent(
                         argThat(event -> event.type() == GenerationEventType.CANCELLED),
                         eq(new TenantId(1L)));
+    }
+
+    @Test
+    void clientCancellationDisposesProviderStream() {
+        ChatEngine engine = mock(ChatEngine.class);
+        GenerationRepository generations = mock(GenerationRepository.class);
+        ConversationRepository conversations = mock(ConversationRepository.class);
+        GenerationAdmission admission = mock(GenerationAdmission.class);
+        AtomicBoolean providerCancelled = new AtomicBoolean();
+        ConversationMessage input = message("m1", "c1", 0);
+        Conversation conversation = conversation("c1", "m1", 0);
+        GenerationRun created = generation("g1");
+        GenerationRun running = created.transition(GenerationStatus.RUNNING);
+        when(conversations.findMessage("m1", new TenantId(1), 2)).thenReturn(Optional.of(input));
+        when(conversations.findConversation("c1", new TenantId(1), 2))
+                .thenReturn(Optional.of(conversation));
+        when(conversations.listMessages("c1", new TenantId(1), 2, 1000)).thenReturn(List.of(input));
+        when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
+        when(generations.find("g1", new TenantId(1), 2)).thenReturn(Optional.of(running));
+        when(engine.stream(any()))
+                .thenReturn(Flux.create(sink -> sink.onCancel(() -> providerCancelled.set(true))));
+
+        GenerationRunner runner =
+                new GenerationRunner(
+                        engine,
+                        generations,
+                        conversations,
+                        new GenerationUsageSink() {},
+                        admission,
+                        null,
+                        new ConversationPromptService(null));
+        runner.start(created, new TenantId(1), 2);
+
+        runner.cancel("g1");
+
+        assertEquals(true, providerCancelled.get());
     }
 
     @Test

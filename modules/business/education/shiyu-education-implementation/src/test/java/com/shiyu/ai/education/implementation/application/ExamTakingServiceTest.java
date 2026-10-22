@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -464,8 +467,11 @@ class ExamTakingServiceTest {
                 99L, 5L, 4L, "EXPIRED", expired.startedAt(), expired.deadlineAt(),
                 LocalDateTime.now(), BigDecimal.TEN, BigDecimal.TEN);
         when(students.selectByUserId(ACTOR.tenantId(), 37L)).thenReturn(student());
-        when(taking.findAttemptsByStudent(ACTOR.tenantId(), 4L)).thenReturn(List.of(expired));
-        when(exams.selectById(ACTOR.tenantId(), 5L)).thenReturn(exam(1));
+        when(taking.findExpiredAttemptsByStudent(eq(ACTOR.tenantId()), eq(4L),
+                any(LocalDateTime.class), isNull(), eq(100))).thenReturn(List.of(expired));
+        when(taking.findHistoryPageByStudent(ACTOR.tenantId(), 4L, 1, 10))
+                .thenReturn(new PageData<>(List.of(settled), 1L));
+        when(exams.selectByIds(ACTOR.tenantId(), List.of(5L))).thenReturn(List.of(exam(1)));
         when(taking.findAttemptById(ACTOR.tenantId(), 99L)).thenReturn(settled);
         when(taking.attemptQuestions(ACTOR.tenantId(), 99L)).thenReturn(List.of(
                 new ExamTakingRepository.AttemptQuestion(
@@ -723,9 +729,12 @@ class ExamTakingServiceTest {
                 99L, 5L, 4L, "SUBMITTED", LocalDateTime.now().minusHours(1),
                 LocalDateTime.now().minusMinutes(30), LocalDateTime.now().minusMinutes(30),
                 BigDecimal.TEN, BigDecimal.TEN);
-        when(taking.findAttemptsByStudent(ACTOR.tenantId(), 4L))
-                .thenReturn(List.of(deleted, visible));
-        when(exams.selectById(ACTOR.tenantId(), 5L)).thenReturn(exam(1));
+        when(taking.findHistoryPageByStudent(ACTOR.tenantId(), 4L, 1, 10))
+                .thenReturn(new PageData<>(List.of(deleted, visible), 1L));
+        when(taking.findHistoryPageByStudent(ACTOR.tenantId(), 4L, 2, 10))
+                .thenReturn(new PageData<>(List.of(), 1L));
+        when(exams.selectByIds(ACTOR.tenantId(), List.of(4L, 5L)))
+                .thenReturn(List.of(exam(1)));
 
         var page = service.history(ACTOR, 1, 10);
 
@@ -735,13 +744,34 @@ class ExamTakingServiceTest {
     }
 
     @Test
+    void historyDoesNotLoadAllAttemptsOrSelectEachExamIndividually() {
+        when(students.selectByUserId(ACTOR.tenantId(), 37L)).thenReturn(student());
+        var attempt = new ExamTakingRepository.Attempt(
+                99L, 5L, 4L, "SUBMITTED", LocalDateTime.now().minusHours(1),
+                LocalDateTime.now().minusMinutes(30), LocalDateTime.now().minusMinutes(30),
+                BigDecimal.TEN, BigDecimal.TEN);
+        when(taking.findHistoryPageByStudent(ACTOR.tenantId(), 4L, 1, 10))
+                .thenReturn(new PageData<>(List.of(attempt), 1L));
+        when(exams.selectByIds(ACTOR.tenantId(), List.of(5L))).thenReturn(List.of(exam(1)));
+
+        var page = service.history(ACTOR, 1, 10);
+
+        assertEquals(1L, page.getTotal());
+        assertEquals(List.of(5L), page.getItems().stream().map(item -> item.examId()).toList());
+        verify(taking).findHistoryPageByStudent(ACTOR.tenantId(), 4L, 1, 10);
+        verify(exams).selectByIds(ACTOR.tenantId(), List.of(5L));
+        verify(exams, never()).selectById(ACTOR.tenantId(), 5L);
+    }
+
+    @Test
     void historyRejectsInvalidPaginationBeforeReadingStudentAttempts() {
         when(students.selectByUserId(ACTOR.tenantId(), 37L)).thenReturn(student());
 
         assertThrows(ServiceException.class, () -> service.history(ACTOR, 0, 10));
         assertThrows(ServiceException.class, () -> service.history(ACTOR, 1, 0));
         assertThrows(ServiceException.class, () -> service.history(ACTOR, 1, 101));
-        verify(taking, never()).findAttemptsByStudent(any(), any());
+        verify(taking, never()).findHistoryPageByStudent(any(), any(), anyInt(), anyInt());
+        verify(taking, never()).findExpiredAttemptsByStudent(any(), any(), any(), any(), anyInt());
     }
 
     @Test

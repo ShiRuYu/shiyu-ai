@@ -43,6 +43,9 @@ public interface KnowledgeChunkRepository {
      */
     List<KnowledgeChunkBO> findBySpace(TenantId tenantId, Long spaceId);
 
+    /** 按租户、知识空间和候选切片标识批量读取切片。 */
+    List<KnowledgeChunkBO> findByIds(TenantId tenantId, Long spaceId, List<Long> ids);
+
     /**
      * 更新或设置 知识 Chunk 相关业务操作，并维护必要的状态和协作关系。
      *

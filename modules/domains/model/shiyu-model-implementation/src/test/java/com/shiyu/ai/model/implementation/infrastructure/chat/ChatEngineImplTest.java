@@ -9,6 +9,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.model.implementation.infrastructure.service.ModelManager;
 import com.shiyu.ai.model.implementation.infrastructure.adapter.impl.DeepSeekHttpProvider;
+import com.shiyu.ai.model.implementation.infrastructure.adapter.impl.GenericPlatformAdapter;
 import com.shiyu.ai.model.implementation.infrastructure.chat.impl.ChatEngineImpl;
 import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ModelRoutePolicy;
 import com.shiyu.ai.model.implementation.infrastructure.gateway.service.ModelRouter;
@@ -23,10 +24,19 @@ import dev.langchain4j.model.output.FinishReason;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 
+import com.sun.net.httpserver.HttpServer;
+
 import reactor.core.publisher.Flux;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 验证 对话 Engine Impl 相关功能、边界条件、异常路径和协作行为。
@@ -566,18 +576,208 @@ class ChatEngineImplTest {
                         any(
                                 dev.langchain4j.model.chat.response.StreamingChatResponseHandler
                                         .class));
+        router.markFailure(new TenantId(7), "OPENAI", "gpt-4o", "temporary failure");
+        router.markFailure(new TenantId(7), "OPENAI", "gpt-4o", "temporary failure");
         List<ChatResponse> events = engine.stream(request).collectList().block();
         assertNotNull(events);
         assertTrue(events.stream().anyMatch(event -> "DELTA".equals(event.getEventType())));
+        assertEquals(
+                0,
+                router.health("OPENAI", "gpt-4o", new TenantId(7)).consecutiveFailures());
+    }
+
+    @Test
+    void appliesRouteTokenLimitToSynchronousAndStreamingProviderRequests() {
+        ModelManager manager = mock(ModelManager.class);
+        DeepSeekHttpProvider provider = mock(DeepSeekHttpProvider.class);
+        when(manager.getDeepSeekProvider()).thenReturn(provider);
+        when(provider.isAvailable()).thenReturn(true);
+        when(provider.chat(any()))
+                .thenReturn(ChatResponse.builder().success(true).content("ok").build());
+        when(provider.stream(any()))
+                .thenReturn(
+                        Flux.just(
+                                ChatResponse.builder()
+                                        .success(true)
+                                        .eventType("COMPLETED")
+                                        .content("ok")
+                                        .build()));
+        ModelRouter router = new ModelRouter();
+        router.savePolicy(
+                new ModelRoutePolicy(
+                        "route-limit",
+                        7,
+                        "limited",
+                        List.of("DEEPSEEK:deepseek-flash"),
+                        1000,
+                        true,
+                        1234));
+        ChatRequest request =
+                ChatRequest.builder()
+                        .modelRouteId("route-limit")
+                        .tenantId(7)
+                        .platform("OPENAI")
+                        .model("ignored")
+                        .messages(List.of(ChatMessage.text("user", "hello")))
+                        .build();
+        ChatEngineImpl engine =
+                new ChatEngineImpl(manager, mock(ApplicationEventPublisher.class), router);
+
+        engine.chat(request);
+        engine.stream(request).collectList().block();
+
+        org.mockito.ArgumentCaptor<ChatRequest> requests =
+                org.mockito.ArgumentCaptor.forClass(ChatRequest.class);
+        verify(provider).chat(requests.capture());
+        verify(provider).stream(requests.capture());
+        assertEquals(1234, requests.getAllValues().get(0).getMaxOutputTokens());
+        assertEquals(1234, requests.getAllValues().get(1).getMaxOutputTokens());
+    }
+
+    @Test
+    void routeTimeoutCancelsAStalledProviderStream() {
+        ModelManager manager = mock(ModelManager.class);
+        DeepSeekHttpProvider provider = mock(DeepSeekHttpProvider.class);
+        java.util.concurrent.atomic.AtomicBoolean cancelled =
+                new java.util.concurrent.atomic.AtomicBoolean();
+        when(manager.getDeepSeekProvider()).thenReturn(provider);
+        when(provider.isAvailable()).thenReturn(true);
+        when(provider.stream(any()))
+                .thenReturn(Flux.<ChatResponse>never().doOnCancel(() -> cancelled.set(true)));
+        ModelRouter router = new ModelRouter();
+        router.savePolicy(
+                new ModelRoutePolicy(
+                        "route-timeout",
+                        7,
+                        "short timeout",
+                        List.of("DEEPSEEK:deepseek-flash"),
+                        50,
+                        false,
+                        1000));
+        ChatRequest request =
+                ChatRequest.builder()
+                        .modelRouteId("route-timeout")
+                        .tenantId(7)
+                        .platform("OPENAI")
+                        .model("ignored")
+                        .messages(List.of(ChatMessage.text("user", "hello")))
+                        .build();
+        ChatEngineImpl engine =
+                new ChatEngineImpl(manager, mock(ApplicationEventPublisher.class), router);
+
+        assertThrows(
+                RuntimeException.class,
+                () -> engine.stream(request).collectList().block(Duration.ofSeconds(1)));
+
+        assertTrue(cancelled.get());
+        assertEquals(
+                1,
+                router.health("DEEPSEEK", "deepseek-flash", new TenantId(7))
+                        .consecutiveFailures());
+    }
+
+    @Test
+    void cancellingStreamClosesTheProviderHttpConnection() throws Exception {
+        CountDownLatch requestStarted = new CountDownLatch(1);
+        CountDownLatch partialReceived = new CountDownLatch(1);
+        CountDownLatch clientDisconnected = new CountDownLatch(1);
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext(
+                "/v1/chat/completions",
+                exchange -> {
+                    exchange.getResponseHeaders().set("Content-Type", "text/event-stream");
+                    exchange.sendResponseHeaders(200, 0);
+                    requestStarted.countDown();
+                    try (OutputStream body = exchange.getResponseBody()) {
+                        body.write(
+                                ("data: {\"id\":\"chunk-1\",\"object\":\"chat.completion.chunk\","
+                                                + "\"created\":1,\"model\":\"gpt\",\"choices\":[{"
+                                                + "\"index\":0,\"delta\":{\"content\":\"hello\"},"
+                                                + "\"finish_reason\":null}]}\n\n")
+                                        .getBytes(StandardCharsets.UTF_8));
+                        body.flush();
+                        while (true) {
+                            body.write(": heartbeat\n\n".getBytes(StandardCharsets.UTF_8));
+                            body.flush();
+                            Thread.sleep(50);
+                        }
+                    } catch (IOException disconnected) {
+                        clientDisconnected.countDown();
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        clientDisconnected.countDown();
+                    }
+                });
+        server.start();
+        try {
+            GenericPlatformAdapter adapter =
+                    new GenericPlatformAdapter(
+                            "OPENAI",
+                            "http://127.0.0.1:" + server.getAddress().getPort() + "/v1",
+                            "test-key",
+                            "gpt");
+            StreamingChatModel streaming = adapter.getStreamingChatModel("gpt");
+            ModelManager manager = mock(ModelManager.class);
+            when(manager.getStreamingChatModel("OPENAI", "gpt")).thenReturn(streaming);
+            ChatEngineImpl engine =
+                    new ChatEngineImpl(manager, mock(ApplicationEventPublisher.class));
+
+            var subscription =
+                    engine.stream(request("OPENAI", "gpt"))
+                            .subscribe(
+                                    event -> {
+                                        if ("DELTA".equals(event.getEventType()))
+                                            partialReceived.countDown();
+                                    });
+
+            assertTrue(requestStarted.await(2, TimeUnit.SECONDS));
+            assertTrue(partialReceived.await(2, TimeUnit.SECONDS));
+            subscription.dispose();
+            assertTrue(
+                    clientDisconnected.await(2, TimeUnit.SECONDS),
+                    "cancelling the stream must close the provider HTTP connection");
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void routedStreamDoesNotReserveCooldownProbeUntilSubscribed() throws InterruptedException {
+        ModelManager manager = mock(ModelManager.class);
+        ModelRouter router =
+                new ModelRouter(
+                        java.time.Clock.systemUTC(), java.time.Duration.ofMillis(20));
+        router.savePolicy(
+                new ModelRoutePolicy(
+                        "route-1", 7L, "Primary", List.of("OPENAI:gpt-4o"), 1000, true, 1000));
+        for (int attempt = 0; attempt < 3; attempt++)
+            router.markFailure(new TenantId(7), "OPENAI", "gpt-4o", "provider down");
+        Thread.sleep(50);
+
+        ChatRequest request =
+                ChatRequest.builder()
+                        .modelRouteId("route-1")
+                        .tenantId(7)
+                        .platform("OPENAI")
+                        .model("ignored")
+                        .messages(List.of(ChatMessage.text("user", "hello")))
+                        .build();
+        ChatEngineImpl engine =
+                new ChatEngineImpl(manager, mock(ApplicationEventPublisher.class), router);
+
+        Flux<ChatResponse> stream = engine.stream(request);
+
+        assertNotNull(stream);
+        assertTrue(router.health("OPENAI", "gpt-4o", new TenantId(7)).healthy());
     }
 
     @Test
     void rejectsRouteWithoutHealthyCandidates() {
         ModelManager manager = mock(ModelManager.class);
         ModelRouter router = new ModelRouter();
-        router.markFailure("default", "configured", "down");
-        router.markFailure("default", "configured", "down");
-        router.markFailure("default", "configured", "down");
+        router.markFailure(new TenantId(7), "default", "configured", "down");
+        router.markFailure(new TenantId(7), "default", "configured", "down");
+        router.markFailure(new TenantId(7), "default", "configured", "down");
         router.savePolicy(
                 new ModelRoutePolicy(
                         "route-2", 7L, "Missing", List.of("configured"), 1000, false, 1000));

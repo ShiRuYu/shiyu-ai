@@ -20,6 +20,9 @@ public interface ExamRepository {
      */
     ExamBO selectById(TenantId tenantId, Long id);
 
+    /** 按租户批量读取未删除的考试。 */
+    List<ExamBO> selectByIds(TenantId tenantId, List<Long> ids);
+
     /**
      * 查询 考试 相关业务数据，并返回处理结果。
      *

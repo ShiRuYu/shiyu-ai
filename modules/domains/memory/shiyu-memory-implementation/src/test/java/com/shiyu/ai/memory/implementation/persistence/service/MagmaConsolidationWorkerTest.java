@@ -1,10 +1,12 @@
 package com.shiyu.ai.memory.implementation.persistence.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import com.shiyu.ai.common.foundation.jdbc.JdbcDialect;
 import com.shiyu.ai.memory.contract.model.*;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +27,126 @@ import javax.sql.DataSource;
  * 验证 Magma Consolidation Worker 相关功能、边界条件、异常路径和协作行为。
  */
 class MagmaConsolidationWorkerTest {
+    @Test
+    void completesOnlyWithTheClaimedLeaseToken() throws Exception {
+        JdbcTemplate jdbc = mock(JdbcTemplate.class);
+        List<UpdateCall> updates = new ArrayList<>();
+        captureUpdates(jdbc, updates);
+        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Long>>any()))
+                .thenReturn(List.of(8L));
+        when(jdbc.queryForMap(anyString(), any(Object[].class)))
+                .thenReturn(Map.of("TENANT_ID", 7L, "EVENT_ID", "revoked"))
+                .thenReturn(Map.of("STATUS", "REVOKED"));
+
+        newWorker(jdbc).processBatch();
+
+        UpdateCall claim = updateMatching(updates, "STATUS='RUNNING'");
+        UpdateCall completion = updateMatching(updates, "STATUS='COMPLETED'");
+        assertTrue(claim.sql().contains("LEASED_UNTIL=?"));
+        assertTrue(completion.sql().contains("LEASED_UNTIL=?"));
+        assertTrue(completion.sql().contains("STATUS='RUNNING'"));
+        assertTrue(completion.sql().contains("LEASED_UNTIL>=CURRENT_TIMESTAMP"));
+        assertEquals(claim.arguments()[0], completion.arguments()[1]);
+    }
+
+    @Test
+    void recordsFailureOnlyWithTheClaimedLeaseToken() throws Exception {
+        JdbcTemplate jdbc = mock(JdbcTemplate.class);
+        List<UpdateCall> updates = new ArrayList<>();
+        captureUpdates(jdbc, updates);
+        when(jdbc.query(anyString(), org.mockito.ArgumentMatchers.<RowMapper<Long>>any()))
+                .thenReturn(List.of(9L));
+        when(jdbc.queryForMap(anyString(), any(Object[].class)))
+                .thenThrow(new IllegalStateException("db unavailable"));
+
+        newWorker(jdbc).processBatch();
+
+        UpdateCall claim = updateMatching(updates, "STATUS='RUNNING'");
+        UpdateCall failure = updateMatching(updates, "LAST_ERROR=?");
+        assertTrue(claim.sql().contains("LEASED_UNTIL=?"));
+        assertTrue(failure.sql().contains("LEASED_UNTIL=?"));
+        assertTrue(failure.sql().contains("STATUS='RUNNING'"));
+        assertTrue(failure.sql().contains("LEASED_UNTIL>=CURRENT_TIMESTAMP"));
+        assertEquals(claim.arguments()[0], failure.arguments()[2]);
+    }
+
+    @Test
+    void createsEdgesWithDialectUpsertsForSupportedDatabases() throws Exception {
+        List<String[]> productsAndClauses =
+                List.of(
+                        new String[] {
+                            "PostgreSQL",
+                            "ON CONFLICT",
+                            "ON CONFLICT (ID) DO UPDATE SET ACTIVE=EXCLUDED.ACTIVE"
+                        },
+                        new String[] {
+                            "MySQL", "ON DUPLICATE KEY UPDATE", "ACTIVE=VALUES(ACTIVE)"
+                        },
+                        new String[] {"H2", "MERGE INTO", "KEY(ID)"});
+
+        for (String[] productAndClause : productsAndClauses) {
+            JdbcTemplate jdbc = mock(JdbcTemplate.class);
+            List<UpdateCall> updates = new ArrayList<>();
+            captureUpdates(jdbc, updates);
+            when(jdbc.queryForObject(anyString(), eq(Integer.class), any(Object[].class)))
+                    .thenReturn(0);
+            MagmaConsolidationWorker worker = newWorker(jdbc);
+            Field dialect = MagmaConsolidationWorker.class.getDeclaredField("dialect");
+            dialect.setAccessible(true);
+            dialect.set(worker, JdbcDialect.fromProduct(productAndClause[0]));
+            Method edgeIfAbsent =
+                    MagmaConsolidationWorker.class.getDeclaredMethod(
+                            "edgeIfAbsent",
+                            long.class,
+                            String.class,
+                            String.class,
+                            String.class,
+                            String.class,
+                            double.class,
+                            double.class,
+                            String.class,
+                            String.class);
+            edgeIfAbsent.setAccessible(true);
+
+            for (int attempt = 0; attempt < 2; attempt++) {
+                edgeIfAbsent.invoke(
+                        worker,
+                        7L,
+                        "source",
+                        "target",
+                        "SEMANTIC",
+                        "similar",
+                        0.7d,
+                        0.8d,
+                        "RULE",
+                        "event");
+            }
+            edgeIfAbsent.invoke(
+                    worker,
+                    8L,
+                    "source",
+                    "target",
+                    "SEMANTIC",
+                    "similar",
+                    0.7d,
+                    0.8d,
+                    "RULE",
+                    "event");
+
+            List<UpdateCall> edgeInserts =
+                    updates.stream()
+                            .filter(update -> update.sql().contains("MEMORY_EDGE"))
+                            .toList();
+            assertEquals(3, edgeInserts.size());
+            assertEquals(edgeInserts.get(0).arguments()[0], edgeInserts.get(1).arguments()[0]);
+            assertNotEquals(edgeInserts.get(0).arguments()[0], edgeInserts.get(2).arguments()[0]);
+            String edgeInsert = edgeInserts.get(0).sql();
+            assertTrue(edgeInsert.contains(productAndClause[1]), productAndClause[0]);
+            assertTrue(edgeInsert.contains(productAndClause[2]), productAndClause[0]);
+            assertTrue(edgeInsert.contains("ACTIVE"), productAndClause[0]);
+        }
+    }
+
     @Test
     void leasesAndCompletesPendingJobs() throws Exception {
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
@@ -222,4 +345,30 @@ class MagmaConsolidationWorkerTest {
         field.set(worker, jdbc);
         return worker;
     }
+
+    private static void captureUpdates(JdbcTemplate jdbc, List<UpdateCall> updates) {
+        org.mockito.stubbing.Answer<Integer> capture =
+                invocation -> {
+                    Object[] invocationArguments = invocation.getArguments();
+                    Object[] parameters =
+                            invocationArguments.length == 2
+                                            && invocationArguments[1] instanceof Object[] nested
+                                    ? nested
+                                    : java.util.Arrays.copyOfRange(invocationArguments, 1, invocationArguments.length);
+                    updates.add(new UpdateCall((String) invocationArguments[0], parameters));
+                    return 1;
+                };
+        when(jdbc.update(anyString(), any(Object[].class))).thenAnswer(capture);
+        when(jdbc.update(anyString(), any(), any())).thenAnswer(capture);
+        when(jdbc.update(anyString(), any(), any(), any())).thenAnswer(capture);
+    }
+
+    private static UpdateCall updateMatching(List<UpdateCall> updates, String fragment) {
+        return updates.stream()
+                .filter(update -> update.sql().contains(fragment))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No update matched " + fragment));
+    }
+
+    private record UpdateCall(String sql, Object[] arguments) {}
 }
