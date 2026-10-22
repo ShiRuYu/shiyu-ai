@@ -11,7 +11,7 @@
 
 后端采用模块化单体，平台领域以 Contract 和 Implementation 分层，业务由启动模块装配，公共基础设施提供 Web、持久化、线程、存储和向量能力。对 POM 依赖及 Java import 的静态扫描未发现模块依赖环、跨领域 Implementation 直接引用或 Contract 引入架构规则所禁止的框架依赖。
 
-本轮确认 **3 项 P1、6 项 P2**。优先关注生成取消与配额生命周期、模型故障状态恢复，以及检索和考试历史在数据增长后的资源成本。没有足够证据支持 P0 级结论。
+本轮确认 **3 项 P1、6 项 P2**。优先关注生成取消与配额生命周期、模型故障状态恢复，以及检索和考试历史在数据增长后的资源成本。没有足够证据支持 P0 级结论。后续真实 PostgreSQL 冒烟另发现 **1 项 P3 运维提示问题**。
 
 **整改复核：** 3 项 P1 与 6 项 P2 均已按当前支持的单实例运行方式完成代码整改和定向测试。生成取消、超时回收和模型熔断均覆盖了本地执行路径。配额、路由健康和索引协调仍含进程内状态；部署手册明确指出水平扩展需先完成存储改造，因此多实例运行仍不受支持。客户端断开测试不能证明真实供应商停止计算或计费。具体验证边界见下文。
 
@@ -70,6 +70,7 @@ HTTP 认证与租户解析
 | **P2** | [EmbeddedIndexRegistry.java](../../modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/infrastructure/index/adapter/EmbeddedIndexRegistry.java) | 混合检索在合并候选时调用 `findBySpace` 并读取整个知识空间的切片，再按命中 ID 取内容。数据量增长时，小 `topK` 查询仍会承担全空间读取和内存开销。 | 按候选 chunk ID 批量加载需要的切片。 | 低—中 |
 | **P2** | [ExamTakingService.java](../../modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/application/ExamTakingService.java)；[ExamTakingRepositoryImpl.java](../../modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/persistence/repository/ExamTakingRepositoryImpl.java) | 历史查询先读取学生所有作答，再逐条查询考试并处理过期记录，最后在内存中分页；查询开销随完整历史增长。 | 在 Repository 层实现数据库分页，并批量读取关联考试。 | 中 |
 | **P2（条件性）** | [MagmaConsolidationWorker.java](../../modules/domains/memory/shiyu-memory-implementation/src/main/java/com/shiyu/ai/memory/implementation/persistence/service/MagmaConsolidationWorker.java)；[H2 Memory baseline](../../modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/schema/memory/12_memory_magma.sql) | Worker 租约固定 60 秒，完成或失败更新只按 Job ID 定位；若处理超过租期，旧 Worker 与接管者可能同时写入。H2 基线中关系边仅以随机 ID 为主键，先查后插不能单独保证跨实例幂等。 | 增加租约 owner/token 并在状态更新时校验；为关系边使用数据库幂等约束或等价 upsert。 | 中 |
+| **P3** | [ApplicationStartupListener.java](../../modules/applications/shiyu-ai-bootstrap/src/main/java/com/shiyu/ai/bootstrap/lifecycle/ApplicationStartupListener.java) | 启动监听器无条件打印 H2 控制台地址。实际使用 `postgresql` profile 时仍会输出该地址，容易被误认为应用回退到了 H2；本次实测没有发生回退。 | 根据 `shiyu.infrastructure.database.provider` 条件化输出，或在非 H2 profile 下省略该行。 | 低 |
 
 ## 整改复核（2026-10-22）
 
@@ -87,6 +88,20 @@ HTTP 认证与租户解析
 | P2 Education 历史查询全量读取并逐条查考试 | **已修复** | Repository 在数据库分页查询中关联同租户且未删除的考试，因此结果和 total 都受关联条件约束；Service 批量读取当前页考试，并以游标批次处理到期作答。Education 定向测试通过。 |
 | P2 Memory 巩固任务租约竞争及关系边重复 | **已修复** | 完成/失败更新要求任务仍为 `RUNNING`、租约值匹配且未过期；关系边 ID 基于租户和关系内容稳定生成，并通过 `JdbcDialect.upsert` 写入。Memory 定向测试通过；PostgreSQL、MySQL 和 H2 服务器均未在本轮实际运行。 |
 
+## 数据库兼容性验证（2026-10-22）
+
+本地验证环境为 PostgreSQL 18.6、UTF-8，数据库地址为 `localhost:5433/postgres`。连接密码按用户授权作为 `postgresql` profile 的本地默认值写入，同时保留 `SHIYU_DB_URL`、`SHIYU_DB_USERNAME`、`SHIYU_DB_PASSWORD` 覆盖能力；本报告不记录凭据。
+
+1. 使用 [PostgreSQL schema baseline](../../scripts/database/postgresql/baseline-schema.sql) 和 [seed baseline](../../scripts/database/postgresql/baseline-seed.sql) 完成初始化。结果为 93 张 `public` 表，`common_schema_baseline.baseline_version=4`，`seed_profile=system-ai`。
+2. Maven reactor 的 30 个模块全部 `SUCCESS`，全量测试 0 failures、0 errors。构建产物为 `modules/applications/shiyu-ai-bootstrap/target/shiyu-ai-bootstrap-1.0.0.jar`。
+3. 使用独立临时 `APP_HOME`、`postgresql` profile 和端口 19001 启动真实 jar。日志确认 Hikari 建立 `org.postgresql.jdbc.PgConnection`，`DatabaseInitializer` 校验外部数据库基线 4（`system-ai`）和 91 张应用表；应用在 8.125 秒内启动成功，没有回退到 H2。
+4. PostgreSQL `pg_stat_activity` 同时看到 10 个 `application_name=PostgreSQL JDBC Driver` 的 Hikari 连接。`GET /v3/api-docs` 返回 HTTP 200，响应 314,959 字节，OpenAPI 版本为 3.1.0。
+5. 在事务内创建临时表并执行两次 `INSERT ... ON CONFLICT ... DO UPDATE`，最终为 1 行、值为 `updated`，随后 `ROLLBACK`；未在数据库留下探测表。
+6. 关键种子表可查询：1 个租户、1 个用户、3 个角色、9 个模型、1 个知识空间、1 门课程、2 个会话和 4 条消息。`auth_tenant_module` 的必填值和状态值未发现异常。
+7. 停止应用后，端口 19001 和 JDBC 会话均已释放；再次检查仍为 93 张表、基线 4/`system-ai`，启动没有改写基线标记或破坏已建 schema。
+
+本机 PostgreSQL 未提供 `vector`/`pgvector` 扩展，因此本次真实数据库冒烟使用应用默认的 JVector provider，没有验证 `pgvector` provider、向量列和相似度查询。MySQL、生产 PostgreSQL、认证后的完整业务写入链路、多实例竞争及真实模型供应商也尚未验证。
+
 ## 建议的回归场景
 
 - 取消生成后确认上游停止，并校验真实请求数、Token 用量和租户并发额度保持一致。
@@ -100,10 +115,22 @@ HTTP 认证与租户解析
 
 - **初次审查已检查：** 31 个 Maven 子模块依赖、生产源码之间的模块级 Java import、架构测试规则，以及生成、Agent/工具、模型路由、Knowledge、Memory、Education 等代表性业务调用链。
 - **初次静态结果：** 未发现 Maven 模块依赖环；未发现跨领域 Implementation 直接 import 或 Contract 依赖架构规则所禁止的框架包。
-- **后续定向验证：** Conversation 16 项、Model 60 项、Knowledge 16 项、Education 53 项、Memory 41 项、配额释放重试 1 项测试通过，共 187 项。Conversation 与 Model 测试在本轮再次运行；Knowledge、Education、Memory 和配额重试结果来自此前针对性运行。未运行完整 Maven reactor 或架构测试套件。
-- **未验证：** 服务启动、真实模型 Provider 请求及供应商侧是否停止计费、多实例竞争/故障恢复、生产数据库。Memory 的 H2/PostgreSQL/MySQL upsert 经过 SQL 生成测试，但未连接真实数据库。原报告 findings 是源码风险判断，不代表线上事故。
+- **后续定向验证：** Conversation 16 项、Model 60 项、Knowledge 16 项、Education 53 项、Memory 41 项、配额释放重试 1 项测试通过，共 187 项。随后完整 Maven reactor 再次通过，30 个模块全部成功，测试 0 failures、0 errors。
+- **数据库验证：** 本地 PostgreSQL 18.6 已完成基线安装、真实 profile 启动、连接池、OpenAPI、关键种子查询和事务内 upsert 冒烟。应用停止后连接归零，93 张表与基线 4/`system-ai` 保持不变。
+- **未验证：** MySQL、生产 PostgreSQL、pgvector provider、认证后的完整业务链路、真实模型 Provider 请求及供应商侧是否停止计费、多实例竞争/故障恢复和真实数据规模。通用 PostgreSQL upsert 已在临时表验证；Memory 专用 Repository 仍主要依赖单元/集成测试中使用的数据库路径。原报告 findings 是源码风险判断，不代表线上事故。
 - **部署边界：** [部署运维手册](../部署运维手册.md)将 H2 与本地索引标为单实例架构，并要求水平扩展前完成外部数据库、分布式缓存/会话和共享对象存储改造。当前配额预留、取消句柄、模型路由健康状态及索引协调使用进程内数据，不应直接部署为多实例服务。
 - **工具可用性：** `brooks-health` 所依赖的共享规则文件在当前本机技能目录中缺失，因此本报告不使用该技能的健康评分。
+
+## 尚未修改项
+
+| 项目 | 状态 | 说明 |
+| --- | --- | --- |
+| PostgreSQL profile 下 H2 控制台提示 | 未修改 | 实测没有 H2 回退，但启动日志仍无条件打印 H2 地址，列为 P3 运维提示问题。 |
+| pgvector 兼容性 | 未验证 | 本机没有安装 `vector`/`pgvector` 扩展；应用默认 JVector 路径已启动。 |
+| MySQL 兼容性 | 未验证 | 当前只安装了 PostgreSQL 基线并在本地 PostgreSQL 执行。 |
+| 生产 PostgreSQL | 未验证 | 未连接任何远端或生产数据库。 |
+| 认证后的业务写入链路 | 未验证 | 本次没有可用的测试账号凭据；启动期基线校验和基础 SQL 已执行，但没有通过 HTTP 完成登录后的端到端写操作。 |
+| 多实例与真实 Provider | 未验证 | 进程内配额、路由健康和索引协调仍按单实例边界设计；真实供应商取消与计费行为没有外部观测。 |
 
 ## 技能
 
