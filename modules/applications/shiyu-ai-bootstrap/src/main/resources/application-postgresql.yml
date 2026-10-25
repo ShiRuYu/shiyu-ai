@@ -7,6 +7,9 @@ shiyu:
   infrastructure:
     database:
       provider: postgresql
+  storage:
+    backup:
+      enabled: false
 
 mybatis-flex:
   datasource:

@@ -37,6 +37,8 @@ class DatabaseProfileConfigurationTest {
                     context.getEnvironment().getProperty("mybatis-flex.datasource.agent.driver-class-name"));
             assertEquals("jdbc:postgresql://localhost:5433/postgres",
                     context.getEnvironment().getProperty("mybatis-flex.datasource.agent.url"));
+            assertFalse(Boolean.parseBoolean(
+                    context.getEnvironment().getProperty("shiyu.storage.backup.enabled", "true")));
             assertFalse(Boolean.TRUE.equals(context.getEnvironment().getProperty("spring.h2.console.enabled", Boolean.class)));
         } finally {
             LogManager.shutdown();
