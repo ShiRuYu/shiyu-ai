@@ -27,5 +27,9 @@ public interface SaTokenUserRepository {
      *
      * @param user 当前操作涉及的用户标识。
      */
-    void updateExtInfo(UserBO user);
+    boolean updateExtInfo(UserBO user, String expectedExtInfo);
+
+    /** Atomically removes one live token and its token session, returning its owner. */
+    Long consumeToken(String tokenValue);
+
 }

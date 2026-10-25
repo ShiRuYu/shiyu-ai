@@ -1,6 +1,10 @@
 package com.shiyu.ai.iam.implementation.utils;
 
+import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.parameter.SaLoginParameter;
+
+import com.shiyu.ai.iam.implementation.infrastructure.auth.AtomicTokenConsumer;
 
 import com.shiyu.ai.common.foundation.auth.LoginHelper;
 import com.shiyu.ai.common.foundation.context.model.UserContext;
@@ -52,13 +56,23 @@ public class SaTokenHelper extends LoginHelper {
     }
 
     /**
-     * 执行 Sa Token 相关业务操作，并维护必要的状态和协作关系。
+     * 按用户标识注销该用户的全部会话。
      *
-     * @param userId 当前操作涉及的用户标识。
+     * @param userId 需要整体注销的用户标识。
      */
     @Override
     public void logout(Long userId) {
         StpUtil.logout(userId);
+    }
+
+    /**
+     * 仅注销指定的 Token。
+     *
+     * @param token 需要注销的 Token。
+     */
+    @Override
+    public void logoutToken(String token) {
+        StpUtil.logoutByTokenValue(token);
     }
 
     /**
@@ -84,10 +98,52 @@ public class SaTokenHelper extends LoginHelper {
     }
 
     /**
-     * 执行 Sa Token 相关业务数据，并返回处理结果。
+     * 仅轮换指定的 Token。
+     *
+     * @param token 当前需要轮换的 Token。
+     * @return 新生成的 Token；原 Token 无效时返回 {@code null}。
+     */
+    @Override
+    public String refreshToken(String token) {
+        Long userId = getUserIdByToken(token);
+        if (userId == null || !(SaManager.getSaTokenDao() instanceof AtomicTokenConsumer)) return null;
+        StpUtil.login(
+                userId,
+                SaLoginParameter.create()
+                        .setIsConcurrent(true)
+                        .setIsShare(false));
+        String replacement = StpUtil.getTokenValue();
+        try {
+            if (consumePersistedToken(token, userId)) return replacement;
+        } catch (RuntimeException failure) {
+            revokeIssuedToken(replacement);
+            throw failure;
+        }
+        revokeIssuedToken(replacement);
+        return null;
+    }
+
+    private boolean consumePersistedToken(String token, Long expectedUserId) {
+        Object dao = SaManager.getSaTokenDao();
+        if (!(dao instanceof AtomicTokenConsumer consumer)) return false;
+        return expectedUserId.equals(consumer.consumeToken(token));
+    }
+
+    private void revokeIssuedToken(String token) {
+        try {
+            StpUtil.logoutByTokenValue(token);
+        } catch (RuntimeException failure) {
+            log.warn(
+                    "刷新失败后无法撤销新签发的 Token: errorType={}",
+                    failure.getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * 兼容旧的用户级 Token 刷新行为。
      *
      * @param userId 当前操作涉及的用户标识。
-     * @return 返回 Sa Token 相关操作生成的结果数据。
+     * @return 返回生成的新 Token。
      */
     @Override
     public String refreshToken(Long userId) {

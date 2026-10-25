@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import com.shiyu.ai.iam.implementation.persistence.dataobject.UserDO;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserMapper;
 import com.shiyu.ai.iam.implementation.persistence.mapper.UserScopeRoleMapper;
 import com.shiyu.ai.iam.implementation.port.repository.AuthUserLookupRepository;
@@ -59,7 +60,11 @@ class IamLookupBoundaryCoverageTest {
         SaTokenUserRepositoryImpl repository = new SaTokenUserRepositoryImpl();
         ReflectionTestUtils.setField(repository, "userMapper", mapper);
         assertNull(repository.selectById(8L));
-        repository.updateExtInfo(null);
-        verify(mapper).update(isNull());
+        when(mapper.updateByQuery(any(), any())).thenReturn(1);
+        com.shiyu.ai.iam.implementation.domain.model.UserBO existing =
+                new com.shiyu.ai.iam.implementation.domain.model.UserBO();
+        existing.setId(8L);
+        existing.setExtInfo("{\"tokens\":{}}");
+        org.junit.jupiter.api.Assertions.assertTrue(repository.updateExtInfo(existing, "{}"));
     }
 }

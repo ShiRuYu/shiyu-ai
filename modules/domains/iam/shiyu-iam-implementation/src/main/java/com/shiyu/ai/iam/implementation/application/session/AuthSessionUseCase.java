@@ -19,13 +19,12 @@ public final class AuthSessionUseCase {
         log.info("刷新Token");
         try {
             SaTokenHelper helper = SaTokenHelper.getInstance();
-            Long userId = helper.getUserIdByToken(oldToken);
-            if (userId == null) {
+            String newAccessToken = helper.refreshToken(oldToken);
+            if (newAccessToken == null) {
                 log.warn("无效的access token");
                 return null;
             }
-            String newAccessToken = helper.refreshToken(userId);
-            log.info("刷新Token成功, userIdPresent={}", userId > 0);
+            log.info("刷新Token成功");
             return newAccessToken;
         } catch (Exception e) {
             log.error(
@@ -47,7 +46,7 @@ public final class AuthSessionUseCase {
             SaTokenHelper helper = SaTokenHelper.getInstance();
             Long userId = helper.getUserIdByToken(token);
             if (userId != null) {
-                helper.logout(userId);
+                helper.logoutToken(token);
                 log.info("退出登录成功, userIdPresent={}", userId > 0);
             } else {
                 log.warn("无效的token, 注销失败");

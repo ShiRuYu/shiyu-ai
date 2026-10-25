@@ -19,7 +19,13 @@ public abstract class LoginHelper {
     /** 从 Token 中获取用户 ID */
     public abstract Long getUserIdByToken(String token);
 
-    /** 刷新 Token（先登出再登录） */
+    /** 登出单个 Token，不影响同一用户的其他会话。 */
+    public abstract void logoutToken(String token);
+
+    /** 刷新单个 Token，不影响同一用户的其他会话。 */
+    public abstract String refreshToken(String token);
+
+    /** 旧式用户级刷新接口，保留给兼容实现。 */
     public abstract String refreshToken(Long userId);
 
     /** 获取 Token 过期时间（秒） */

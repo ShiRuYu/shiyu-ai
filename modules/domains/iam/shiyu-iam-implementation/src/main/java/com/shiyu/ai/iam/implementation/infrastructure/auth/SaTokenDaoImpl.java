@@ -8,8 +8,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.iam.implementation.domain.model.UserBO;
 import com.shiyu.ai.iam.implementation.port.repository.SaTokenUserRepository;
-import com.shiyu.ai.iam.implementation.utils.UserLockManager;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
@@ -21,12 +19,13 @@ import java.util.Base64;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * 提供 Sa Token Dao Impl 所属基础设施的适配、存储或运行支持。
  */
 @Component
-public class SaTokenDaoImpl implements SaTokenDao {
+public class SaTokenDaoImpl implements SaTokenDao, AtomicTokenConsumer {
 
     private static final org.slf4j.Logger log =
             org.slf4j.LoggerFactory.getLogger(SaTokenDaoImpl.class);
@@ -53,27 +52,10 @@ public class SaTokenDaoImpl implements SaTokenDao {
      */
     private final SaTokenUserRepository saTokenUserRepository;
 
-    /** 主缓存：存储 token → loginId 及 session 对象 过期时间设为 30 秒，get() 中已有 isExpired() 兜底检查，减少 DB 访问 */
+    /** 主缓存用于对象存储；持久化 token 与 session 每次从数据库读取。 */
     private final Cache<String, Object> localCache =
             Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.SECONDS).maximumSize(50000).build();
 
-    /** 缓存的登录标识与持久化 token 共用相同的到期时间。 */
-    private record CachedToken(String loginId, long expireTime) {
-        private boolean expired() {
-            return expireTime != Long.MAX_VALUE && expireTime <= System.currentTimeMillis();
-        }
-    }
-
-    /** 缓存会话仍遵循持久化会话的到期时间。 */
-    private record CachedSession(SaSession session, long expireTime) {
-        private boolean expired() {
-            return expireTime != Long.MAX_VALUE && expireTime <= System.currentTimeMillis();
-        }
-    }
-
-    /** 反向索引缓存：token → userId 由于 token 已改为纯随机字符串，不再包含 userId，需要用此缓存快速查找 */
-    private final Cache<String, Long> tokenToUserCache =
-            Caffeine.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).maximumSize(50000).build();
 
     /** 定时清理过期 token 数据 */
     private final ScheduledExecutorService cleanupScheduler =
@@ -88,6 +70,16 @@ public class SaTokenDaoImpl implements SaTokenDao {
         this.saTokenUserRepository = saTokenUserRepository;
     }
 
+    @Override
+    public Long consumeToken(String tokenValue) {
+        Long userId = saTokenUserRepository.consumeToken(tokenValue);
+        if (userId != null) {
+            localCache.invalidate(TOKEN_PREFIX + tokenValue);
+            localCache.invalidate(TOKEN_SESSION_PREFIX + tokenValue);
+        }
+        return userId;
+    }
+
     /**
      * 执行 Sa Token Dao Impl 相关业务操作，并维护必要的状态和协作关系。
      */
@@ -98,8 +90,6 @@ public class SaTokenDaoImpl implements SaTokenDao {
                 () -> {
                     try {
                         localCache.cleanUp();
-                        UserLockManager.INSTANCE.cleanUp();
-                        tokenToUserCache.cleanUp();
                     } catch (Exception ignored) {
                         // 清理失败不影响主流程
                     }
@@ -121,12 +111,6 @@ public class SaTokenDaoImpl implements SaTokenDao {
     public String get(String key) {
         if (!key.startsWith(TOKEN_PREFIX)) return null;
 
-        Object cached = localCache.getIfPresent(key);
-        if (cached instanceof CachedToken token) {
-            if (!token.expired()) return token.loginId();
-            localCache.invalidate(key);
-        }
-
         Long userId = extractUserIdFromTokenKey(key);
         if (userId == null) return null;
 
@@ -140,16 +124,15 @@ public class SaTokenDaoImpl implements SaTokenDao {
         if (entry == null) return null;
 
         if (isExpired(entry)) {
-            tokens.remove(tokenValue);
-            saveExtInfo(userId, ext);
+            updateExtInfo(userId, latest -> {
+                Map<String, Object> latestTokens = castMap(latest.get("tokens"));
+                return latestTokens != null && latestTokens.remove(tokenValue) != null;
+            });
+            localCache.invalidate(key);
             return null;
         }
 
-        String loginId = (String) entry.get("loginId");
-        if (loginId != null && entry.get("expireTime") instanceof Number expiry) {
-            localCache.put(key, new CachedToken(loginId, expiry.longValue()));
-        }
-        return loginId;
+        return (String) entry.get("loginId");
     }
 
     /**
@@ -166,41 +149,17 @@ public class SaTokenDaoImpl implements SaTokenDao {
         // value 就是 loginId（userId 的字符串形式），直接使用
         Long userId = Long.parseLong(value);
 
-        // 建立反向索引：token → userId（供后续 get/delete/session 查询使用）
-        tokenToUserCache.put(key, userId);
-
         long expireTime =
                 timeout > 0 ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE;
-        UserLockManager.INSTANCE.executeWithLock(
-                userId,
-                () -> {
-                    Map<String, Object> ext = getExtInfo(userId);
-                    String tokenValue = key.substring(TOKEN_PREFIX.length());
-
-                    // 仅保留最近登录的一个 token，清理该用户下所有旧 token
-                    Map<String, Object> tokens = getOrCreateMap(ext, "tokens");
-
-                    @SuppressWarnings("unchecked")
-                    List<String> oldTokens = new ArrayList<>(tokens.keySet());
-                    for (String oldToken : oldTokens) {
-                        localCache.invalidate(TOKEN_PREFIX + oldToken);
-                        localCache.invalidate(TOKEN_SESSION_PREFIX + oldToken);
-                    }
-                    tokens.clear();
-
-                    Map<String, Object> oldTokenSessions = castMap(ext.get("tokenSessions"));
-                    if (oldTokenSessions != null) {
-                        oldTokenSessions.clear();
-                    }
-
-                    Map<String, Object> entry = new LinkedHashMap<>();
-                    entry.put("loginId", value);
-                    entry.put("expireTime", expireTime);
-                    tokens.put(tokenValue, entry);
-
-                    saveExtInfo(userId, ext);
-                    localCache.put(key, new CachedToken(value, expireTime));
-                });
+        String tokenValue = key.substring(TOKEN_PREFIX.length());
+        updateExtInfo(userId, ext -> {
+            Map<String, Object> tokens = getOrCreateMap(ext, "tokens");
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("loginId", value);
+            entry.put("expireTime", expireTime);
+            tokens.put(tokenValue, entry);
+            return true;
+        });
     }
 
     /**
@@ -221,26 +180,17 @@ public class SaTokenDaoImpl implements SaTokenDao {
             } catch (NumberFormatException e) {
                 return;
             }
-            // 补充反向索引
-            tokenToUserCache.put(key, userId);
         }
 
-        Map<String, Object> ext = getExtInfo(userId);
+        Long resolvedUserId = userId;
         String tokenValue = key.substring(TOKEN_PREFIX.length());
-
-        Map<String, Object> tokens = castMap(ext.get("tokens"));
-        if (tokens == null) return;
-
-        Map<String, Object> entry = castMap(tokens.get(tokenValue));
-        if (entry == null) return;
-
-        entry.put("loginId", value);
-        saveExtInfo(userId, ext);
-        if (entry.get("expireTime") instanceof Number expiry) {
-            localCache.put(key, new CachedToken(value, expiry.longValue()));
-        } else {
-            localCache.invalidate(key);
-        }
+        updateExtInfo(resolvedUserId, ext -> {
+            Map<String, Object> tokens = castMap(ext.get("tokens"));
+            Map<String, Object> entry = tokens == null ? null : castMap(tokens.get(tokenValue));
+            if (entry == null) return false;
+            entry.put("loginId", value);
+            return true;
+        });
     }
 
     /**
@@ -253,30 +203,17 @@ public class SaTokenDaoImpl implements SaTokenDao {
         if (!key.startsWith(TOKEN_PREFIX)) return;
 
         Long userId = extractUserIdFromTokenKey(key);
-        // 清理反向索引（先查再删不影响查）
-        tokenToUserCache.invalidate(key);
         if (userId == null) return;
 
-        localCache.invalidate(key);
-        UserLockManager.INSTANCE.executeWithLock(
-                userId,
-                () -> {
-                    Map<String, Object> ext = getExtInfo(userId);
-                    String tokenValue = key.substring(TOKEN_PREFIX.length());
-
-                    Map<String, Object> tokens = castMap(ext.get("tokens"));
-                    if (tokens != null) {
-                        tokens.remove(tokenValue);
-                    }
-
-                    Map<String, Object> tokenSessions = castMap(ext.get("tokenSessions"));
-                    if (tokenSessions != null) {
-                        tokenSessions.remove(tokenValue);
-                    }
-
-                    saveExtInfo(userId, ext);
-                    localCache.invalidate(TOKEN_SESSION_PREFIX + tokenValue);
-                });
+        String tokenValue = key.substring(TOKEN_PREFIX.length());
+        updateExtInfo(userId, ext -> {
+            Map<String, Object> tokens = castMap(ext.get("tokens"));
+            Map<String, Object> tokenSessions = castMap(ext.get("tokenSessions"));
+            boolean removed = tokens != null && tokens.remove(tokenValue) != null;
+            removed |= tokenSessions != null && tokenSessions.remove(tokenValue) != null;
+            return removed;
+        });
+        localCache.invalidate(TOKEN_SESSION_PREFIX + tokenValue);
     }
 
     /**
@@ -289,7 +226,7 @@ public class SaTokenDaoImpl implements SaTokenDao {
     public long getTimeout(String key) {
         if (!key.startsWith(TOKEN_PREFIX)) return NOT_VALUE_EXPIRE;
 
-        Long userId = extractUserIdFromTokenKey(key);
+        Long userId = findUserIdByToken(key.substring(TOKEN_PREFIX.length()));
         if (userId == null) return NOT_VALUE_EXPIRE;
 
         Map<String, Object> ext = getExtInfo(userId);
@@ -317,19 +254,16 @@ public class SaTokenDaoImpl implements SaTokenDao {
         Long userId = extractUserIdFromTokenKey(key);
         if (userId == null) return;
 
-        Map<String, Object> ext = getExtInfo(userId);
         String tokenValue = key.substring(TOKEN_PREFIX.length());
-
-        Map<String, Object> tokens = castMap(ext.get("tokens"));
-        if (tokens == null) return;
-
-        Map<String, Object> entry = castMap(tokens.get(tokenValue));
-        if (entry == null) return;
-
-        entry.put(
-                "expireTime",
-                timeout > 0 ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE);
-        saveExtInfo(userId, ext);
+        long expireTime = timeout > 0
+                ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE;
+        updateExtInfo(userId, ext -> {
+            Map<String, Object> tokens = castMap(ext.get("tokens"));
+            Map<String, Object> entry = tokens == null ? null : castMap(tokens.get(tokenValue));
+            if (entry == null) return false;
+            entry.put("expireTime", expireTime);
+            return true;
+        });
         localCache.invalidate(key);
     }
 
@@ -425,12 +359,6 @@ public class SaTokenDaoImpl implements SaTokenDao {
      */
     @Override
     public SaSession getSession(String sessionId) {
-        Object cached = localCache.getIfPresent(sessionId);
-        if (cached instanceof CachedSession entry) {
-            if (!entry.expired()) return entry.session();
-            localCache.invalidate(sessionId);
-        }
-
         Long userId = extractUserIdFromSessionKey(sessionId);
         if (userId == null) return null;
 
@@ -447,8 +375,11 @@ public class SaTokenDaoImpl implements SaTokenDao {
         if (entry == null) return null;
 
         if (isExpired(entry)) {
-            sectionMap.remove(valueKey);
-            saveExtInfo(userId, ext);
+            updateExtInfo(userId, latest -> {
+                Map<String, Object> latestSection = castMap(latest.get(section));
+                return latestSection != null && latestSection.remove(valueKey) != null;
+            });
+            localCache.invalidate(sessionId);
             return null;
         }
 
@@ -456,9 +387,6 @@ public class SaTokenDaoImpl implements SaTokenDao {
         if (data == null) return null;
 
         SaSession session = deserializeSession(data);
-        if (session != null && entry.get("expireTime") instanceof Number expiry) {
-            localCache.put(sessionId, new CachedSession(session, expiry.longValue()));
-        }
         return session;
     }
 
@@ -476,28 +404,18 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
         long expireTime =
                 timeout > 0 ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE;
-        UserLockManager.INSTANCE.executeWithLock(
-                userId,
-                () -> {
-                    Map<String, Object> ext = getExtInfo(userId);
-                    String valueKey = extractSessionValueKey(sessionId);
-                    if (valueKey == null) return;
-
-                    String section =
-                            sessionId.startsWith(TOKEN_SESSION_PREFIX)
-                                    ? "tokenSessions"
-                                    : "sessions";
-
-                    Map<String, Object> sectionMap = getOrCreateMap(ext, section);
-
-                    Map<String, Object> entry = new LinkedHashMap<>();
-                    entry.put("data", serializeSession(session));
-                    entry.put("expireTime", expireTime);
-                    sectionMap.put(valueKey, entry);
-
-                    saveExtInfo(userId, ext);
-                    localCache.put(sessionId, new CachedSession(session, expireTime));
-                });
+        String valueKey = extractSessionValueKey(sessionId);
+        if (valueKey == null) return;
+        String section = sessionId.startsWith(TOKEN_SESSION_PREFIX) ? "tokenSessions" : "sessions";
+        updateExtInfo(userId, ext -> {
+            Map<String, Object> sectionMap = getOrCreateMap(ext, section);
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("data", serializeSession(session));
+            entry.put("expireTime", expireTime);
+            sectionMap.put(valueKey, entry);
+            return true;
+        });
+        localCache.put(sessionId, session);
     }
 
     /**
@@ -511,22 +429,20 @@ public class SaTokenDaoImpl implements SaTokenDao {
         Long userId = extractUserIdFromSessionKey(sessionId);
         if (userId == null) return;
 
-        Map<String, Object> ext = getExtInfo(userId);
         String valueKey = extractSessionValueKey(sessionId);
         if (valueKey == null) return;
-
         String section = sessionId.startsWith(TOKEN_SESSION_PREFIX) ? "tokenSessions" : "sessions";
-
-        Map<String, Object> sectionMap = castMap(ext.get(section));
-        if (sectionMap == null) return;
-
-        Map<String, Object> entry = castMap(sectionMap.get(valueKey));
-        if (entry == null) return;
-
-        entry.put("data", serializeSession(session));
-        saveExtInfo(userId, ext);
-        if (entry.get("expireTime") instanceof Number expiry) {
-            localCache.put(sessionId, new CachedSession(session, expiry.longValue()));
+        long[] expiry = {Long.MIN_VALUE};
+        boolean updated = updateExtInfo(userId, ext -> {
+            Map<String, Object> sectionMap = castMap(ext.get(section));
+            Map<String, Object> entry = sectionMap == null ? null : castMap(sectionMap.get(valueKey));
+            if (entry == null) return false;
+            entry.put("data", serializeSession(session));
+            if (entry.get("expireTime") instanceof Number timeout) expiry[0] = timeout.longValue();
+            return true;
+        });
+        if (updated && expiry[0] != Long.MIN_VALUE) {
+            localCache.put(sessionId, session);
         } else {
             localCache.invalidate(sessionId);
         }
@@ -542,18 +458,13 @@ public class SaTokenDaoImpl implements SaTokenDao {
         Long userId = extractUserIdFromSessionKey(sessionId);
         if (userId == null) return;
 
-        Map<String, Object> ext = getExtInfo(userId);
         String valueKey = extractSessionValueKey(sessionId);
         if (valueKey == null) return;
-
         String section = sessionId.startsWith(TOKEN_SESSION_PREFIX) ? "tokenSessions" : "sessions";
-
-        Map<String, Object> sectionMap = castMap(ext.get(section));
-        if (sectionMap != null) {
-            sectionMap.remove(valueKey);
-        }
-
-        saveExtInfo(userId, ext);
+        updateExtInfo(userId, ext -> {
+            Map<String, Object> sectionMap = castMap(ext.get(section));
+            return sectionMap != null && sectionMap.remove(valueKey) != null;
+        });
         localCache.invalidate(sessionId);
     }
 
@@ -594,22 +505,18 @@ public class SaTokenDaoImpl implements SaTokenDao {
         Long userId = extractUserIdFromSessionKey(sessionId);
         if (userId == null) return;
 
-        Map<String, Object> ext = getExtInfo(userId);
         String valueKey = extractSessionValueKey(sessionId);
         if (valueKey == null) return;
-
         String section = sessionId.startsWith(TOKEN_SESSION_PREFIX) ? "tokenSessions" : "sessions";
-
-        Map<String, Object> sectionMap = castMap(ext.get(section));
-        if (sectionMap == null) return;
-
-        Map<String, Object> entry = castMap(sectionMap.get(valueKey));
-        if (entry == null) return;
-
-        entry.put(
-                "expireTime",
-                timeout > 0 ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE);
-        saveExtInfo(userId, ext);
+        long expireTime = timeout > 0
+                ? System.currentTimeMillis() + timeout * 1000 : Long.MAX_VALUE;
+        updateExtInfo(userId, ext -> {
+            Map<String, Object> sectionMap = castMap(ext.get(section));
+            Map<String, Object> entry = sectionMap == null ? null : castMap(sectionMap.get(valueKey));
+            if (entry == null) return false;
+            entry.put("expireTime", expireTime);
+            return true;
+        });
         localCache.invalidate(sessionId);
     }
 
@@ -634,15 +541,8 @@ public class SaTokenDaoImpl implements SaTokenDao {
     // ==================== 内部辅助方法 ====================
 
     private Long extractUserIdFromTokenKey(String key) {
-        // 先从反向索引缓存查找
-        Long cachedUserId = tokenToUserCache.getIfPresent(key);
-        if (cachedUserId != null) return cachedUserId;
-
-        // 缓存未命中时查询持久化 token，并重建反向索引。
         String tokenValue = key.substring(TOKEN_PREFIX.length());
-        Long userId = findUserIdByToken(tokenValue);
-        if (userId != null) tokenToUserCache.put(key, userId);
-        return userId;
+        return findUserIdByToken(tokenValue);
     }
 
     /** 从 token 字符串中解析 userId（缓存未命中时调用）。 */
@@ -666,16 +566,9 @@ public class SaTokenDaoImpl implements SaTokenDao {
                 return Long.parseLong(valueKey);
             }
 
-            // token-session: 前缀时 valueKey 是 token 值，查反向缓存
+            // token-session: 前缀时 valueKey 是 token 值，所有权必须来自当前持久化令牌
             if (sessionId.startsWith(TOKEN_SESSION_PREFIX)) {
-                String tokenKey = TOKEN_PREFIX + valueKey;
-                Long cached = tokenToUserCache.getIfPresent(tokenKey);
-                if (cached != null) return cached;
-
-                // 缓存未命中时从当前格式 token 中解析 userId
-                Long found = findUserIdByToken(valueKey);
-                if (found != null) tokenToUserCache.put(tokenKey, found);
-                return found;
+                return findUserIdByToken(valueKey);
             }
 
             return Long.parseLong(valueKey);
@@ -728,21 +621,31 @@ public class SaTokenDaoImpl implements SaTokenDao {
 
     private Map<String, Object> getExtInfo(Long userId) {
         UserBO user = saTokenUserRepository.selectById(userId);
-        if (user == null || user.getExtInfo() == null || user.getExtInfo().isBlank()) {
-            return new LinkedHashMap<>();
-        }
-        Map<String, Object> map = JSONUtils.parseMap(user.getExtInfo());
+        return parseExtInfo(user == null ? null : user.getExtInfo());
+    }
+
+    private Map<String, Object> parseExtInfo(String extInfo) {
+        if (extInfo == null || extInfo.isBlank()) return new LinkedHashMap<>();
+        Map<String, Object> map = JSONUtils.parseMap(extInfo);
         return map != null ? map : new LinkedHashMap<>();
     }
 
-    private void saveExtInfo(Long userId, Map<String, Object> ext) {
-        // 每次保存前清理过期 tokens，防止 extInfo 无限膨胀
-        cleanupExpiredEntries(ext);
-        UserBO user = saTokenUserRepository.selectById(userId);
-        if (user == null) return;
-        user.setExtInfo(JSONUtils.toJsonString(ext));
-        user.setUpdateTime(java.util.Date.from(java.time.Instant.now()));
-        saTokenUserRepository.updateExtInfo(user);
+    private boolean updateExtInfo(Long userId, Function<Map<String, Object>, Boolean> mutation) {
+        if (userId == null) return false;
+        for (int attempt = 0; attempt < 8; attempt++) {
+            UserBO user = saTokenUserRepository.selectById(userId);
+            if (user == null) return false;
+            String expectedExtInfo = user.getExtInfo();
+            Map<String, Object> ext = parseExtInfo(expectedExtInfo);
+            Map<String, Object> before = JSONUtils.parseMap(JSONUtils.toJsonString(ext));
+            if (!Boolean.TRUE.equals(mutation.apply(ext))) return false;
+            cleanupExpiredEntries(ext);
+            if (Objects.equals(before, ext)) return true;
+            user.setExtInfo(JSONUtils.toJsonString(ext));
+            user.setUpdateTime(java.util.Date.from(java.time.Instant.now()));
+            if (saTokenUserRepository.updateExtInfo(user, expectedExtInfo)) return true;
+        }
+        throw new IllegalStateException("Sa Token extInfo update conflicted repeatedly");
     }
 
     /** 清理 extInfo 中所有过期的 tokens / sessions / tokenSessions 条目 */

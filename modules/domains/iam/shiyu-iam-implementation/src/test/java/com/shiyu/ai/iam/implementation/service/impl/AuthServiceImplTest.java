@@ -349,17 +349,17 @@ class AuthServiceImplTest {
     void refreshesAndLogsOutOnlyValidTokens() {
         SaTokenHelper helper = mock(SaTokenHelper.class);
         when(helper.getUserIdByToken("old")).thenReturn(20L);
-        when(helper.refreshToken(20L)).thenReturn("new");
+        when(helper.refreshToken("old")).thenReturn("new");
         try (var mocked = mockStatic(SaTokenHelper.class)) {
             mocked.when(SaTokenHelper::getInstance).thenReturn(helper);
             assertEquals("new", service.refreshToken("old"));
-            verify(helper).refreshToken(20L);
+            verify(helper).refreshToken("old");
             when(helper.getUserIdByToken("bad")).thenReturn(null);
             assertNull(service.refreshToken("bad"));
             service.logout("old");
-            verify(helper).logout(20L);
+            verify(helper).logoutToken("old");
             service.logout("bad");
-            verify(helper, times(1)).logout(20L);
+            verify(helper, times(1)).logoutToken("old");
             when(helper.getUserIdByToken("throws")).thenThrow(new IllegalStateException("expired"));
             assertNull(service.refreshToken("throws"));
         }

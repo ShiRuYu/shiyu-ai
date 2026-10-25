@@ -29,6 +29,7 @@ class SaTokenDaoImplCoverageTest {
         SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
         UserBO user = user(7L, "{}");
         when(repository.selectById(7L)).thenReturn(user);
+        mockExtInfoCas(repository, user);
         SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
         String token = Base64.getUrlEncoder().withoutPadding()
                 .encodeToString("7".getBytes(StandardCharsets.UTF_8)) + "_short-lived";
@@ -49,6 +50,7 @@ class SaTokenDaoImplCoverageTest {
         SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
         UserBO user = user(7L, "{}");
         when(repository.selectById(7L)).thenReturn(user);
+        mockExtInfoCas(repository, user);
         SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
         String encodedId = Base64.getUrlEncoder().withoutPadding()
                 .encodeToString("7".getBytes(StandardCharsets.UTF_8));
@@ -75,6 +77,7 @@ class SaTokenDaoImplCoverageTest {
         SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
         UserBO user = user(7L, "{}");
         when(repository.selectById(7L)).thenReturn(user);
+        mockExtInfoCas(repository, user);
         SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
         String encodedId = Base64.getUrlEncoder().withoutPadding()
                 .encodeToString("7".getBytes(StandardCharsets.UTF_8));
@@ -100,7 +103,8 @@ class SaTokenDaoImplCoverageTest {
     void persistsTokensSessionsAndObjectsAcrossCacheMisses() {
         SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
         UserBO user = user(7L, "{}");
-        when(repository.selectById(7L)).thenReturn(user);
+        when(repository.selectById(7L)).thenAnswer(invocation -> user(7L, user.getExtInfo()));
+        mockExtInfoCas(repository, user);
         SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
         String token =
                 Base64.getUrlEncoder()
@@ -140,7 +144,7 @@ class SaTokenDaoImplCoverageTest {
         dao.updateObjectTimeout("k", 20);
         assertTrue(dao.searchData("", "", 0, 10, false).isEmpty());
         dao.destroy();
-        verify(repository, atLeastOnce()).updateExtInfo(any(UserBO.class));
+        verify(repository, atLeastOnce()).updateExtInfo(any(UserBO.class), nullable(String.class));
     }
 
     @Test
@@ -160,6 +164,7 @@ class SaTokenDaoImplCoverageTest {
                                                         "7",
                                                         Map.of("data", "bad", "expireTime", 1L)))));
         when(repository.selectById(7L)).thenReturn(user);
+        mockExtInfoCas(repository, user);
         SaTokenDaoImpl dao = new SaTokenDaoImpl(repository);
         assertNull(dao.get("Authorization:login:token:expired"));
         assertEquals(
@@ -181,6 +186,7 @@ class SaTokenDaoImplCoverageTest {
         SaTokenUserRepository repository = mock(SaTokenUserRepository.class);
         UserBO user = user(7L, "{}");
         when(repository.selectById(7L)).thenReturn(user);
+        mockExtInfoCas(repository, user);
         String tokenValue =
                 Base64.getUrlEncoder()
                                 .withoutPadding()
@@ -342,6 +348,36 @@ class SaTokenDaoImplCoverageTest {
         cleanup.invoke(dao, ext);
         assertFalse(((Map<?, ?>) ext.get("tokens")).containsKey("expired"));
         dao.destroy();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> castMapStatic(Object value) {
+        return value instanceof Map<?, ?> ? (Map<String, Object>) value : null;
+    }
+
+    private static void mockExtInfoCas(SaTokenUserRepository repository, UserBO persistedUser) {
+        when(repository.updateExtInfo(any(UserBO.class), nullable(String.class)))
+                .thenAnswer(invocation -> {
+                    UserBO update = invocation.getArgument(0);
+                    String expected = invocation.getArgument(1);
+                    if (!java.util.Objects.equals(persistedUser.getExtInfo(), expected)) return false;
+                    persistedUser.setExtInfo(update.getExtInfo());
+                    return true;
+                });
+        when(repository.consumeToken(anyString())).thenAnswer(invocation -> {
+            String value = invocation.getArgument(0);
+            Map<String, Object> ext = JSONUtils.parseMap(persistedUser.getExtInfo());
+            Map<String, Object> tokens = ext == null ? null : castMapStatic(ext.get("tokens"));
+            Map<String, Object> entry = tokens == null ? null : castMapStatic(tokens.get(value));
+            if (entry == null || !(entry.get("expireTime") instanceof Number expiry)) return null;
+            if (expiry.longValue() != Long.MAX_VALUE
+                    && expiry.longValue() <= System.currentTimeMillis()) return null;
+            tokens.remove(value);
+            Map<String, Object> tokenSessions = castMapStatic(ext.get("tokenSessions"));
+            if (tokenSessions != null) tokenSessions.remove(value);
+            persistedUser.setExtInfo(JSONUtils.toJsonString(ext));
+            return persistedUser.getId();
+        });
     }
 
     private static UserBO user(Long id, String extInfo) {

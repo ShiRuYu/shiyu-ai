@@ -19,7 +19,7 @@ class SaTokenDaoImplTest {
     private SaTokenUserRepository users;
     private SaTokenDaoImpl dao;
     private UserBO user;
-    private final String key = "Authorization:login:token:test-token";
+    private final String key = "Authorization:login:token:NDI_test-token-value";
 
     @BeforeEach
     void setUp() {
@@ -27,7 +27,20 @@ class SaTokenDaoImplTest {
         user = new UserBO();
         user.setId(42L);
         user.setExtInfo("{}");
-        when(users.selectById(42L)).thenReturn(user);
+        when(users.selectById(42L)).thenAnswer(invocation -> {
+            UserBO snapshot = new UserBO();
+            snapshot.setId(user.getId());
+            snapshot.setExtInfo(user.getExtInfo());
+            return snapshot;
+        });
+        when(users.updateExtInfo(any(UserBO.class), nullable(String.class)))
+                .thenAnswer(invocation -> {
+                    UserBO update = invocation.getArgument(0);
+                    String expected = invocation.getArgument(1);
+                    if (!java.util.Objects.equals(user.getExtInfo(), expected)) return false;
+                    user.setExtInfo(update.getExtInfo());
+                    return true;
+                });
         dao = new SaTokenDaoImpl(users);
     }
 
@@ -48,7 +61,7 @@ class SaTokenDaoImplTest {
         assertTrue(dao.getTimeout(key) > 0);
         dao.delete(key);
         assertNull(dao.get(key));
-        verify(users, atLeastOnce()).updateExtInfo(user);
+        verify(users, atLeastOnce()).updateExtInfo(any(UserBO.class), nullable(String.class));
     }
 
     @Test
@@ -63,7 +76,7 @@ class SaTokenDaoImplTest {
 
         assertEquals("42", dao.get(randomTokenKey));
         assertTrue(dao.getTimeout(randomTokenKey) > 0);
-        verify(users, times(1)).findUserIdByToken("bcf38261-60f9-4790-83bb-a5e33e917d17");
+        verify(users, times(2)).findUserIdByToken("bcf38261-60f9-4790-83bb-a5e33e917d17");
     }
 
     @Test
