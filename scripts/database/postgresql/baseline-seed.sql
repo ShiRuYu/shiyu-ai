@@ -132,6 +132,7 @@ INSERT INTO "auth_auth_code" VALUES(118, 'file:list', '查看文件列表和配�
 INSERT INTO "auth_auth_code" VALUES(119, 'platform:usage:read', '查看平台全租户用量', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_auth_code" VALUES(120, 'model:admin', '管理模型网关', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_auth_code" VALUES(121, 'agent:intent:edit', '编辑意图', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO "auth_auth_code" VALUES(122, 'plugin:market', '访问插件市场', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_role_scope_auth_code" VALUES(1, 1, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_role_scope_auth_code" VALUES(2, 1, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_role_scope_auth_code" VALUES(1, 2, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
@@ -355,6 +356,8 @@ INSERT INTO "auth_role_scope_auth_code" VALUES(1, 120, 1, 1, 0, 'system', CURREN
 INSERT INTO "auth_role_scope_auth_code" VALUES(2, 120, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_role_scope_auth_code" VALUES(1, 121, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_role_scope_auth_code" VALUES(2, 121, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO "auth_role_scope_auth_code" VALUES(1, 122, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
+INSERT INTO "auth_role_scope_auth_code" VALUES(2, 122, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_tenant_menu" VALUES(1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO "auth_tenant_menu" VALUES(1, 2, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO "auth_tenant_menu" VALUES(1, 3, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
@@ -441,6 +444,7 @@ INSERT INTO "auth_tenant_auth_code" VALUES(1, 118, 1, CURRENT_TIMESTAMP, CURRENT
 INSERT INTO "auth_tenant_auth_code" VALUES(1, 119, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO "auth_tenant_auth_code" VALUES(1, 120, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO "auth_tenant_auth_code" VALUES(1, 121, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO "auth_tenant_auth_code" VALUES(1, 122, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/03_agent.sql
 
@@ -960,6 +964,11 @@ SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
        'agent:intent:edit', '编辑意图', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'agent:intent:edit');
 
+INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
+       'plugin:market', '访问插件市场', 1, 0, 'system', 'system'
+WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'plugin:market');
+
 INSERT INTO AUTH_TENANT_AUTH_CODE (TENANT_ID, AUTH_CODE_ID, STATUS, CREATE_TIME, UPDATE_TIME)
 SELECT T.ID, C.ID, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM AUTH_TENANT T
@@ -967,7 +976,7 @@ FROM AUTH_TENANT T
 WHERE T.ID = 1
   AND T.STATUS = 1
   AND T.DEL_FLAG = 0
-  AND C.CODE IN ('model:admin', 'agent:intent:edit')
+  AND C.CODE IN ('model:admin', 'agent:intent:edit', 'plugin:market')
   AND C.STATUS = 1
   AND C.DEL_FLAG = 0
   AND NOT EXISTS (
@@ -989,7 +998,7 @@ WHERE T.ID = 1
   AND R.CODE IN ('super', 'admin')
   AND R.STATUS = 1
   AND R.DEL_FLAG = 0
-  AND C.CODE IN ('model:admin', 'agent:intent:edit')
+  AND C.CODE IN ('model:admin', 'agent:intent:edit', 'plugin:market')
   AND C.STATUS = 1
   AND C.DEL_FLAG = 0
   AND NOT EXISTS (

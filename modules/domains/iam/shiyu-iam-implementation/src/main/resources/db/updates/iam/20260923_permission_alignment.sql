@@ -9,6 +9,11 @@ SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
        'agent:intent:edit', '编辑意图', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'agent:intent:edit');
 
+INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
+       'plugin:market', '访问插件市场', 1, 0, 'system', 'system'
+WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'plugin:market');
+
 INSERT INTO AUTH_TENANT_AUTH_CODE (TENANT_ID, AUTH_CODE_ID, STATUS, CREATE_TIME, UPDATE_TIME)
 SELECT T.ID, C.ID, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM AUTH_TENANT T
@@ -16,7 +21,7 @@ FROM AUTH_TENANT T
 WHERE T.ID = 1
   AND T.STATUS = 1
   AND T.DEL_FLAG = 0
-  AND C.CODE IN ('model:admin', 'agent:intent:edit')
+  AND C.CODE IN ('model:admin', 'agent:intent:edit', 'plugin:market')
   AND C.STATUS = 1
   AND C.DEL_FLAG = 0
   AND NOT EXISTS (
@@ -38,7 +43,7 @@ WHERE T.ID = 1
   AND R.CODE IN ('super', 'admin')
   AND R.STATUS = 1
   AND R.DEL_FLAG = 0
-  AND C.CODE IN ('model:admin', 'agent:intent:edit')
+  AND C.CODE IN ('model:admin', 'agent:intent:edit', 'plugin:market')
   AND C.STATUS = 1
   AND C.DEL_FLAG = 0
   AND NOT EXISTS (

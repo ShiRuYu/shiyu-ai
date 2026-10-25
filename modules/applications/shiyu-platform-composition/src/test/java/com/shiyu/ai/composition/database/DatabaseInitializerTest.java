@@ -218,27 +218,27 @@ class DatabaseInitializerTest {
         initializer.initialize();
         try (Connection connection = dataSource.getConnection(); Statement sql = connection.createStatement()) {
             sql.executeUpdate("DELETE FROM AUTH_ROLE_SCOPE_AUTH_CODE WHERE AUTH_CODE_ID IN "
-                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit'))");
+                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market'))");
             sql.executeUpdate("DELETE FROM AUTH_TENANT_AUTH_CODE WHERE AUTH_CODE_ID IN "
-                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit'))");
-            sql.executeUpdate("DELETE FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit')");
+                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market'))");
+            sql.executeUpdate("DELETE FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market')");
         }
 
         initializer.initialize();
 
-        assertEquals(2, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit')"));
-        assertEquals(4, scalar(dataSource,
+        assertEquals(3, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market')"));
+        assertEquals(6, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
-                        + "JOIN AUTH_ROLE R ON R.ID=G.ROLE_ID WHERE C.CODE IN ('model:admin','agent:intent:edit') "
+                        + "JOIN AUTH_ROLE R ON R.ID=G.ROLE_ID WHERE C.CODE IN ('model:admin','agent:intent:edit','plugin:market') "
                         + "AND G.TENANT_ID=1 AND R.TENANT_ID=1 AND R.CODE IN ('super','admin')"));
-        assertEquals(2, scalar(dataSource,
+        assertEquals(3, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
-                        + "WHERE C.CODE IN ('model:admin','agent:intent:edit') AND G.TENANT_ID=1"));
+                        + "WHERE C.CODE IN ('model:admin','agent:intent:edit','plugin:market') AND G.TENANT_ID=1"));
 
         initializer.initialize();
-        assertEquals(2, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit')"));
+        assertEquals(3, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market')"));
     }
 
     @Test
@@ -353,11 +353,16 @@ class DatabaseInitializerTest {
                 1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_USER WHERE USERNAME='admin'"));
         assertEquals(3, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE"));
         assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_MENU"));
-        assertEquals(115, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
+        assertEquals(116, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE"));
         assertEquals(38, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_MENU"));
-        assertEquals(115, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
+        assertEquals(116, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
         assertTrue(scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU") >= 99);
-        assertEquals(230, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
+        assertEquals(232, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
+        assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE='plugin:market'"));
+        assertEquals(2, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                + "WHERE C.CODE='plugin:market' AND G.TENANT_ID=1 AND G.STATUS=1 AND G.DEL_FLAG=0"));
+        assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                + "WHERE C.CODE='plugin:market' AND G.TENANT_ID=1 AND G.STATUS=1"));
         assertEquals(
                 1,
                 scalar(

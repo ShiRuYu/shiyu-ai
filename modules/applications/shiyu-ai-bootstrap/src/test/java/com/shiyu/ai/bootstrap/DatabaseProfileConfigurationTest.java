@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.SpringApplication;
@@ -34,8 +35,11 @@ class DatabaseProfileConfigurationTest {
             assertTrue(Arrays.asList(context.getEnvironment().getActiveProfiles()).contains("postgresql"));
             assertEquals("org.postgresql.Driver",
                     context.getEnvironment().getProperty("mybatis-flex.datasource.agent.driver-class-name"));
+            assertEquals("jdbc:postgresql://localhost:5433/postgres",
+                    context.getEnvironment().getProperty("mybatis-flex.datasource.agent.url"));
             assertFalse(Boolean.TRUE.equals(context.getEnvironment().getProperty("spring.h2.console.enabled", Boolean.class)));
         } finally {
+            LogManager.shutdown();
             if (previousHome == null) System.clearProperty("app.home");
             else System.setProperty("app.home", previousHome);
         }
