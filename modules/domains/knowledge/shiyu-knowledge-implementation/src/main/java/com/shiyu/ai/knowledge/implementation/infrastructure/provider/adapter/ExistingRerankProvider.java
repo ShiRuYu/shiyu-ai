@@ -2,6 +2,7 @@ package com.shiyu.ai.knowledge.implementation.infrastructure.provider.adapter;
 
 import com.shiyu.ai.knowledge.implementation.domain.port.provider.RerankProvider;
 
+import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatMessage;
 import com.shiyu.ai.model.contract.model.ChatRequest;
@@ -53,7 +54,7 @@ public class ExistingRerankProvider implements RerankProvider {
      * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     @Override
-    public List<Integer> rerank(String query, List<String> candidates, int topK) {
+    public List<Integer> rerank(TenantId tenantId, String query, List<String> candidates, int topK) {
         if (candidates == null || candidates.size() <= 1) {
             return java.util.stream.IntStream.range(0, candidates == null ? 0 : candidates.size())
                     .boxed()
@@ -71,6 +72,7 @@ public class ExistingRerankProvider implements RerankProvider {
                     chatEngine.chat(
                             ChatRequest.builder()
                                     .platform("default")
+                                    .tenantId(tenantId == null ? 0L : tenantId.value())
                                     .messages(List.of(ChatMessage.text("user", prompt.toString())))
                                     .build());
             if (response != null && response.isSuccess() && response.getContent() != null) {

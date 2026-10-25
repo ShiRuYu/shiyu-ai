@@ -71,6 +71,7 @@ class EmbeddedIndexRegistryIntegrationTest {
         KnowledgeDocumentBO document = new KnowledgeDocumentBO();
         document.setId(20L);
         document.setSpaceId(10L);
+        document.setCurrentVersionId(40L);
         document.setTitle("统一向量接口");
         document.setLifecycleStatus("PUBLISHED");
 
@@ -79,13 +80,38 @@ class EmbeddedIndexRegistryIntegrationTest {
         chunk.setTenantId(1L);
         chunk.setSpaceId(10L);
         chunk.setDocumentId(20L);
+        chunk.setVersionId(40L);
         chunk.setContent("Knowledge 通过 vector 模块的公共 Provider 构建和检索索引");
+        chunk.setEmbedding("[1.0,0.0,0.0]");
+        chunk.setEmbeddingModel("test-embedding");
         chunk.setEmbeddingDimension(3);
         chunk.setEmbeddingBinary(toBytes(new float[] {1F, 0F, 0F}));
+        chunk.setMetadata("{\"source\":\"current-version\"}");
 
+        KnowledgeChunkBO staleChunk = new KnowledgeChunkBO();
+        staleChunk.setId(31L);
+        staleChunk.setTenantId(1L);
+        staleChunk.setSpaceId(10L);
+        staleChunk.setDocumentId(20L);
+        staleChunk.setVersionId(39L);
+        staleChunk.setContent("旧版本内容不应进入当前索引");
+        staleChunk.setEmbeddingModel("test-embedding");
+        staleChunk.setEmbeddingDimension(3);
+        staleChunk.setEmbeddingBinary(toBytes(new float[] {0F, 1F, 0F}));
+
+        when(enterpriseRepository.claimIndexRebuildLease(any(TenantId.class), eq(10L)))
+                .thenAnswer(
+                        invocation ->
+                                ((TenantId) invocation.getArgument(0)).equals(new TenantId(1L))
+                                        ? 1L
+                                        : 2L);
+        when(enterpriseRepository.activateIndexRebuild(
+                        eq(new TenantId(1L)), eq(10L), eq(1L), eq(0L), eq(1L)))
+                .thenReturn(true);
         when(enterpriseRepository.findSpaceByTenant(new TenantId(1L), 10L)).thenReturn(space);
         when(documentRepository.findBySpace(new TenantId(1L), 10L)).thenReturn(List.of(document));
-        when(chunkRepository.findBySpace(new TenantId(1L), 10L)).thenReturn(List.of(chunk));
+        when(chunkRepository.findBySpace(new TenantId(1L), 10L))
+                .thenReturn(List.of(chunk, staleChunk));
         when(chunkRepository.findByIds(new TenantId(1L), 10L, List.of(30L)))
                 .thenReturn(List.of(chunk));
 
@@ -145,6 +171,10 @@ class EmbeddedIndexRegistryIntegrationTest {
         assertThat(hits.getFirst().chunkId()).isEqualTo(30L);
         assertThat(hits.getFirst().vectorScore()).isGreaterThan(0D);
         assertThat(hits.getFirst().bm25Score()).isGreaterThan(0D);
+        assertThat(
+                        registry.hybridSearch(
+                                new TenantId(1L), 10L, "旧版本内容", "KEYWORD", 5, 0D, false))
+                .isEmpty();
         verify(chunkRepository, never()).findBySpace(new TenantId(1L), 10L);
 
         ActorContext actor = new ActorContext(new TenantId(1), new UserId(42), false);
@@ -155,7 +185,7 @@ class EmbeddedIndexRegistryIntegrationTest {
                 .hasSize(1);
         assertThat(registry.hybridSearch(new TenantId(1L), 10L, "统一向量接口", "VECTOR", 5, 0D, false))
                 .hasSize(1);
-        when(rerankProvider.rerank(any(), any(), anyInt()))
+        when(rerankProvider.rerank(any(), any(), any(), anyInt()))
                 .thenReturn(java.util.Arrays.asList(0, null, 99));
         assertThat(registry.hybridSearch(new TenantId(1L), 10L, "统一向量接口", "HYBRID", 5, 0D, true))
                 .hasSize(1);
@@ -187,7 +217,54 @@ class EmbeddedIndexRegistryIntegrationTest {
                                 registry.hybridSearch(
                                         new TenantId(1L), 10L, "q", "SEMANTIC", 5, 0D, false))
                 .isInstanceOf(RuntimeException.class);
-        verify(enterpriseRepository).updateSpace(eq(new TenantId(1L)), any(KnowledgeSpaceBO.class));
+        verify(enterpriseRepository)
+                .activateIndexRebuild(
+                        new TenantId(1L), 10L, 1L, 0L, 1L);
+    }
+
+    @Test
+    void retainsActivatedIndexWhenOldVersionCleanupFails() {
+        KnowledgeEnterpriseRepository enterprise = mock(KnowledgeEnterpriseRepository.class);
+        KnowledgeDocumentRepository documents = mock(KnowledgeDocumentRepository.class);
+        KnowledgeChunkRepository chunks = mock(KnowledgeChunkRepository.class);
+        VectorStoreProvider provider = mock(VectorStoreProvider.class);
+        when(provider.type()).thenReturn("jvector");
+        when(provider.open(any())).thenReturn(mock(com.shiyu.ai.common.vector.api.VectorStore.class));
+        when(enterprise.claimIndexRebuildLease(new TenantId(1L), 10L)).thenReturn(1L);
+
+        KnowledgeSpaceBO space = space(10L);
+        when(enterprise.findSpaceByTenant(new TenantId(1L), 10L)).thenReturn(space);
+        when(enterprise.activateIndexRebuild(
+                        new TenantId(1L), 10L, 1L, 0L, 1L))
+                .thenReturn(true);
+        when(documents.findBySpace(new TenantId(1L), 10L)).thenReturn(List.of());
+        when(chunks.findBySpace(new TenantId(1L), 10L)).thenReturn(List.of());
+
+        EmbeddedIndexRegistry registry =
+                new EmbeddedIndexRegistry(
+                        enterprise,
+                        documents,
+                        chunks,
+                        mock(EmbeddingProvider.class),
+                        mock(RerankProvider.class),
+                        provider,
+                        tempDir.toString(),
+                        5,
+                        60,
+                        1) {
+                    @Override
+                    protected void cleanupOldVersions(Long tenantId, Long spaceId, long version) {
+                        throw new IllegalStateException("cleanup unavailable");
+                    }
+                };
+        try {
+            assertThat(registry.rebuild(new TenantId(1L), 10L)).isEqualTo(1L);
+            assertThat(space.getActiveIndexVersion()).isEqualTo(1L);
+            assertThat(tempDir.resolve("index/1/10/1")).isDirectory();
+            verify(enterprise).activateIndexRebuild(new TenantId(1L), 10L, 1L, 0L, 1L);
+        } finally {
+            registry.closeAll();
+        }
     }
 
     @Test
@@ -198,6 +275,17 @@ class EmbeddedIndexRegistryIntegrationTest {
         VectorStoreProvider provider = mock(VectorStoreProvider.class);
         when(provider.type()).thenReturn("jvector");
         when(provider.open(any())).thenReturn(mock(com.shiyu.ai.common.vector.api.VectorStore.class));
+        when(enterprise.claimIndexRebuildLease(any(TenantId.class), any(Long.class)))
+                .thenAnswer(
+                        invocation ->
+                                ((Long) invocation.getArgument(1)).equals(10L) ? 1L : 2L);
+        when(enterprise.activateIndexRebuild(
+                        any(TenantId.class),
+                        any(Long.class),
+                        any(Long.class),
+                        any(Long.class),
+                        any(Long.class)))
+                .thenReturn(true);
         KnowledgeSpaceBO firstSpace = space(10L);
         KnowledgeSpaceBO secondSpace = space(20L);
         when(enterprise.findSpaceByTenant(new TenantId(1L), 10L)).thenReturn(firstSpace);
@@ -218,6 +306,7 @@ class EmbeddedIndexRegistryIntegrationTest {
                             }
                             return List.of();
                         });
+        when(chunks.findBySpace(any(TenantId.class), any(Long.class))).thenReturn(List.of());
         EmbeddedIndexRegistry registry =
                 new EmbeddedIndexRegistry(
                         enterprise,
@@ -240,7 +329,7 @@ class EmbeddedIndexRegistryIntegrationTest {
 
             assertThat(secondEnteredWhileFirstWasBuilding).isTrue();
             assertThat(first.get(5, TimeUnit.SECONDS)).isEqualTo(1L);
-            assertThat(second.get(5, TimeUnit.SECONDS)).isEqualTo(1L);
+            assertThat(second.get(5, TimeUnit.SECONDS)).isEqualTo(2L);
         } finally {
             releaseFirst.countDown();
             pool.shutdownNow();

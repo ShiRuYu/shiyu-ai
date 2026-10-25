@@ -16,6 +16,7 @@ import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeIngestionJobB
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeReviewRecordBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceMemberBO;
+import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentDO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeAuditLogDO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentVersionDO;
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeEvaluationCaseDO;
@@ -25,24 +26,24 @@ import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeSpa
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeSpaceMemberDO;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeAuditLogMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDocumentVersionMapper;
+import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeDocumentMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeEvaluationCaseMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeIngestionJobMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeReviewRecordMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeSpaceMapper;
 import com.shiyu.ai.knowledge.implementation.persistence.mapper.KnowledgeSpaceMemberMapper;
 
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 负责 知识 Enterprise 的持久化查询、保存和删除，并维护数据访问边界。
  */
 @Repository
-@RequiredArgsConstructor
 public class KnowledgeEnterpriseRepositoryImpl
         implements com.shiyu.ai.knowledge.implementation.domain.port.repository
                 .KnowledgeEnterpriseRepository {
@@ -59,6 +60,7 @@ public class KnowledgeEnterpriseRepositoryImpl
      * 版本映射器，表示当前对象中的对应属性。
      */
     private final KnowledgeDocumentVersionMapper versionMapper;
+    private final KnowledgeDocumentMapper documentMapper;
     /**
      * reviewMapper 属性，保存当前对象中的业务数据或协作依赖。
      */
@@ -75,6 +77,46 @@ public class KnowledgeEnterpriseRepositoryImpl
      * evaluationMapper 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final KnowledgeEvaluationCaseMapper evaluationMapper;
+
+    @Autowired
+    public KnowledgeEnterpriseRepositoryImpl(
+            KnowledgeSpaceMapper spaceMapper,
+            KnowledgeSpaceMemberMapper memberMapper,
+            KnowledgeDocumentVersionMapper versionMapper,
+            KnowledgeDocumentMapper documentMapper,
+            KnowledgeReviewRecordMapper reviewMapper,
+            KnowledgeIngestionJobMapper jobMapper,
+            KnowledgeAuditLogMapper auditMapper,
+            KnowledgeEvaluationCaseMapper evaluationMapper) {
+        this.spaceMapper = spaceMapper;
+        this.memberMapper = memberMapper;
+        this.versionMapper = versionMapper;
+        this.documentMapper = documentMapper;
+        this.reviewMapper = reviewMapper;
+        this.jobMapper = jobMapper;
+        this.auditMapper = auditMapper;
+        this.evaluationMapper = evaluationMapper;
+    }
+
+    /** Compatibility constructor used by repository unit fixtures predating the document mapper. */
+    public KnowledgeEnterpriseRepositoryImpl(
+            KnowledgeSpaceMapper spaceMapper,
+            KnowledgeSpaceMemberMapper memberMapper,
+            KnowledgeDocumentVersionMapper versionMapper,
+            KnowledgeReviewRecordMapper reviewMapper,
+            KnowledgeIngestionJobMapper jobMapper,
+            KnowledgeAuditLogMapper auditMapper,
+            KnowledgeEvaluationCaseMapper evaluationMapper) {
+        this(
+                spaceMapper,
+                memberMapper,
+                versionMapper,
+                null,
+                reviewMapper,
+                jobMapper,
+                auditMapper,
+                evaluationMapper);
+    }
 
     public KnowledgeSpaceBO findSpace(TenantId tenantId, Long id) {
         requireTenant(tenantId);
@@ -101,6 +143,166 @@ public class KnowledgeEnterpriseRepositoryImpl
                                                 .eq(KnowledgeSpaceDO::getId, id)
                                                 .eq(KnowledgeSpaceDO::getDelFlag, 0))),
                 KnowledgeSpaceBO.class);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public Long claimIndexRebuildLease(TenantId tenantId, Long spaceId) {
+        return claimIndexRebuildLeaseInternal(tenantId, spaceId, null);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public Long claimIndexRebuildLease(TenantId tenantId, Long spaceId, Long jobId) {
+        if (jobId == null) return null;
+        return claimIndexRebuildLeaseInternal(tenantId, spaceId, jobId);
+    }
+
+    private Long claimIndexRebuildLeaseInternal(TenantId tenantId, Long spaceId, Long jobId) {
+        requireTenant(tenantId);
+        if (spaceId == null) return null;
+        if (spaceMapper.lockSpaceForIndexRebuild(tenantId.value(), spaceId) == null) return null;
+        Long activeVersion = spaceMapper.activeIndexVersion(tenantId.value(), spaceId);
+        if (activeVersion == null) return null;
+        String leaseKey = "INDEX_REBUILD_LEASE:" + spaceId;
+        LocalDateTime staleBefore = LocalDateTime.now().minusMinutes(5);
+        KnowledgeIngestionJobDO lease =
+                jobMapper.selectOneByQuery(
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getSpaceId, spaceId)
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INDEX_REBUILD_LEASE")
+                                .eq(KnowledgeIngestionJobDO::getJobKey, leaseKey)
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
+        LocalDateTime now = LocalDateTime.now();
+        if (lease == null) {
+            KnowledgeIngestionJobDO created = new KnowledgeIngestionJobDO();
+            created.setJobKey(leaseKey);
+            created.setJobType("INDEX_REBUILD_LEASE");
+            created.setTenantId(tenantId.value());
+            created.setSpaceId(spaceId);
+            created.setJobStatus("SUCCEEDED");
+            created.setStage("IDLE");
+            created.setProgress(100);
+            created.setAttempts(0);
+            created.setMaxAttempts(Integer.MAX_VALUE);
+            created.setLockVersion(Math.max(0L, activeVersion));
+            created.setDelFlag(0);
+            if (jobMapper.insert(created) != 1) return null;
+            lease = created;
+        }
+        lease.setTenantId(tenantId.value());
+        if (jobId != null) lease.setCheckpointData(jobId.toString());
+        long oldVersion = lease.getLockVersion() == null ? 0 : lease.getLockVersion();
+        if ("RUNNING".equals(lease.getJobStatus())
+                && lease.getHeartbeatTime() != null
+                && !lease.getHeartbeatTime().isBefore(staleBefore)) return null;
+        long newVersion = Math.max(oldVersion, activeVersion) + 1;
+        int changed =
+                jobMapper.claimIndexRebuildLease(
+                        tenantId.value(),
+                        lease.getId(),
+                        leaseKey,
+                        jobId == null ? Objects.toString(lease.getCheckpointData(), "") : jobId.toString(),
+                        oldVersion,
+                        newVersion,
+                        now,
+                        staleBefore);
+        return changed == 1 ? newVersion : null;
+    }
+
+    @Override
+    public boolean heartbeatIndexRebuildLease(
+            TenantId tenantId, Long spaceId, Long fencingVersion, LocalDateTime heartbeatTime) {
+        requireTenant(tenantId);
+        return jobMapper.heartbeatIndexRebuildLease(
+                        tenantId.value(),
+                        spaceId,
+                        "INDEX_REBUILD_LEASE:" + spaceId,
+                        fencingVersion,
+                        heartbeatTime)
+                == 1;
+    }
+
+
+    @Override
+    public boolean activateIndexRebuild(
+            TenantId tenantId,
+            Long spaceId,
+            Long fencingVersion,
+            Long expectedActiveVersion,
+            Long newActiveVersion) {
+        requireTenant(tenantId);
+        LocalDateTime now = LocalDateTime.now();
+        return spaceMapper.activateIndexRebuild(
+                        tenantId.value(),
+                        spaceId,
+                        "INDEX_REBUILD_LEASE:" + spaceId,
+                        fencingVersion,
+                        now.minusSeconds(90),
+                        expectedActiveVersion,
+                        newActiveVersion,
+                        null,
+                        null)
+                == 1;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public boolean activateIndexRebuild(
+            TenantId tenantId,
+            Long spaceId,
+            Long fencingVersion,
+            Long expectedActiveVersion,
+            Long newActiveVersion,
+            Long jobId,
+            Long jobLockVersion) {
+        requireTenant(tenantId);
+        if (jobMapper.lockCurrentIndexRebuildJob(tenantId.value(), jobId, jobLockVersion) == null) {
+            return false;
+        }
+        if (jobMapper.markIndexRebuildActivating(tenantId.value(), jobId, jobLockVersion) != 1) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        int activated;
+        try {
+            activated =
+                    spaceMapper.activateIndexRebuild(
+                            tenantId.value(),
+                            spaceId,
+                            "INDEX_REBUILD_LEASE:" + spaceId,
+                            fencingVersion,
+                            now.minusSeconds(90),
+                            expectedActiveVersion,
+                            newActiveVersion,
+                            jobId == null ? null : jobId.toString(),
+                            jobLockVersion);
+        } catch (RuntimeException activationFailure) {
+            jobMapper.resetIndexRebuildActivation(
+                    tenantId.value(), jobId, jobLockVersion);
+            throw activationFailure;
+        }
+        if (activated != 1) {
+            jobMapper.resetIndexRebuildActivation(
+                    tenantId.value(), jobId, jobLockVersion);
+            throw new IllegalStateException("Index rebuild lease was lost before activation");
+        }
+        return true;
+    }
+
+    @Override
+    public boolean releaseIndexRebuildLease(
+            TenantId tenantId, Long spaceId, Long fencingVersion, boolean succeeded) {
+        requireTenant(tenantId);
+        return jobMapper.releaseIndexRebuildLease(
+                        tenantId.value(),
+                        spaceId,
+                        "INDEX_REBUILD_LEASE:" + spaceId,
+                        fencingVersion,
+                        LocalDateTime.now(),
+                        succeeded)
+                == 1;
     }
 
     public List<KnowledgeSpaceBO> findActiveSpacesByTenant(TenantId tenantId) {
@@ -397,6 +599,313 @@ public class KnowledgeEnterpriseRepositoryImpl
                 "update knowledge ingestion job");
     }
 
+    @Override
+    public KnowledgeIngestionJobBO claimIngestionJob(TenantId tenantId, Long jobId) {
+        requireTenant(tenantId);
+        KnowledgeIngestionJobBO job = findJob(tenantId, jobId);
+        if (job == null || !"INGEST".equals(job.getJobType())
+                || !"PENDING".equals(job.getJobStatus())) return null;
+        long currentVersion = job.getLockVersion() == null ? 0L : job.getLockVersion();
+        LocalDateTime now = LocalDateTime.now();
+        KnowledgeIngestionJobDO update = new KnowledgeIngestionJobDO();
+        update.setJobStatus("RUNNING");
+        update.setStage("STARTING");
+        update.setProgress(1);
+        update.setAttempts((job.getAttempts() == null ? 0 : job.getAttempts()) + 1);
+        update.setErrorMessage(null);
+        update.setStartedTime(now);
+        update.setHeartbeatTime(now);
+        update.setFinishedTime(null);
+        update.setLockVersion(currentVersion + 1);
+        int affected =
+                jobMapper.updateByQuery(
+                        update,
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, jobId)
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INGEST")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "PENDING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, currentVersion)
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
+        if (affected != 1) return null;
+        job.setJobStatus("RUNNING");
+        job.setStage("STARTING");
+        job.setProgress(1);
+        job.setAttempts(update.getAttempts());
+        job.setErrorMessage(null);
+        job.setStartedTime(now);
+        job.setHeartbeatTime(now);
+        job.setFinishedTime(null);
+        job.setLockVersion(currentVersion + 1);
+        return job;
+    }
+
+    @Override
+    public boolean isIndexRebuildJobCurrent(
+            TenantId tenantId, Long jobId, Long lockVersion) {
+        requireTenant(tenantId);
+        if (jobId == null || lockVersion == null) return false;
+        return jobMapper.currentIndexRebuildJob(tenantId.value(), jobId, lockVersion) != null;
+    }
+
+    @Override
+    public boolean beginIndexRebuildAttempt(TenantId tenantId, Long jobId, Long lockVersion) {
+        requireTenant(tenantId);
+        return jobMapper.beginIndexRebuildAttempt(
+                        tenantId.value(), jobId, lockVersion, LocalDateTime.now())
+                == 1;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public boolean cancelIndexRebuildJob(TenantId tenantId, KnowledgeIngestionJobBO job) {
+        requireTenant(tenantId);
+        if (job == null || job.getId() == null) return false;
+        long lockVersion = job.getLockVersion() == null ? 0L : job.getLockVersion();
+        if ("RUNNING".equals(job.getJobStatus())
+                && jobMapper.lockCurrentIndexRebuildJob(
+                                tenantId.value(), job.getId(), lockVersion)
+                        == null) {
+            return false;
+        }
+        int changed = jobMapper.cancelIndexRebuildJob(
+                tenantId.value(), job.getId(), lockVersion, LocalDateTime.now());
+        if (changed != 1) return false;
+        if ("RUNNING".equals(job.getJobStatus()) && job.getSpaceId() != null) {
+            jobMapper.fenceRunningIndexRebuildLease(
+                    tenantId.value(),
+                    job.getSpaceId(),
+                    "INDEX_REBUILD_LEASE:" + job.getSpaceId(),
+                    job.getId().toString(),
+                    LocalDateTime.now());
+        }
+        return true;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public boolean recoverStaleIngestionJob(
+            TenantId tenantId, KnowledgeIngestionJobBO job, LocalDateTime heartbeatBefore) {
+        requireTenant(tenantId);
+        if (job == null || job.getId() == null || job.getLockVersion() == null) return false;
+        boolean retry = job.getAttempts() < job.getMaxAttempts();
+        LocalDateTime now = LocalDateTime.now();
+        KnowledgeIngestionJobDO update = new KnowledgeIngestionJobDO();
+        update.setJobStatus(retry ? "PENDING" : "FAILED");
+        update.setStage(retry ? "RECOVERED" : "FAILED");
+        update.setErrorMessage("任务租约超时，等待恢复");
+        update.setHeartbeatTime(now);
+        update.setFinishedTime(retry ? null : now);
+        update.setLockVersion(job.getLockVersion() + 1);
+        int changed =
+                jobMapper.updateByQuery(
+                        update,
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, job.getId())
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INGEST")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, job.getLockVersion())
+                                .lt(KnowledgeIngestionJobDO::getHeartbeatTime, heartbeatBefore)
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
+        if (changed != 1 || retry || job.getDocumentId() == null || job.getVersionId() == null) {
+            return changed == 1;
+        }
+        KnowledgeDocumentDO documentUpdate = new KnowledgeDocumentDO();
+        documentUpdate.setParseStatus("FAILED");
+        documentMapper.updateByQuery(
+                documentUpdate,
+                QueryWrapper.create()
+                        .eq(KnowledgeDocumentDO::getTenantId, tenantId.value())
+                        .eq(KnowledgeDocumentDO::getId, job.getDocumentId())
+                        .eq(KnowledgeDocumentDO::getCurrentVersionId, job.getVersionId()));
+        KnowledgeDocumentVersionDO versionUpdate = new KnowledgeDocumentVersionDO();
+        versionUpdate.setParseStatus("FAILED");
+        versionMapper.updateByQuery(
+                versionUpdate,
+                QueryWrapper.create()
+                        .eq(KnowledgeDocumentVersionDO::getTenantId, tenantId.value())
+                        .eq(KnowledgeDocumentVersionDO::getId, job.getVersionId())
+                        .eq(KnowledgeDocumentVersionDO::getDocumentId, job.getDocumentId()));
+        return true;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public boolean heartbeatIngestionJob(
+            TenantId tenantId, Long jobId, Long lockVersion, LocalDateTime heartbeatTime) {
+        requireTenant(tenantId);
+        KnowledgeIngestionJobBO job = findJob(tenantId, jobId);
+        if (job == null || job.getLockVersion() == null
+                || !job.getLockVersion().equals(lockVersion)) return false;
+        if (jobMapper.lockClaimedIngestionJob(
+                        tenantId.value(), jobId, job.getDocumentId(), job.getVersionId(), lockVersion)
+                == null) return false;
+        KnowledgeIngestionJobDO update = new KnowledgeIngestionJobDO();
+        update.setHeartbeatTime(heartbeatTime);
+        return jobMapper.updateByQuery(
+                        update,
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, jobId)
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INGEST")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, lockVersion)
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0))
+                == 1;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public boolean updateClaimedIngestionJob(TenantId tenantId, KnowledgeIngestionJobBO job) {
+        requireTenant(tenantId);
+        if (job == null || job.getId() == null || job.getLockVersion() == null) return false;
+        if (jobMapper.lockClaimedIngestionJob(
+                        tenantId.value(),
+                        job.getId(),
+                        job.getDocumentId(),
+                        job.getVersionId(),
+                        job.getLockVersion())
+                == null) return false;
+        job.setTenantId(tenantId.value());
+        return jobMapper.updateByQuery(
+                        MapstructUtils.convert(job, KnowledgeIngestionJobDO.class),
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, job.getId())
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INGEST")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, job.getLockVersion())
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0))
+                == 1;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public boolean failClaimedIngestion(
+            TenantId tenantId, KnowledgeIngestionJobBO job, String documentParseStatus) {
+        requireTenant(tenantId);
+        if (job == null || job.getId() == null || job.getLockVersion() == null) return false;
+        if (jobMapper.lockClaimedIngestionJob(
+                        tenantId.value(),
+                        job.getId(),
+                        job.getDocumentId(),
+                        job.getVersionId(),
+                        job.getLockVersion())
+                == null) return false;
+        KnowledgeIngestionJobDO update = MapstructUtils.convert(job, KnowledgeIngestionJobDO.class);
+        int changed =
+                jobMapper.updateByQuery(
+                        update,
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, job.getId())
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INGEST")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, job.getLockVersion())
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
+        if (changed != 1) return false;
+        com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentDO documentUpdate =
+                new com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentDO();
+        documentUpdate.setParseStatus(documentParseStatus);
+        documentMapper.updateByQuery(
+                documentUpdate,
+                QueryWrapper.create()
+                        .eq(KnowledgeDocumentDO::getTenantId, tenantId.value())
+                        .eq(KnowledgeDocumentDO::getId, job.getDocumentId())
+                        .eq(KnowledgeDocumentDO::getCurrentVersionId, job.getVersionId()));
+        return true;
+    }
+
+    @Override
+    public boolean cancelIngestionJob(TenantId tenantId, KnowledgeIngestionJobBO job) {
+        requireTenant(tenantId);
+        if (job == null || job.getId() == null) return false;
+        KnowledgeIngestionJobDO update = new KnowledgeIngestionJobDO();
+        update.setJobStatus("CANCELLED");
+        update.setStage("SUPERSEDED".equals(job.getStage()) ? "SUPERSEDED" : "CANCELLED");
+        update.setFinishedTime(LocalDateTime.now());
+        update.setLockVersion((job.getLockVersion() == null ? 0L : job.getLockVersion()) + 1);
+        return jobMapper.updateByQuery(
+                        update,
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, job.getId())
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INGEST")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion,
+                                        job.getLockVersion() == null ? 0L : job.getLockVersion())
+                                .in(KnowledgeIngestionJobDO::getJobStatus, "PENDING", "RUNNING")
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0))
+                == 1;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
+    public boolean completeClaimedIngestion(
+            TenantId tenantId,
+            KnowledgeIngestionJobBO job,
+            KnowledgeDocumentVersionBO version,
+            com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO document,
+            String parsedTitle) {
+        requireTenant(tenantId);
+        if (job == null || job.getId() == null || job.getLockVersion() == null
+                || version == null || document == null) return false;
+        if (jobMapper.lockClaimedIngestionJob(
+                        tenantId.value(),
+                        job.getId(),
+                        job.getDocumentId(),
+                        job.getVersionId(),
+                        job.getLockVersion())
+                == null) return false;
+        com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentDO docUpdate =
+                new com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeDocumentDO();
+        docUpdate.setContent(document.getContent());
+        docUpdate.setParseStatus(document.getParseStatus());
+        requireAffected(
+                documentMapper.updateByQuery(
+                        docUpdate,
+                        QueryWrapper.create()
+                                .eq(KnowledgeDocumentDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeDocumentDO::getId, document.getId())
+                                .eq(KnowledgeDocumentDO::getCurrentVersionId, version.getId())),
+                "publish ingested document content");
+        if (parsedTitle != null && !parsedTitle.isBlank()
+                && (version.getTitle() == null || version.getTitle().isBlank())) {
+            version.setTitle(parsedTitle);
+        }
+        requireAffected(
+                versionMapper.updateByQuery(
+                        MapstructUtils.convert(version, KnowledgeDocumentVersionDO.class),
+                        QueryWrapper.create()
+                                .eq(KnowledgeDocumentVersionDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeDocumentVersionDO::getId, version.getId())
+                                .eq(KnowledgeDocumentVersionDO::getDocumentId, job.getDocumentId())),
+                "publish ingested document version");
+        KnowledgeIngestionJobDO completed = new KnowledgeIngestionJobDO();
+        completed.setJobStatus("SUCCEEDED");
+        completed.setStage("COMPLETED");
+        completed.setProgress(100);
+        completed.setHeartbeatTime(LocalDateTime.now());
+        completed.setFinishedTime(LocalDateTime.now());
+        requireAffected(
+                jobMapper.updateByQuery(
+                        completed,
+                        QueryWrapper.create()
+                                .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
+                                .eq(KnowledgeIngestionJobDO::getId, job.getId())
+                                .eq(KnowledgeIngestionJobDO::getJobType, "INGEST")
+                                .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
+                                .eq(KnowledgeIngestionJobDO::getLockVersion, job.getLockVersion())
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0)),
+                "complete claimed ingestion job");
+        job.setJobStatus("SUCCEEDED");
+        job.setStage("COMPLETED");
+        job.setProgress(100);
+        job.setHeartbeatTime(completed.getHeartbeatTime());
+        job.setFinishedTime(completed.getFinishedTime());
+        return true;
+    }
+
     public PageData<KnowledgeIngestionJobBO> pageJobsByTenant(
             TenantId tenantId, int pageNum, int pageSize, Long spaceId, String status) {
         requireTenant(tenantId);
@@ -488,7 +997,6 @@ public class KnowledgeEnterpriseRepositoryImpl
         update.setJobStatus("RUNNING");
         update.setStage("BUILDING");
         update.setProgress(1);
-        update.setAttempts((job.getAttempts() == null ? 0 : job.getAttempts()) + 1);
         update.setErrorMessage(null);
         update.setStartedTime(now);
         update.setHeartbeatTime(now);
@@ -508,7 +1016,6 @@ public class KnowledgeEnterpriseRepositoryImpl
         job.setJobStatus("RUNNING");
         job.setStage("BUILDING");
         job.setProgress(1);
-        job.setAttempts(update.getAttempts());
         job.setErrorMessage(null);
         job.setStartedTime(now);
         job.setHeartbeatTime(now);
@@ -539,6 +1046,7 @@ public class KnowledgeEnterpriseRepositoryImpl
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public boolean recoverStaleIndexRebuildJob(
             TenantId tenantId, KnowledgeIngestionJobBO job, LocalDateTime heartbeatBefore) {
         requireTenant(tenantId);
@@ -555,7 +1063,8 @@ public class KnowledgeEnterpriseRepositoryImpl
         update.setHeartbeatTime(now);
         update.setFinishedTime(retry ? null : now);
         update.setLockVersion(currentVersion + 1);
-        return jobMapper.updateByQuery(
+        int changed =
+                jobMapper.updateByQuery(
                         update,
                         QueryWrapper.create()
                                 .eq(KnowledgeIngestionJobDO::getTenantId, tenantId.value())
@@ -564,8 +1073,17 @@ public class KnowledgeEnterpriseRepositoryImpl
                                 .eq(KnowledgeIngestionJobDO::getJobStatus, "RUNNING")
                                 .eq(KnowledgeIngestionJobDO::getLockVersion, currentVersion)
                                 .lt(KnowledgeIngestionJobDO::getHeartbeatTime, heartbeatBefore)
-                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0))
-                == 1;
+                                .eq(KnowledgeIngestionJobDO::getDelFlag, 0));
+        if (changed != 1) return false;
+        if (job.getSpaceId() != null) {
+            jobMapper.fenceRunningIndexRebuildLease(
+                    tenantId.value(),
+                    job.getSpaceId(),
+                    "INDEX_REBUILD_LEASE:" + job.getSpaceId(),
+                    job.getId().toString(),
+                    now);
+        }
+        return true;
     }
 
     @Override

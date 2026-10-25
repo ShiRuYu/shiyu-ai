@@ -10,12 +10,20 @@ import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.knowledge.implementation.application.port.document.DocumentParser;
 import com.shiyu.ai.knowledge.implementation.application.port.rag.ChunkSplitter.Chunk;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentVersionBO;
+import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeIngestionJobBO;
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeChunkRepository;
+import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
 import com.shiyu.ai.model.contract.api.EmbeddingService;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -36,6 +44,7 @@ public class DocumentIngestionService {
      * chunkRepository 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final KnowledgeChunkRepository chunkRepository;
+    private final KnowledgeEnterpriseRepository enterpriseRepository;
     /**
      * chunkSplitter 属性，保存当前对象中的业务数据或协作依赖。
      */
@@ -52,14 +61,43 @@ public class DocumentIngestionService {
      * @param chunkRepository 用于完成本次业务处理的 chunkRepository 参数。
      * @param documentParsers 用于完成本次业务处理的 documentParsers 参数。
      */
+    private final TransactionTemplate transactionTemplate;
+
+    @Autowired
+    public DocumentIngestionService(
+            EmbeddingService embeddingService,
+            KnowledgeChunkRepository chunkRepository,
+            KnowledgeEnterpriseRepository enterpriseRepository,
+            @Qualifier("agentDataSource") javax.sql.DataSource dataSource,
+            List<DocumentParser> documentParsers) {
+        this.embeddingService = embeddingService;
+        this.chunkRepository = chunkRepository;
+        this.enterpriseRepository = enterpriseRepository;
+        this.transactionTemplate =
+                new TransactionTemplate(new DataSourceTransactionManager(dataSource));
+        this.chunkSplitter = new ChineseChunkSplitter();
+        this.documentParsers = documentParsers != null ? documentParsers : List.of();
+    }
+
+    public DocumentIngestionService(
+            EmbeddingService embeddingService,
+            KnowledgeChunkRepository chunkRepository,
+            KnowledgeEnterpriseRepository enterpriseRepository,
+            List<DocumentParser> documentParsers) {
+        this.embeddingService = embeddingService;
+        this.chunkRepository = chunkRepository;
+        this.enterpriseRepository = enterpriseRepository;
+        this.transactionTemplate = null;
+        this.chunkSplitter = new ChineseChunkSplitter();
+        this.documentParsers = documentParsers != null ? documentParsers : List.of();
+    }
+
+    /** Compatibility constructor for existing direct callers that only exercise actor validation. */
     public DocumentIngestionService(
             EmbeddingService embeddingService,
             KnowledgeChunkRepository chunkRepository,
             List<DocumentParser> documentParsers) {
-        this.embeddingService = embeddingService;
-        this.chunkRepository = chunkRepository;
-        this.chunkSplitter = new ChineseChunkSplitter();
-        this.documentParsers = documentParsers != null ? documentParsers : List.of();
+        this(embeddingService, chunkRepository, null, documentParsers);
     }
 
     /** 根据文件格式获取对应的文档解析器 */
@@ -98,7 +136,34 @@ public class DocumentIngestionService {
             String content,
             List<Long> knowledgeIds) {
         TenantId ownerTenant = actor.tenantId();
-        chunkRepository.deleteByDocumentId(ownerTenant, documentId);
+        if (enterpriseRepository != null) {
+            KnowledgeDocumentVersionBO version =
+                    enterpriseRepository.findVersion(ownerTenant, versionId);
+            if (version == null || !documentId.equals(version.getDocumentId())) {
+                throw new IllegalArgumentException("document version does not belong to document");
+            }
+        }
+        List<KnowledgeChunkBO> chunkDOs = buildChunks(
+                actor, spaceId, documentId, versionId, content, knowledgeIds);
+        if (!chunkRepository.replaceByDocumentVersion(ownerTenant, documentId, versionId, chunkDOs)) {
+            return List.of();
+        }
+        log.info(
+                "文档 {} 注入完成: {} chunks → H2（发布时通过 VectorStoreProvider 构建版本索引）",
+                documentId,
+                chunkDOs.size());
+        return chunkDOs;
+    }
+
+    /** Stage every chunk and embed it before publishing this immutable version. */
+    private List<KnowledgeChunkBO> buildChunks(
+            ActorContext actor,
+            Long spaceId,
+            Long documentId,
+            Long versionId,
+            String content,
+            List<Long> knowledgeIds) {
+        TenantId ownerTenant = actor.tenantId();
         List<Chunk> chunks = chunkSplitter.split(content);
         log.info("文档 {} 切分为 {} 个 Chunk", documentId, chunks.size());
 
@@ -140,15 +205,75 @@ public class DocumentIngestionService {
             chunkDO.setTokenCount(Math.max(1, chunk.content().length() / 2));
             chunkDO.setStatus(1);
             chunkDO.setDelFlag(0);
-            chunkRepository.insert(ownerTenant, chunkDO);
             chunkDOs.add(chunkDO);
         }
-
-        log.info(
-                "文档 {} 注入完成: {} chunks → H2（发布时通过 VectorStoreProvider 构建版本索引）",
-                documentId,
-                chunkDOs.size());
         return chunkDOs;
+    }
+
+    /** Query whether a version has usable chunks. */
+    public boolean hasChunks(TenantId tenantId, Long documentId, Long versionId) {
+        return !chunkRepository.findByDocumentVersion(tenantId, documentId, versionId).isEmpty();
+    }
+
+    /** Clone already embedded chunks into a newly created immutable version. */
+    public boolean copyVersionChunks(
+            TenantId tenantId, Long documentId, Long sourceVersionId, Long targetVersionId) {
+        return chunkRepository.copyByDocumentVersion(
+                tenantId, documentId, sourceVersionId, targetVersionId);
+    }
+
+    /** Atomically publish staged chunks and document/job state while the lease is current. */
+    public boolean ingestIfClaimed(
+            ActorContext actor,
+            Long spaceId,
+            KnowledgeDocumentBO document,
+            KnowledgeDocumentVersionBO version,
+            KnowledgeIngestionJobBO job,
+            String content,
+            String title,
+            List<Long> knowledgeIds) {
+        if (actor == null) throw new IllegalArgumentException("actor is required");
+        List<KnowledgeChunkBO> chunks =
+                buildChunks(
+                        actor,
+                        spaceId,
+                        job.getDocumentId(),
+                        job.getVersionId(),
+                        content,
+                        knowledgeIds);
+        return publishClaimedIngestion(actor.tenantId(), job, version, document, title, chunks);
+    }
+
+    public boolean publishClaimedIngestion(
+            TenantId tenantId,
+            KnowledgeIngestionJobBO job,
+            KnowledgeDocumentVersionBO version,
+            KnowledgeDocumentBO document,
+            String title,
+            List<KnowledgeChunkBO> chunks) {
+        if (transactionTemplate == null) {
+            throw new IllegalStateException("agent transaction manager is required for ingestion publication");
+        }
+        Boolean published =
+                transactionTemplate.execute(
+                        status -> {
+                            if (!chunkRepository.replaceByDocumentVersionIfClaimed(
+                                    tenantId,
+                                    job.getDocumentId(),
+                                    job.getVersionId(),
+                                    job.getId(),
+                                    job.getLockVersion(),
+                                    chunks)) {
+                                return false;
+                            }
+                            if (!enterpriseRepository.completeClaimedIngestion(
+                                    tenantId, job, version, document, title)) {
+                                status.setRollbackOnly();
+                                return false;
+                            }
+                            return true;
+                        });
+        return Boolean.TRUE.equals(published);
     }
 
     /**

@@ -158,6 +158,47 @@ class KnowledgeEnterpriseRepositoryCoverageTest {
     }
 
     @Test
+    void passesIndexRebuildJobCheckpointAsTextForPostgresComparison() {
+        KnowledgeSpaceMapper spaces = mock(KnowledgeSpaceMapper.class);
+        KnowledgeSpaceMemberMapper members = mock(KnowledgeSpaceMemberMapper.class);
+        KnowledgeDocumentVersionMapper versions = mock(KnowledgeDocumentVersionMapper.class);
+        KnowledgeReviewRecordMapper reviews = mock(KnowledgeReviewRecordMapper.class);
+        KnowledgeIngestionJobMapper jobs = mock(KnowledgeIngestionJobMapper.class);
+        KnowledgeAuditLogMapper audits = mock(KnowledgeAuditLogMapper.class);
+        KnowledgeEvaluationCaseMapper evaluations = mock(KnowledgeEvaluationCaseMapper.class);
+        KnowledgeEnterpriseRepositoryImpl repository =
+                new KnowledgeEnterpriseRepositoryImpl(
+                        spaces, members, versions, reviews, jobs, audits, evaluations);
+        when(jobs.lockCurrentIndexRebuildJob(31L, 91L, 4L)).thenReturn(91L);
+        when(jobs.markIndexRebuildActivating(31L, 91L, 4L)).thenReturn(1);
+        when(spaces.activateIndexRebuild(
+                        eq(31L),
+                        eq(5L),
+                        eq("INDEX_REBUILD_LEASE:5"),
+                        eq(8L),
+                        any(),
+                        eq(2L),
+                        eq(8L),
+                        eq("91"),
+                        eq(4L)))
+                .thenReturn(1);
+
+        assertTrue(repository.activateIndexRebuild(TENANT, 5L, 8L, 2L, 8L, 91L, 4L));
+
+        verify(spaces)
+                .activateIndexRebuild(
+                        eq(31L),
+                        eq(5L),
+                        eq("INDEX_REBUILD_LEASE:5"),
+                        eq(8L),
+                        any(),
+                        eq(2L),
+                        eq(8L),
+                        eq("91"),
+                        eq(4L));
+    }
+
+    @Test
     void commandWritesFailWhenNoTenantOwnedRowIsAffected() {
         KnowledgeSpaceMapper spaces = mock(KnowledgeSpaceMapper.class);
         KnowledgeSpaceMemberMapper members = mock(KnowledgeSpaceMemberMapper.class);

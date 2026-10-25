@@ -22,6 +22,35 @@ public interface KnowledgeIndexService extends FullTextIndex, VectorIndex {
      */
     long rebuild(TenantId tenantId, Long spaceId);
 
+    /** Rebuild using a caller-held durable fencing token. */
+    default long rebuild(TenantId tenantId, Long spaceId, long fencingVersion) {
+        return rebuild(tenantId, spaceId);
+    }
+
+    /** Rebuild for a durable worker job, fencing activation against concurrent cancellation. */
+    default long rebuild(
+            TenantId tenantId,
+            Long spaceId,
+            long fencingVersion,
+            Long jobId,
+            Long jobLockVersion) {
+        return rebuild(tenantId, spaceId, fencingVersion);
+    }
+
+    /** Rebuild while the caller still owns its durable job and space lease. */
+    default long rebuild(
+            TenantId tenantId,
+            Long spaceId,
+            long fencingVersion,
+            Long jobId,
+            Long jobLockVersion,
+            java.util.function.BooleanSupplier leaseIsCurrent) {
+        if (!leaseIsCurrent.getAsBoolean()) {
+            throw new IllegalStateException("Index rebuild lease was lost");
+        }
+        return rebuild(tenantId, spaceId, fencingVersion, jobId, jobLockVersion);
+    }
+
     /**
      * 执行 知识 索引 相关业务数据，并返回处理结果。
      *

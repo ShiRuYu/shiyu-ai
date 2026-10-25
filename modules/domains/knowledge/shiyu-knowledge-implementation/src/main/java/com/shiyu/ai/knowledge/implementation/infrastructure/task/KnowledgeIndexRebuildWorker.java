@@ -25,6 +25,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 
 /** Processes durable knowledge-space index rebuild jobs. */
 @Slf4j
@@ -122,30 +124,113 @@ public class KnowledgeIndexRebuildWorker {
     }
 
     void processIndexRebuild(TenantId tenantId, Long jobId) {
-        KnowledgeIngestionJobBO job =
-                enterpriseRepository.claimIndexRebuildJob(tenantId, jobId);
-        if (job == null) return;
-        ScheduledFuture<?> heartbeatTask = null;
+        TenantScope.withTenant(
+                tenantId,
+                () -> {
+                    KnowledgeIngestionJobBO job =
+                            enterpriseRepository.claimIndexRebuildJob(tenantId, jobId);
+                    if (job != null) processClaimedIndexRebuild(tenantId, job);
+                    return null;
+                });
+    }
+
+    private void processClaimedIndexRebuild(TenantId tenantId, KnowledgeIngestionJobBO job) {
+        Long jobId = job.getId();
+        ScheduledFuture<?> jobHeartbeat = null;
+        ScheduledFuture<?> leaseHeartbeat = null;
+        Long leaseVersion = null;
+        boolean leaseClaimed = false;
+        boolean buildSucceeded = false;
+        boolean finalJobUpdateCompleted = false;
+        AtomicBoolean leaseCurrent = new AtomicBoolean(true);
         try {
-            heartbeatTask =
+            Long claimedLeaseVersion =
+                    enterpriseRepository.claimIndexRebuildLease(
+                            tenantId, job.getSpaceId(), job.getId());
+            if (claimedLeaseVersion == null || claimedLeaseVersion <= 0) {
+                job.setJobStatus("PENDING");
+                job.setStage("WAITING_FOR_SPACE_LEASE");
+                job.setProgress(0);
+                job.setHeartbeatTime(LocalDateTime.now());
+                finalJobUpdateCompleted =
+                        enterpriseRepository.updateIndexRebuildJob(tenantId, job);
+                if (!finalJobUpdateCompleted) {
+                    log.warn(
+                            "Knowledge index rebuild job changed while waiting for lease, jobId={}",
+                            job.getId());
+                }
+                return;
+            }
+            leaseVersion = claimedLeaseVersion;
+            leaseClaimed = true;
+            if (!enterpriseRepository.beginIndexRebuildAttempt(
+                    tenantId, job.getId(), job.getLockVersion())) {
+                return;
+            }
+            job.setAttempts((job.getAttempts() == null ? 0 : job.getAttempts()) + 1);
+            job.setStage("LEASED_BUILD");
+            long fencedVersion = claimedLeaseVersion;
+            jobHeartbeat =
                     scheduler.scheduleWithFixedDelay(
                             () ->
-                                    enterpriseRepository.heartbeatIndexRebuildJob(
-                                            tenantId,
-                                            jobId,
-                                            job.getLockVersion(),
-                                            LocalDateTime.now()),
+                                    runHeartbeat(
+                                            "job",
+                                            job.getId(),
+                                            () ->
+                                                    TenantScope.withTenant(
+                                                            tenantId,
+                                                            () ->
+                                                                    enterpriseRepository
+                                                                            .heartbeatIndexRebuildJob(
+                                                                                    tenantId,
+                                                                                    job.getId(),
+                                                                                    job.getLockVersion(),
+                                                                                    LocalDateTime.now())),
+                                            leaseCurrent),
                             30,
                             30,
                             TimeUnit.SECONDS);
-            indexService.rebuild(tenantId, job.getSpaceId());
+            leaseHeartbeat =
+                    scheduler.scheduleWithFixedDelay(
+                            () ->
+                                    runHeartbeat(
+                                            "space lease",
+                                            job.getId(),
+                                            () ->
+                                                    TenantScope.withTenant(
+                                                            tenantId,
+                                                            () ->
+                                                                    enterpriseRepository
+                                                                            .heartbeatIndexRebuildLease(
+                                                                                    tenantId,
+                                                                                    job.getSpaceId(),
+                                                                                    fencedVersion,
+                                                                                    LocalDateTime.now())),
+                                            leaseCurrent),
+                            30,
+                            30,
+                            TimeUnit.SECONDS);
+            indexService.rebuild(
+                    tenantId,
+                    job.getSpaceId(),
+                    fencedVersion,
+                    job.getId(),
+                    job.getLockVersion(),
+                    leaseCurrent::get);
+            if (!leaseCurrent.get()
+                    || !enterpriseRepository.isIndexRebuildJobCurrent(
+                            tenantId, job.getId(), job.getLockVersion())) {
+                return;
+            }
             job.setJobStatus("SUCCEEDED");
             job.setStage("COMPLETED");
             job.setProgress(100);
             job.setErrorMessage(null);
             job.setHeartbeatTime(LocalDateTime.now());
             job.setFinishedTime(LocalDateTime.now());
+            buildSucceeded = true;
         } catch (RuntimeException exception) {
+            if (!leaseCurrent.get()) return;
             boolean retry = job.getAttempts() < job.getMaxAttempts();
             job.setJobStatus(retry ? "PENDING" : "FAILED");
             job.setStage(retry ? "RETRY_WAIT" : "FAILED");
@@ -159,9 +244,49 @@ public class KnowledgeIndexRebuildWorker {
                     retry,
                     exception.getClass().getSimpleName());
         } finally {
-            if (heartbeatTask != null) heartbeatTask.cancel(false);
+            if (jobHeartbeat != null) jobHeartbeat.cancel(false);
+            if (leaseHeartbeat != null) leaseHeartbeat.cancel(false);
+            if (leaseClaimed) {
+                try {
+                    enterpriseRepository.releaseIndexRebuildLease(
+                            tenantId, job.getSpaceId(), leaseVersion, buildSucceeded);
+                } catch (RuntimeException releaseFailure) {
+                    log.error("Unable to release knowledge index rebuild lease, jobId={}", jobId, releaseFailure);
+                }
+            }
+            if (!finalJobUpdateCompleted) {
+                try {
+                    if (!enterpriseRepository.updateIndexRebuildJob(tenantId, job)) {
+                        log.warn("Knowledge index rebuild job changed before final update, jobId={}", jobId);
+                    }
+                } catch (RuntimeException updateFailure) {
+                    log.error("Unable to update knowledge index rebuild job, jobId={}", jobId, updateFailure);
+                }
+            }
         }
-        enterpriseRepository.updateIndexRebuildJob(tenantId, job);
+    }
+
+    private void runHeartbeat(
+            String resource,
+            Long jobId,
+            BooleanSupplier heartbeat,
+            AtomicBoolean leaseCurrent) {
+        try {
+            if (!heartbeat.getAsBoolean()) {
+                leaseCurrent.set(false);
+                log.warn(
+                        "Knowledge index rebuild {} heartbeat was rejected, jobId={}",
+                        resource,
+                        jobId);
+            }
+        } catch (RuntimeException exception) {
+            leaseCurrent.set(false);
+            log.warn(
+                    "Knowledge index rebuild {} heartbeat failed, jobId={}, errorType={}",
+                    resource,
+                    jobId,
+                    exception.getClass().getSimpleName());
+        }
     }
 
     private TenantId jobTenant(KnowledgeIngestionJobBO job) {

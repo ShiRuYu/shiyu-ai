@@ -151,18 +151,7 @@ public class EmbeddedIngestionWorker {
                 concurrency,
                 pollDelayMs);
         executor = threadPoolManager.getExecutor("knowledge-ingestion");
-        LocalDateTime staleBefore = LocalDateTime.now().minusMinutes(5);
-        for (KnowledgeIngestionJobBO job : enterpriseRepository.findStaleJobs(staleBefore)) {
-            job.setJobStatus("PENDING");
-            job.setStage("RECOVERED");
-            job.setErrorMessage("应用重启后恢复");
-            TenantScope.withTenant(
-                    jobTenant(job),
-                    () -> {
-                        enterpriseRepository.updateJob(jobTenant(job), job);
-                        return null;
-                    });
-        }
+        recoverStaleJobs();
         pollingTask =
                 scheduler.scheduleWithFixedDelay(
                         this::safePoll,
@@ -170,6 +159,20 @@ public class EmbeddedIngestionWorker {
                         Math.max(100, pollDelayMs),
                         TimeUnit.MILLISECONDS);
         log.info("Knowledge ingestion worker polling started");
+    }
+
+    private void recoverStaleJobs() {
+        LocalDateTime staleBefore = LocalDateTime.now().minusMinutes(5);
+        for (KnowledgeIngestionJobBO job : enterpriseRepository.findStaleJobs(staleBefore)) {
+            TenantId tenantId = jobTenant(job);
+            TenantScope.withTenant(
+                    tenantId,
+                    () -> {
+                        enterpriseRepository.recoverStaleIngestionJob(
+                                tenantId, job, staleBefore);
+                        return null;
+                    });
+        }
     }
 
     private void safePoll() {
@@ -181,6 +184,7 @@ public class EmbeddedIngestionWorker {
     }
 
     void poll() {
+        recoverStaleJobs();
         int capacity = Math.max(0, concurrency - inFlight.size());
         if (capacity == 0) return;
         List<KnowledgeIngestionJobBO> pendingJobs = enterpriseRepository.pollPendingJobs(capacity);
@@ -188,8 +192,28 @@ public class EmbeddedIngestionWorker {
             log.info("Knowledge ingestion worker claimed {} pending jobs", pendingJobs.size());
         }
         for (KnowledgeIngestionJobBO job : pendingJobs) {
-            if (inFlight.add(job.getId())) {
-                executor.submit(() -> execute(jobTenant(job), job.getId()));
+            TenantId tenantId = jobTenant(job);
+            if (!inFlight.add(job.getId())) continue;
+            try {
+                executor.submit(
+                        () -> {
+                            try {
+                                TenantScope.withTenant(
+                                        tenantId,
+                                        () -> {
+                                            KnowledgeIngestionJobBO claimed =
+                                                    enterpriseRepository.claimIngestionJob(
+                                                            tenantId, job.getId());
+                                            if (claimed != null) executeClaimed(tenantId, claimed);
+                                            return null;
+                                        });
+                            } finally {
+                                inFlight.remove(job.getId());
+                            }
+                        });
+            } catch (RuntimeException exception) {
+                inFlight.remove(job.getId());
+                throw exception;
             }
         }
     }
@@ -199,7 +223,9 @@ public class EmbeddedIngestionWorker {
             TenantScope.withTenant(
                     tenantId,
                     () -> {
-                        executeInTenant(tenantId, jobId);
+                        KnowledgeIngestionJobBO job =
+                                enterpriseRepository.claimIngestionJob(tenantId, jobId);
+                        if (job != null) executeClaimed(tenantId, job);
                         return null;
                     });
         } finally {
@@ -207,142 +233,140 @@ public class EmbeddedIngestionWorker {
         }
     }
 
-    private void executeInTenant(TenantId tenantId, Long jobId) {
-        KnowledgeIngestionJobBO job = enterpriseRepository.findJob(tenantId, jobId);
-        if (job == null) return;
+    private void executeClaimed(TenantId tenantId, KnowledgeIngestionJobBO job) {
+        ScheduledFuture<?> heartbeat = null;
         try {
-            job = markRunning(tenantId, job);
-            if (job == null) return;
-            if (isCancelled(tenantId, jobId)) return;
-            KnowledgeDocumentBO document =
-                    documentRepository.selectById(tenantId, job.getDocumentId());
-            KnowledgeDocumentVersionBO version =
-                    enterpriseRepository.findVersion(tenantId, job.getVersionId());
-            if (document == null || version == null) {
-                throw new IllegalStateException("任务关联的文档或版本不存在");
-            }
-
-            update(job, "PARSING", 30);
-            DocumentParser parser =
-                    parserFor(document.getDocType())
-                            .orElseThrow(
-                                    () ->
-                                            new IllegalStateException(
-                                                    "Missing document parser: "
-                                                            + document.getDocType()));
-            DocumentParser.ParseResult parsed;
-            try {
-                update(job, "READING", 10);
-                byte[] bytes;
-                try (ObjectStorage.ReadableObject object =
-                        objectStorage.open(version.getObjectKey())) {
-                    bytes = object.inputStream().readAllBytes();
-                    securityScanner.validate(object.originalName(), object.contentType(), bytes);
-                }
-                parsed = parser.parse(bytes);
-            } catch (IOException storageException) {
-                if (version.getContent() == null || version.getContent().isBlank()) {
-                    throw storageException;
-                }
-                log.warn(
-                        "Source object missing, reusing stored document content, jobId={},"
-                                + " objectKeyLength={}",
-                        job.getId(),
-                        version.getObjectKey() == null ? 0 : version.getObjectKey().length());
-                parsed =
-                        new DocumentParser.ParseResult(
-                                version.getTitle(), version.getContent(), "");
-            }
-            if (parsed.text() == null || parsed.text().isBlank()) {
-                throw new IllegalStateException("文档未解析出有效文本");
-            }
-
-            update(job, "EMBEDDING", 55);
-            if (isCancelled(tenantId, jobId)) return;
-            if (job.getActorUserId() == null || job.getActorUserId() <= 0) {
-                throw new IllegalStateException(
-                        "ingestion job has no actorUserId; refusing unattributed embedding");
-            }
-            ActorContext actor =
-                    new ActorContext(
-                            new TenantId(job.getTenantId()),
-                            new UserId(job.getActorUserId()),
-                            false);
-            ingestionService.ingest(
-                    actor,
-                    job.getSpaceId(),
-                    job.getDocumentId(),
-                    job.getVersionId(),
-                    parsed.text(),
-                    List.of());
-
-            if (isCancelled(tenantId, jobId)) {
-                ingestionService.delete(
-                        new com.shiyu.ai.kernel.context.TenantId(job.getTenantId()),
-                        job.getDocumentId());
-                return;
-            }
-
-            version.setContent(parsed.text());
-            version.setParseStatus("READY");
-            if ((version.getTitle() == null || version.getTitle().isBlank())
-                    && parsed.title() != null
-                    && !parsed.title().isBlank()) {
-                version.setTitle(parsed.title());
-            }
-            enterpriseRepository.updateVersion(tenantId, version);
-            document.setContent(parsed.text());
-            document.setParseStatus("READY");
-            documentRepository.update(tenantId, document);
-
-            job.setJobStatus("SUCCEEDED");
-            job.setStage("COMPLETED");
-            job.setProgress(100);
-            job.setHeartbeatTime(LocalDateTime.now());
-            job.setFinishedTime(LocalDateTime.now());
-            enterpriseRepository.updateJob(tenantId, job);
+            heartbeat =
+                    scheduler.scheduleWithFixedDelay(
+                            () ->
+                                    TenantScope.withTenant(
+                                            tenantId,
+                                            () -> {
+                                                enterpriseRepository.heartbeatIngestionJob(
+                                                        tenantId,
+                                                        job.getId(),
+                                                        job.getLockVersion(),
+                                                        LocalDateTime.now());
+                                                return null;
+                                            }),
+                            30,
+                            30,
+                            TimeUnit.SECONDS);
+            processClaimed(tenantId, job);
         } catch (Exception exception) {
             fail(tenantId, job, exception);
+        } finally {
+            if (heartbeat != null) heartbeat.cancel(false);
         }
     }
 
-    private KnowledgeIngestionJobBO markRunning(TenantId tenantId, KnowledgeIngestionJobBO job) {
-        KnowledgeIngestionJobBO current = enterpriseRepository.findJob(tenantId, job.getId());
-        if (current == null || !"PENDING".equals(current.getJobStatus())) {
-            return null;
+    private void processClaimed(TenantId tenantId, KnowledgeIngestionJobBO job) {
+        KnowledgeDocumentBO document =
+                documentRepository.selectById(tenantId, job.getDocumentId());
+        KnowledgeDocumentVersionBO version =
+                enterpriseRepository.findVersion(tenantId, job.getVersionId());
+        if (document == null || version == null) {
+            throw new IllegalStateException("任务关联的文档或版本不存在");
         }
-        job = current;
-        job.setJobStatus("RUNNING");
-        job.setStage("STARTING");
-        job.setProgress(1);
-        job.setAttempts((job.getAttempts() == null ? 0 : job.getAttempts()) + 1);
-        job.setStartedTime(LocalDateTime.now());
+        if (!job.getVersionId().equals(document.getCurrentVersionId())) {
+            cancelSupersededJob(tenantId, job);
+            return;
+        }
+
+        update(job, "PARSING", 30);
+        DocumentParser parser =
+                parserFor(document.getDocType())
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "Missing document parser: "
+                                                        + document.getDocType()));
+        DocumentParser.ParseResult parsed;
+        try {
+            update(job, "READING", 10);
+            byte[] bytes;
+            try (ObjectStorage.ReadableObject object = objectStorage.open(version.getObjectKey())) {
+                bytes = object.inputStream().readAllBytes();
+                securityScanner.validate(object.originalName(), object.contentType(), bytes);
+            }
+            parsed = parser.parse(bytes);
+        } catch (IOException storageException) {
+            if (version.getContent() == null || version.getContent().isBlank()) {
+                throw new IllegalStateException("文档内容不可读取", storageException);
+            }
+            log.warn(
+                    "Source object missing, reusing stored document content, jobId={},"
+                            + " objectKeyLength={}",
+                    job.getId(),
+                    version.getObjectKey() == null ? 0 : version.getObjectKey().length());
+            parsed = new DocumentParser.ParseResult(version.getTitle(), version.getContent(), "");
+        }
+        if (parsed.text() == null || parsed.text().isBlank()) {
+            throw new IllegalStateException("文档未解析出有效文本");
+        }
+
+        update(job, "EMBEDDING", 55);
+        if (job.getActorUserId() == null || job.getActorUserId() <= 0) {
+            throw new IllegalStateException(
+                    "ingestion job has no actorUserId; refusing unattributed embedding");
+        }
+        ActorContext actor =
+                new ActorContext(
+                        new TenantId(job.getTenantId()), new UserId(job.getActorUserId()), false);
+        version.setContent(parsed.text());
+        version.setParseStatus("READY");
+        document.setContent(parsed.text());
+        document.setParseStatus("READY");
+        if (!ingestionService.ingestIfClaimed(
+                actor,
+                job.getSpaceId(),
+                document,
+                version,
+                job,
+                parsed.text(),
+                parsed.title(),
+                List.of())) {
+            throw new StaleIngestionClaimException();
+        }
+    }
+
+    private void cancelSupersededJob(TenantId tenantId, KnowledgeIngestionJobBO job) {
+        job.setJobStatus("CANCELLED");
+        job.setStage("SUPERSEDED");
+        job.setErrorMessage(null);
         job.setHeartbeatTime(LocalDateTime.now());
-        enterpriseRepository.updateJob(tenantId, job);
-        return job;
+        job.setFinishedTime(LocalDateTime.now());
+        if (!enterpriseRepository.cancelIngestionJob(tenantId, job)) {
+            throw new StaleIngestionClaimException();
+        }
     }
 
     private void update(KnowledgeIngestionJobBO job, String stage, int progress) {
         job.setStage(stage);
         job.setProgress(progress);
         job.setHeartbeatTime(LocalDateTime.now());
-        enterpriseRepository.updateJob(jobTenant(job), job);
+        if (!enterpriseRepository.updateClaimedIngestionJob(jobTenant(job), job)) {
+            throw new StaleIngestionClaimException();
+        }
     }
 
     private void fail(TenantId tenantId, KnowledgeIngestionJobBO job, Exception exception) {
         log.error("Knowledge ingestion failed, jobId={}", job.getId(), exception);
-        if (isCancelled(tenantId, job.getId())) return;
         boolean retry = job.getAttempts() < job.getMaxAttempts();
         job.setJobStatus(retry ? "PENDING" : "FAILED");
         job.setStage(retry ? "RETRY_WAIT" : "FAILED");
         job.setErrorMessage("文档处理失败，请稍后重试");
         job.setHeartbeatTime(LocalDateTime.now());
         if (!retry) job.setFinishedTime(LocalDateTime.now());
-        enterpriseRepository.updateJob(tenantId, job);
-        KnowledgeDocumentBO document = documentRepository.selectById(tenantId, job.getDocumentId());
-        if (document != null) {
-            document.setParseStatus(retry ? "PENDING" : "FAILED");
-            documentRepository.update(tenantId, document);
+        enterpriseRepository.failClaimedIngestion(
+                tenantId, job, retry ? "PENDING" : "FAILED");
+    }
+
+    private static final class StaleIngestionClaimException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
+        private StaleIngestionClaimException() {
+            super("Ingestion claim is no longer current");
         }
     }
 
@@ -369,11 +393,6 @@ public class EmbeddedIngestionWorker {
         return parsers.stream()
                 .filter(parser -> parser.getSupportedFormat().equalsIgnoreCase("txt"))
                 .findFirst();
-    }
-
-    private boolean isCancelled(TenantId tenantId, Long jobId) {
-        KnowledgeIngestionJobBO current = enterpriseRepository.findJob(tenantId, jobId);
-        return current != null && "CANCELLED".equals(current.getJobStatus());
     }
 
     @PreDestroy

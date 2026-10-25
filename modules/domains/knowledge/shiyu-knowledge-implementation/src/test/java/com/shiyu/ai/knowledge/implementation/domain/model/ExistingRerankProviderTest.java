@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.model.contract.api.ChatEngine;
 import com.shiyu.ai.model.contract.model.ChatResponse;
 
@@ -23,8 +24,8 @@ class ExistingRerankProviderTest {
     @Test
     void returnsDeterministicOrderForSmallCandidateSets() {
         assertEquals("platform", provider.profile());
-        assertEquals(List.of(), provider.rerank("q", null, 3));
-        assertEquals(List.of(0), provider.rerank("q", List.of("one"), 3));
+        assertEquals(List.of(), provider.rerank(new TenantId(1L), "q", null, 3));
+        assertEquals(List.of(0), provider.rerank(new TenantId(1L), "q", List.of("one"), 3));
     }
 
     @Test
@@ -32,7 +33,7 @@ class ExistingRerankProviderTest {
         when(engine.chat(any()))
                 .thenReturn(
                         ChatResponse.builder().success(true).content("[2], 2, 9, bad, 0").build());
-        assertEquals(List.of(2, 0), provider.rerank("q", List.of("a", "b", "c"), 99));
+        assertEquals(List.of(2, 0), provider.rerank(new TenantId(1L), "q", List.of("a", "b", "c"), 99));
         verify(engine).chat(any());
     }
 
@@ -40,17 +41,17 @@ class ExistingRerankProviderTest {
     void fallsBackForEmptyResponseFailureAndProviderException() {
         when(engine.chat(any()))
                 .thenReturn(ChatResponse.builder().success(true).content("bad").build());
-        assertEquals(List.of(0), provider.rerank("q", List.of("a", "b"), 0));
+        assertEquals(List.of(0), provider.rerank(new TenantId(1L), "q", List.of("a", "b"), 0));
         when(engine.chat(any()))
                 .thenReturn(ChatResponse.builder().success(false).content("1").build());
-        assertEquals(List.of(0, 1), provider.rerank("q", List.of("a", "b"), 2));
+        assertEquals(List.of(0, 1), provider.rerank(new TenantId(1L), "q", List.of("a", "b"), 2));
         when(engine.chat(any())).thenThrow(new IllegalStateException("down"));
-        assertEquals(List.of(0), provider.rerank("q", List.of("a", "b"), 1));
+        assertEquals(List.of(0), provider.rerank(new TenantId(1L), "q", List.of("a", "b"), 1));
         doReturn(null).when(engine).chat(any());
-        assertEquals(List.of(0, 1), provider.rerank("q", List.of("a", "b"), 2));
+        assertEquals(List.of(0, 1), provider.rerank(new TenantId(1L), "q", List.of("a", "b"), 2));
         doReturn(ChatResponse.builder().success(true).content(null).build())
                 .when(engine)
                 .chat(any());
-        assertEquals(List.of(0), provider.rerank("q", List.of("a", "b"), 1));
+        assertEquals(List.of(0), provider.rerank(new TenantId(1L), "q", List.of("a", "b"), 1));
     }
 }

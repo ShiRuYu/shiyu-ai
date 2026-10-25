@@ -10,6 +10,7 @@ import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.vector.api.VectorStoreProvider;
 import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.knowledge.implementation.domain.port.provider.EmbeddingProvider;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeChunkBO;
 import com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO;
@@ -20,6 +21,11 @@ import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeDoc
 import com.shiyu.ai.knowledge.implementation.domain.port.repository.KnowledgeEnterpriseRepository;
 
 import jakarta.annotation.PreDestroy;
+import java.time.LocalDateTime;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,9 +36,12 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -42,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -82,6 +92,12 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
      */
     private final int rrfK;
     private final ConcurrentMap<RebuildKey, RebuildLock> rebuildLocks = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService synchronousLeaseScheduler =
+            Executors.newSingleThreadScheduledExecutor(task -> {
+                Thread thread = new Thread(task, "knowledge-index-lease-heartbeat");
+                thread.setDaemon(true);
+                return thread;
+            });
 
     /**
      * 执行 Embedded 索引 相关业务操作，并维护必要的状态和协作关系。
@@ -128,29 +144,165 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
      */
     @Override
     public long rebuild(TenantId tenant, Long spaceId) {
+        Long fencingVersion =
+                TenantScope.withTenant(
+                        tenant, () -> enterpriseRepository.claimIndexRebuildLease(tenant, spaceId));
+        if (fencingVersion == null) throw new ServiceException("知识空间索引正在重建，请稍后重试");
+        boolean succeeded = false;
+        AtomicBoolean leaseCurrent = new AtomicBoolean(true);
+        ScheduledFuture<?> heartbeat =
+                synchronousLeaseScheduler.scheduleWithFixedDelay(
+                        () -> {
+                            try {
+                                boolean renewed = TenantScope.withTenant(
+                                        tenant,
+                                        () -> enterpriseRepository.heartbeatIndexRebuildLease(
+                                                tenant, spaceId, fencingVersion, LocalDateTime.now()));
+                                if (!renewed) {
+                                    leaseCurrent.set(false);
+                                    log.warn(
+                                            "Synchronous knowledge index rebuild lease was lost: tenantSelected={}, spacePresent={}, versionPresent={}",
+                                            tenant.value() > 0,
+                                            spaceId != null,
+                                            fencingVersion > 0);
+                                }
+                            } catch (RuntimeException heartbeatFailure) {
+                                leaseCurrent.set(false);
+                                log.warn(
+                                        "Unable to refresh synchronous knowledge index rebuild lease: tenantSelected={}, spacePresent={}, errorType={}",
+                                        tenant.value() > 0,
+                                        spaceId != null,
+                                        heartbeatFailure.getClass().getSimpleName());
+                            }
+                        },
+                        30,
+                        30,
+                        TimeUnit.SECONDS);
+        try {
+            long version = TenantScope.withTenant(
+                    tenant,
+                    () ->
+                            rebuild(
+                                    tenant,
+                                    spaceId,
+                                    fencingVersion,
+                                    null,
+                                    null,
+                                    leaseCurrent::get));
+            succeeded = true;
+            return version;
+        } finally {
+            heartbeat.cancel(false);
+            boolean rebuildSucceeded = succeeded;
+            TenantScope.withTenant(
+                    tenant,
+                    () ->
+                            enterpriseRepository.releaseIndexRebuildLease(
+                                    tenant, spaceId, fencingVersion, rebuildSucceeded));
+        }
+    }
+
+    @Override
+    public long rebuild(TenantId tenant, Long spaceId, long fencingVersion) {
+        return rebuild(tenant, spaceId, fencingVersion, null, null);
+    }
+
+    @Override
+    public long rebuild(
+            TenantId tenant,
+            Long spaceId,
+            long fencingVersion,
+            Long jobId,
+            Long jobLockVersion) {
+        return rebuild(tenant, spaceId, fencingVersion, jobId, jobLockVersion, () -> true);
+    }
+
+    @Override
+    public long rebuild(
+            TenantId tenant,
+            Long spaceId,
+            long fencingVersion,
+            Long jobId,
+            Long jobLockVersion,
+            java.util.function.BooleanSupplier leaseIsCurrent) {
         long tenantId = requireTenant(tenant);
         RebuildKey key = new RebuildKey(tenantId, spaceId);
         RebuildLock lock = retainLock(key);
         lock.lock.lock();
+        Path stagingLockPath = storage.stagingLockPath(tenantId, spaceId, fencingVersion);
         try {
-            return rebuildLocked(tenant, spaceId, tenantId);
+            return withStagingFileLock(
+                    stagingLockPath,
+                    () ->
+                            rebuildLocked(
+                                    tenant,
+                                    spaceId,
+                                    tenantId,
+                                    fencingVersion,
+                                    jobId,
+                                    jobLockVersion,
+                                    leaseIsCurrent));
         } finally {
             lock.lock.unlock();
             releaseLock(key, lock);
         }
     }
 
-    private long rebuildLocked(TenantId tenant, Long spaceId, long tenantId) {
+    private <T> T withStagingFileLock(
+            Path lockPath, java.util.function.Supplier<T> action) {
+        try {
+            Files.createDirectories(lockPath.getParent());
+            try (FileChannel channel =
+                    FileChannel.open(
+                            lockPath,
+                            StandardOpenOption.CREATE,
+                            StandardOpenOption.WRITE)) {
+                var fileLock = channel.lock();
+                try {
+                    return action.get();
+                } finally {
+                    fileLock.release();
+                }
+            }
+        } catch (java.io.IOException exception) {
+            throw new ServiceException("无法获取知识索引 staging 锁");
+        }
+    }
+
+    private void ensureLeaseCurrent(java.util.function.BooleanSupplier leaseIsCurrent) {
+        if (!leaseIsCurrent.getAsBoolean()) {
+            throw new ServiceException("索引重建租约已失效，停止构建");
+        }
+    }
+
+    private long rebuildLocked(
+            TenantId tenant,
+            Long spaceId,
+            long tenantId,
+            long fencingVersion,
+            Long jobId,
+            Long jobLockVersion,
+            java.util.function.BooleanSupplier leaseIsCurrent) {
+        ensureLeaseCurrent(leaseIsCurrent);
         KnowledgeSpaceBO space = enterpriseRepository.findSpaceByTenant(tenant, spaceId);
         if (space == null) throw new ServiceException("知识空间不存在: " + spaceId);
         if (!Long.valueOf(tenantId).equals(space.getTenantId()))
             throw new ServiceException("租户与知识空间不匹配");
         long previousVersion =
                 space.getActiveIndexVersion() == null ? 0 : space.getActiveIndexVersion();
-        long version = previousVersion + 1;
-        Path versionPath = storage.path(tenantId, spaceId, version);
+        long version = fencingVersion;
+        Path versionPath = storage.stagingPath(tenantId, spaceId, fencingVersion);
+        Path activePath = storage.path(tenantId, spaceId, version);
+        boolean movedToActivePath = false;
+        boolean activated = false;
         try {
+            if (Files.exists(versionPath)) {
+                throw new ServiceException("索引版本路径已存在，拒绝覆盖: " + version);
+            }
+            ensureLeaseCurrent(leaseIsCurrent);
             Files.createDirectories(versionPath);
+            storage.cleanupAbandonedStaging(
+                    tenantId, spaceId, fencingVersion, leaseIsCurrent);
             List<KnowledgeDocumentBO> published =
                     documentRepository.findBySpace(tenant, spaceId).stream()
                             .filter(document -> "PUBLISHED".equals(document.getLifecycleStatus()))
@@ -162,14 +314,70 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                                             KnowledgeDocumentBO::getId, Function.identity()));
             List<KnowledgeChunkBO> chunks =
                     chunkRepository.findBySpace(tenant, spaceId).stream()
-                            .filter(chunk -> documents.containsKey(chunk.getDocumentId()))
+                            .filter(
+                                    chunk -> {
+                                        KnowledgeDocumentBO document =
+                                                documents.get(chunk.getDocumentId());
+                                        return document != null
+                                                && (document.getCurrentVersionId() == null
+                                                        ? chunk.getVersionId() == null
+                                                        : document.getCurrentVersionId().equals(chunk.getVersionId()));
+                                    })
                             .toList();
-            storage.buildLucene(versionPath.resolve("lucene"), chunks, documents);
-            storage.buildVector(versionPath.resolve("vector"), tenantId, spaceId, version, chunks);
+            ensureLeaseCurrent(leaseIsCurrent);
+            storage.buildLucene(
+                    versionPath.resolve("lucene"), chunks, documents, leaseIsCurrent);
+            ensureLeaseCurrent(leaseIsCurrent);
+            storage.buildVector(
+                    versionPath.resolve("vector"),
+                    tenantId,
+                    spaceId,
+                    version,
+                    chunks,
+                    fencingVersion,
+                    leaseIsCurrent);
+            ensureLeaseCurrent(leaseIsCurrent);
+            Files.createDirectories(activePath.getParent());
+            if (Files.exists(activePath)) {
+                throw new ServiceException("索引版本路径已存在，拒绝覆盖: " + version);
+            }
+            ensureLeaseCurrent(leaseIsCurrent);
+            try {
+                Files.move(versionPath, activePath, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException unsupported) {
+                Files.move(versionPath, activePath);
+            }
+            movedToActivePath = true;
+            boolean activatedByCurrentOwner =
+                    jobId == null
+                            ? enterpriseRepository.activateIndexRebuild(
+                                    tenant, spaceId, fencingVersion, previousVersion, version)
+                            : enterpriseRepository.activateIndexRebuild(
+                                    tenant,
+                                    spaceId,
+                                    fencingVersion,
+                                    previousVersion,
+                                    version,
+                                    jobId,
+                                    jobLockVersion);
+            if (!activatedByCurrentOwner) {
+                throw new ServiceException("索引重建租约已失效，拒绝激活旧构建结果");
+            }
+            activated = true;
             space.setActiveIndexVersion(version);
-            enterpriseRepository.updateSpace(tenant, space);
             storage.invalidate(new IndexKey(tenantId, spaceId, version));
-            storage.cleanupOldVersions(tenantId, spaceId, version);
+            try {
+                cleanupOldVersions(tenantId, spaceId, version);
+            } catch (Exception cleanupFailure) {
+                log.warn(
+                        "新嵌入式索引已激活，但旧版本清理失败: tenantSelected={}, spacePresent={},"
+                                + " versionPresent={}, errorType={}, errorMessageLength={}",
+                        tenantId > 0,
+                        spaceId != null,
+                        version > 0,
+                        cleanupFailure.getClass().getSimpleName(),
+                        cleanupFailure.getMessage() == null ? 0 : cleanupFailure.getMessage().length());
+            }
             log.info(
                     "Activated embedded index tenantSelected={}, spacePresent={},"
                             + " versionPresent={}, chunks={}",
@@ -179,7 +387,13 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                     chunks.size());
             return version;
         } catch (Exception exception) {
-            storage.deleteTree(versionPath);
+            if (!activated) {
+                Path failedPath = movedToActivePath ? activePath : versionPath;
+                if (storage.dropVectorStore(
+                        tenantId, spaceId, version, failedPath.resolve("vector"))) {
+                    storage.deleteTree(failedPath);
+                }
+            }
             log.error(
                     "构建嵌入式索引失败: tenantSelected={}, spacePresent={}, versionPresent={},"
                             + " errorType={}, errorMessageLength={}",
@@ -408,7 +622,8 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                                     })
                             .toList();
             List<Integer> order =
-                    rerankProvider.rerank(query, contents, Math.min(topK, ranked.size()));
+                    rerankProvider.rerank(
+                            tenantId, query, contents, Math.min(topK, ranked.size()));
             Map<Integer, Integer> rerankPositions = new HashMap<>();
             for (int i = 0; i < order.size(); i++) {
                 Integer candidateIndex = order.get(i);
@@ -518,15 +733,6 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
                 0D);
     }
 
-    private void writeVectorManifest(Path vectorPath, int dimension) throws Exception {
-        storage.writeVectorManifest(vectorPath, dimension);
-    }
-
-    private EmbeddedIndexStorage.VectorManifest readVectorManifest(Path vectorPath)
-            throws Exception {
-        return storage.readVectorManifest(vectorPath);
-    }
-
     private float[] fromBytes(byte[] bytes) {
         return storage.fromBytes(bytes);
     }
@@ -539,7 +745,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
         return storage.resolveAppHome(value);
     }
 
-    private void cleanupOldVersions(Long tenantId, Long spaceId, long version) {
+    protected void cleanupOldVersions(Long tenantId, Long spaceId, long version) {
         storage.cleanupOldVersions(tenantId, spaceId, version);
     }
 
@@ -552,6 +758,7 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
      */
     @PreDestroy
     public void closeAll() {
+        synchronousLeaseScheduler.shutdownNow();
         storage.closeAll();
     }
 

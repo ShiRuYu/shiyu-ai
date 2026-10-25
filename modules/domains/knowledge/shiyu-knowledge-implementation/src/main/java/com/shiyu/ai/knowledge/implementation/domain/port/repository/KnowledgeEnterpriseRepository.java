@@ -35,6 +35,42 @@ public interface KnowledgeEnterpriseRepository {
      */
     KnowledgeSpaceBO findSpaceByTenant(TenantId tenantId, Long id);
 
+    /** Claim the durable cross-instance index rebuild lease and return its fencing version. */
+    Long claimIndexRebuildLease(TenantId tenantId, Long spaceId);
+
+    /** Claim the lease on behalf of a durable rebuild job. */
+    default Long claimIndexRebuildLease(TenantId tenantId, Long spaceId, Long jobId) {
+        return claimIndexRebuildLease(tenantId, spaceId);
+    }
+
+    /** Refresh a lease only while its fencing version is still current. */
+    boolean heartbeatIndexRebuildLease(
+            TenantId tenantId, Long spaceId, Long fencingVersion, LocalDateTime heartbeatTime);
+
+
+    /** Fence activation so a worker with an expired or replaced lease cannot publish. */
+    boolean activateIndexRebuild(
+            TenantId tenantId,
+            Long spaceId,
+            Long fencingVersion,
+            Long expectedActiveVersion,
+            Long newActiveVersion);
+
+    /** Activate a worker rebuild while serializing against cancellation of its durable job. */
+    boolean activateIndexRebuild(
+            TenantId tenantId,
+            Long spaceId,
+            Long fencingVersion,
+            Long expectedActiveVersion,
+            Long newActiveVersion,
+            Long jobId,
+            Long jobLockVersion);
+
+    /** Finish a lease only if its fencing version is still current. */
+    boolean releaseIndexRebuildLease(
+            TenantId tenantId, Long spaceId, Long fencingVersion, boolean succeeded);
+
+
     /**
      * 根据条件查询并返回所需数据。
      *
@@ -263,6 +299,35 @@ public interface KnowledgeEnterpriseRepository {
      */
     List<KnowledgeIngestionJobBO> pollPendingJobs(int limit);
 
+    /** 原子领取摄取任务并递增租约版本。 */
+    KnowledgeIngestionJobBO claimIngestionJob(TenantId tenantId, Long jobId);
+
+    /** 只有租约版本和心跳都未变化时，才恢复超时摄取任务。 */
+    boolean recoverStaleIngestionJob(
+            TenantId tenantId, KnowledgeIngestionJobBO job, LocalDateTime heartbeatBefore);
+
+    /** 仅当前运行租约可更新摄取任务状态。 */
+    boolean updateClaimedIngestionJob(TenantId tenantId, KnowledgeIngestionJobBO job);
+
+    /** 仅当前租约持有者刷新摄取任务心跳。 */
+    boolean heartbeatIngestionJob(
+            TenantId tenantId, Long jobId, Long lockVersion, LocalDateTime heartbeatTime);
+
+    /** 在一个事务中提交当前租约对应的版本、文档和完成状态。 */
+    boolean completeClaimedIngestion(
+            TenantId tenantId,
+            KnowledgeIngestionJobBO job,
+            KnowledgeDocumentVersionBO version,
+            com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO document,
+            String parsedTitle);
+
+    /** Fenced failure/retry update, scoped to the version that is still current. */
+    boolean failClaimedIngestion(
+            TenantId tenantId, KnowledgeIngestionJobBO job, String documentParseStatus);
+
+    /** 取消摄取任务并递增租约版本，使旧 Worker 立即失去写权限。 */
+    boolean cancelIngestionJob(TenantId tenantId, KnowledgeIngestionJobBO job);
+
     /**
      * 查询 知识 Enterprise 相关业务数据，并返回处理结果。
      *
@@ -290,6 +355,15 @@ public interface KnowledgeEnterpriseRepository {
 
     /** 仅允许当前租约持有者写回索引重建任务结果。 */
     boolean updateIndexRebuildJob(TenantId tenantId, KnowledgeIngestionJobBO job);
+
+    /** Cancels a pending rebuild or fences a running one. */
+    boolean cancelIndexRebuildJob(TenantId tenantId, KnowledgeIngestionJobBO job);
+
+    /** Checks whether a rebuild still owns its expected running job version. */
+    boolean isIndexRebuildJobCurrent(TenantId tenantId, Long jobId, Long lockVersion);
+
+    /** Atomically accounts a worker attempt only while its job claim is still current. */
+    boolean beginIndexRebuildAttempt(TenantId tenantId, Long jobId, Long lockVersion);
 
     /**
      * 创建或保存 知识 Enterprise 相关业务操作，并维护必要的状态和协作关系。

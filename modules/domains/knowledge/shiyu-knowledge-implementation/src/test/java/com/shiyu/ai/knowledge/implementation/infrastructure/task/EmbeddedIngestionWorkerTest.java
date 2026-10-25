@@ -38,7 +38,7 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 class EmbeddedIngestionWorkerTest {
     @Test
-    void bindsJobTenantAndReleasesCapacityWhenInitialLookupFails() throws Exception {
+    void bindsJobTenantAndReleasesCapacityWhenClaimFails() throws Exception {
         KnowledgeEnterpriseRepository enterprise = mock(KnowledgeEnterpriseRepository.class);
         EmbeddedIngestionWorker worker =
                 worker(
@@ -52,12 +52,13 @@ class EmbeddedIngestionWorkerTest {
                         mock(ThreadPoolManager.class));
         Set<Long> inFlight = new java.util.HashSet<>(Set.of(17L));
         set(worker, "inFlight", inFlight);
-        when(enterprise.findJob(new TenantId(10L), 17L))
-                .thenAnswer(
+        doAnswer(
                         invocation -> {
                             assertEquals(new TenantId(10L), TenantScope.require());
                             throw new IllegalStateException("database unavailable");
-                        });
+                        })
+                .when(enterprise)
+                .claimIngestionJob(new TenantId(10L), 17L);
         TenantScope.set(new TenantId(99L));
         try {
             Exception failure =
@@ -69,7 +70,7 @@ class EmbeddedIngestionWorkerTest {
         } finally {
             TenantScope.clear();
         }
-        when(enterprise.findJob(new TenantId(10L), 18L))
+        when(enterprise.claimIngestionJob(new TenantId(10L), 18L))
                 .thenAnswer(
                         invocation -> {
                             assertEquals(new TenantId(10L), TenantScope.require());
@@ -87,7 +88,14 @@ class EmbeddedIngestionWorkerTest {
         ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
         ExecutorService executor = mock(ExecutorService.class);
         KnowledgeIngestionJobBO stale = job(1L, 7L, 8L, 9L, "RUNNING", 10, 3);
+        stale.setLockVersion(1L);
         when(enterprise.findStaleJobs(any())).thenReturn(List.of(stale));
+        when(enterprise.recoverStaleIngestionJob(eq(new TenantId(10L)), eq(stale), any()))
+                .thenAnswer(
+                        invocation -> {
+                            assertEquals(new TenantId(10L), TenantScope.require());
+                            return true;
+                        });
         when(pools.getExecutor("knowledge-ingestion")).thenReturn(executor);
         when(scheduler.scheduleWithFixedDelay(any(Runnable.class), anyLong(), anyLong(), any()))
                 .thenReturn(null);
@@ -103,18 +111,9 @@ class EmbeddedIngestionWorkerTest {
                         pools);
         set(worker, "concurrency", 2);
         set(worker, "pollDelayMs", 0L);
-        doAnswer(
-                        invocation -> {
-                            assertEquals(new TenantId(10L), TenantScope.require());
-                            return null;
-                        })
-                .when(enterprise)
-                .updateJob(new TenantId(10L), stale);
         worker.initialize();
         assertTrue(TenantScope.current().isEmpty());
-        assertEquals("PENDING", stale.getJobStatus());
-        assertEquals("RECOVERED", stale.getStage());
-        verify(enterprise).updateJob(new TenantId(10L), stale);
+        verify(enterprise).recoverStaleIngestionJob(eq(new TenantId(10L)), eq(stale), any());
         worker.initialize();
         verify(pools, times(1)).getExecutor("knowledge-ingestion");
     }
@@ -158,7 +157,7 @@ class EmbeddedIngestionWorkerTest {
         KnowledgeIngestionJobBO job = job(2L, 7L, 8L, 9L, "PENDING", 0, 3);
         KnowledgeDocumentBO document = document(8L, "TXT");
         KnowledgeDocumentVersionBO version = version(9L, "obj");
-        when(enterprise.findJob(new TenantId(10L), 2L)).thenReturn(job);
+        stubClaim(enterprise, job);
         when(documents.selectById(new TenantId(10L), 8L)).thenReturn(document);
         when(enterprise.findVersion(new TenantId(10L), 9L)).thenReturn(version);
         when(parser.getSupportedFormat()).thenReturn("txt");
@@ -187,12 +186,14 @@ class EmbeddedIngestionWorkerTest {
         assertEquals("READY", document.getParseStatus());
         assertEquals("READY", version.getParseStatus());
         verify(ingestion)
-                .ingest(
+                .ingestIfClaimed(
                         any(com.shiyu.ai.kernel.context.ActorContext.class),
                         eq(7L),
-                        eq(8L),
-                        eq(9L),
+                        eq(document),
+                        eq(version),
+                        eq(job),
                         eq("hello"),
+                        eq("parsed"),
                         eq(List.of()));
         verify(documents).selectById(new TenantId(10L), 8L);
     }
@@ -208,7 +209,7 @@ class EmbeddedIngestionWorkerTest {
         KnowledgeDocumentBO document = document(8L, "REFERENCE");
         KnowledgeDocumentVersionBO version = version(9L, "missing");
         version.setContent("stored text");
-        when(enterprise.findJob(new TenantId(10L), 6L)).thenReturn(job);
+        stubClaim(enterprise, job);
         when(documents.selectById(new TenantId(10L), 8L)).thenReturn(document);
         when(enterprise.findVersion(new TenantId(10L), 9L)).thenReturn(version);
         when(textParser.getSupportedFormat()).thenReturn("txt");
@@ -227,12 +228,14 @@ class EmbeddedIngestionWorkerTest {
         assertEquals("SUCCEEDED", job.getJobStatus());
         verify(textParser, never()).parse(any(byte[].class));
         verify(ingestion)
-                .ingest(
+                .ingestIfClaimed(
                         any(com.shiyu.ai.kernel.context.ActorContext.class),
                         eq(7L),
-                        eq(8L),
-                        eq(9L),
+                        eq(document),
+                        eq(version),
+                        eq(job),
                         eq("stored text"),
+                        eq(null),
                         eq(List.of()));
     }
 
@@ -245,7 +248,7 @@ class EmbeddedIngestionWorkerTest {
         KnowledgeDocumentBO document = document(8L, "TXT");
         KnowledgeDocumentVersionBO version = version(9L, "missing");
         KnowledgeIngestionJobBO retry = job(3L, 7L, 8L, 9L, "PENDING", 1, 3);
-        when(enterprise.findJob(new TenantId(10L), 3L)).thenReturn(retry);
+        stubClaim(enterprise, retry);
         when(documents.selectById(new TenantId(10L), 8L)).thenReturn(document);
         when(enterprise.findVersion(new TenantId(10L), 9L)).thenReturn(version);
         when(parser.getSupportedFormat()).thenReturn("txt");
@@ -269,12 +272,13 @@ class EmbeddedIngestionWorkerTest {
         retry.setJobStatus("PENDING");
         invokeExecute(worker, new TenantId(10L), 3L);
         assertEquals("FAILED", retry.getJobStatus());
-        assertEquals("FAILED", document.getParseStatus());
+        assertEquals("FAILED", retry.getStage());
         assertEquals("文档处理失败，请稍后重试", retry.getErrorMessage());
+        verify(enterprise).failClaimedIngestion(eq(new TenantId(10L)), eq(retry), eq("PENDING"));
+        verify(enterprise).failClaimedIngestion(eq(new TenantId(10L)), eq(retry), eq("FAILED"));
 
         clearInvocations(storage);
-        KnowledgeIngestionJobBO cancelled = job(4L, 7L, 8L, 9L, "CANCELLED", 1, 3);
-        when(enterprise.findJob(new TenantId(10L), 4L)).thenReturn(cancelled);
+        when(enterprise.claimIngestionJob(new TenantId(10L), 4L)).thenReturn(null);
         invokeExecute(worker, new TenantId(10L), 4L);
         verify(storage, never()).open(anyString());
     }
@@ -294,25 +298,26 @@ class EmbeddedIngestionWorkerTest {
                         mock(ScheduledExecutorService.class),
                         mock(ThreadPoolManager.class));
 
-        when(enterprise.findJob(new TenantId(10L), 99L)).thenReturn(null);
+        when(enterprise.claimIngestionJob(new TenantId(10L), 99L)).thenReturn(null);
         invokeExecute(worker, new TenantId(10L), 99L);
 
         KnowledgeIngestionJobBO running = job(100L, 7L, 8L, 9L, "RUNNING", 1, 2);
-        when(enterprise.findJob(new TenantId(10L), 100L)).thenReturn(running);
+        when(enterprise.claimIngestionJob(new TenantId(10L), 100L)).thenReturn(null);
         invokeExecute(worker, new TenantId(10L), 100L);
         verify(documents, never()).selectById(any(TenantId.class), anyLong());
 
         KnowledgeIngestionJobBO missing = job(101L, 7L, 8L, 9L, "PENDING", 2, 2);
-        when(enterprise.findJob(new TenantId(10L), 101L)).thenReturn(missing);
+        stubClaim(enterprise, missing);
         when(documents.selectById(new TenantId(10L), 8L)).thenReturn(null);
         invokeExecute(worker, new TenantId(10L), 101L);
         assertEquals("FAILED", missing.getJobStatus());
         assertEquals("FAILED", missing.getStage());
-        verify(enterprise, atLeastOnce()).updateJob(new TenantId(10L), missing);
+        verify(enterprise)
+                .failClaimedIngestion(eq(new TenantId(10L)), eq(missing), eq("FAILED"));
     }
 
     @Test
-    void handlesBlankParserOutputAndCancellationAfterEmbedding() throws Exception {
+    void handlesBlankParserOutputAndRejectsAStalePublication() throws Exception {
         KnowledgeEnterpriseRepository enterprise = mock(KnowledgeEnterpriseRepository.class);
         KnowledgeDocumentRepository documents = mock(KnowledgeDocumentRepository.class);
         DocumentIngestionService ingestion = mock(DocumentIngestionService.class);
@@ -321,7 +326,7 @@ class EmbeddedIngestionWorkerTest {
         KnowledgeIngestionJobBO blank = job(102L, 7L, 8L, 9L, "PENDING", 0, 1);
         KnowledgeDocumentBO document = document(8L, "markdown");
         KnowledgeDocumentVersionBO version = version(9L, "obj");
-        when(enterprise.findJob(new TenantId(10L), 102L)).thenReturn(blank);
+        stubClaim(enterprise, blank);
         when(documents.selectById(new TenantId(10L), 8L)).thenReturn(document);
         when(enterprise.findVersion(new TenantId(10L), 9L)).thenReturn(version);
         when(parser.getSupportedFormat()).thenReturn("md");
@@ -346,35 +351,33 @@ class EmbeddedIngestionWorkerTest {
                         mock(ThreadPoolManager.class));
         invokeExecute(worker, new TenantId(10L), 102L);
         assertEquals("FAILED", blank.getJobStatus());
+        assertEquals("FAILED", blank.getStage());
+        verify(enterprise)
+                .failClaimedIngestion(eq(new TenantId(10L)), eq(blank), eq("FAILED"));
         verify(ingestion, never())
-                .ingest(
+                .ingestIfClaimed(
                         any(com.shiyu.ai.kernel.context.ActorContext.class),
                         anyLong(),
-                        anyLong(),
-                        anyLong(),
+                        any(KnowledgeDocumentBO.class),
+                        any(KnowledgeDocumentVersionBO.class),
+                        any(KnowledgeIngestionJobBO.class),
                         anyString(),
+                        nullable(String.class),
                         anyList());
 
-        KnowledgeIngestionJobBO cancelled = job(103L, 7L, 8L, 9L, "PENDING", 0, 1);
-        when(enterprise.findJob(new TenantId(10L), 103L)).thenReturn(cancelled);
-        doAnswer(
-                        invocation -> {
-                            cancelled.setJobStatus("CANCELLED");
-                            return null;
-                        })
-                .when(ingestion)
-                .ingest(
-                        any(com.shiyu.ai.kernel.context.ActorContext.class),
-                        anyLong(),
-                        anyLong(),
-                        anyLong(),
-                        anyString(),
-                        anyList());
+        KnowledgeIngestionJobBO staleClaim = job(103L, 7L, 8L, 9L, "PENDING", 0, 3);
+        stubClaim(enterprise, staleClaim);
+        when(ingestion.ingestIfClaimed(
+                        any(), anyLong(), any(), any(), eq(staleClaim), anyString(), nullable(String.class), anyList()))
+                .thenReturn(false);
         when(parser.parse(any(byte[].class)))
                 .thenReturn(new DocumentParser.ParseResult("title", "text", ""));
         invokeExecute(worker, new TenantId(10L), 103L);
-        assertEquals("CANCELLED", cancelled.getJobStatus());
-        verify(ingestion).delete(new TenantId(10L), 8L);
+        assertEquals("PENDING", staleClaim.getJobStatus());
+        assertEquals("RETRY_WAIT", staleClaim.getStage());
+        verify(enterprise)
+                .failClaimedIngestion(eq(new TenantId(10L)), eq(staleClaim), eq("PENDING"));
+        verify(ingestion, never()).delete(any(TenantId.class), anyLong());
     }
 
     @Test
@@ -412,26 +415,25 @@ class EmbeddedIngestionWorkerTest {
         worker.poll();
         verify(enterprise).pollPendingJobs(1);
 
-        KnowledgeIngestionJobBO claimed = job(110L, 7L, 8L, 9L, "PENDING", 0, 1);
-        KnowledgeIngestionJobBO cancelled = job(110L, 7L, 8L, 9L, "CANCELLED", 0, 1);
-        when(enterprise.findJob(new TenantId(10L), 110L)).thenReturn(claimed, claimed, cancelled);
+        when(enterprise.claimIngestionJob(new TenantId(10L), 110L)).thenReturn(null);
         invokeExecute(worker, new TenantId(10L), 110L);
         verify(storage, never()).open(anyString());
 
         KnowledgeIngestionJobBO noContent = job(111L, 7L, 8L, 9L, "PENDING", 0, 1);
         KnowledgeDocumentBO document = document(8L, "UNKNOWN");
         KnowledgeDocumentVersionBO version = version(9L, "missing");
-        when(enterprise.findJob(new TenantId(10L), 111L)).thenReturn(noContent);
+        KnowledgeDocumentVersionBO readable = version(9L, "obj");
+        KnowledgeDocumentVersionBO untitled = version(9L, "obj");
+        stubClaim(enterprise, noContent);
         when(documents.selectById(new TenantId(10L), 8L)).thenReturn(document);
-        when(enterprise.findVersion(new TenantId(10L), 9L)).thenReturn(version);
+        when(enterprise.findVersion(new TenantId(10L), 9L))
+                .thenReturn(version, readable, readable, untitled);
         when(storage.open("missing")).thenThrow(new java.io.IOException("gone"));
         invokeExecute(worker, new TenantId(10L), 111L);
         assertEquals("FAILED", noContent.getJobStatus());
 
         KnowledgeIngestionJobBO unknown = job(112L, 7L, 8L, 9L, "PENDING", 0, 1);
-        KnowledgeDocumentVersionBO readable = version(9L, "obj");
-        when(enterprise.findJob(new TenantId(10L), 112L)).thenReturn(unknown);
-        when(enterprise.findVersion(new TenantId(10L), 9L)).thenReturn(readable);
+        stubClaim(enterprise, unknown);
         when(storage.open("obj"))
                 .thenReturn(
                         new ObjectStorage.ReadableObject(
@@ -448,7 +450,7 @@ class EmbeddedIngestionWorkerTest {
                 .thenReturn(new DocumentParser.ParseResult("title", "text", ""));
         KnowledgeIngestionJobBO noActor = job(113L, 7L, 8L, 9L, "PENDING", 0, 1);
         noActor.setActorUserId(0L);
-        when(enterprise.findJob(new TenantId(10L), 113L)).thenReturn(noActor);
+        stubClaim(enterprise, noActor);
         when(storage.open("obj"))
                 .thenReturn(
                         new ObjectStorage.ReadableObject(
@@ -469,17 +471,18 @@ class EmbeddedIngestionWorkerTest {
         invokeExecute(actorWorker, new TenantId(10L), 113L);
         assertEquals("FAILED", noActor.getJobStatus());
         verify(ingestion, never())
-                .ingest(
+                .ingestIfClaimed(
                         any(com.shiyu.ai.kernel.context.ActorContext.class),
                         anyLong(),
-                        anyLong(),
-                        anyLong(),
+                        any(KnowledgeDocumentBO.class),
+                        any(KnowledgeDocumentVersionBO.class),
+                        any(KnowledgeIngestionJobBO.class),
                         anyString(),
+                        nullable(String.class),
                         anyList());
 
         KnowledgeIngestionJobBO titled = job(114L, 7L, 8L, 9L, "PENDING", 0, 1);
-        KnowledgeDocumentVersionBO untitled = version(9L, "obj");
-        when(enterprise.findJob(new TenantId(10L), 114L)).thenReturn(titled);
+        stubClaim(enterprise, titled);
         when(enterprise.findVersion(new TenantId(10L), 9L)).thenReturn(untitled);
         when(parser.parse(any(byte[].class)))
                 .thenReturn(new DocumentParser.ParseResult("Parsed title", "text", ""));
@@ -524,13 +527,9 @@ class EmbeddedIngestionWorkerTest {
         parserFor.setAccessible(true);
         assertTrue(
                 ((java.util.Optional<?>) parserFor.invoke(worker, new Object[] {null})).isEmpty());
-        Method markRunning =
-                EmbeddedIngestionWorker.class.getDeclaredMethod(
-                        "markRunning", TenantId.class, KnowledgeIngestionJobBO.class);
-        markRunning.setAccessible(true);
-        when(enterprise.findJob(new TenantId(10L), 202L)).thenReturn(null);
-        KnowledgeIngestionJobBO missing = job(202L, 7L, 8L, 9L, "PENDING", 0, 1);
-        assertNull(markRunning.invoke(worker, new TenantId(10L), missing));
+        when(enterprise.claimIngestionJob(new TenantId(10L), 202L)).thenReturn(null);
+        invokeExecute(worker, new TenantId(10L), 202L);
+        verify(enterprise).claimIngestionJob(new TenantId(10L), 202L);
     }
 
     private static EmbeddedIngestionWorker worker(
@@ -542,8 +541,46 @@ class EmbeddedIngestionWorkerTest {
             List<DocumentParser> parsers,
             ScheduledExecutorService scheduler,
             ThreadPoolManager pools) {
+        when(enterprise.updateClaimedIngestionJob(any(TenantId.class), any())).thenReturn(true);
+        when(enterprise.failClaimedIngestion(any(TenantId.class), any(), anyString()))
+                .thenReturn(true);
+        when(enterprise.cancelIngestionJob(any(TenantId.class), any())).thenReturn(true);
+        when(ingestion.ingestIfClaimed(
+                        any(), anyLong(), any(), any(), any(KnowledgeIngestionJobBO.class),
+                        anyString(), nullable(String.class), anyList()))
+                .thenAnswer(
+                        invocation -> {
+                            KnowledgeDocumentVersionBO version = invocation.getArgument(3);
+                            String parsedTitle = invocation.getArgument(6);
+                            if (parsedTitle != null
+                                    && !parsedTitle.isBlank()
+                                    && (version.getTitle() == null || version.getTitle().isBlank())) {
+                                version.setTitle(parsedTitle);
+                            }
+                            KnowledgeIngestionJobBO job = invocation.getArgument(4);
+                            job.setJobStatus("SUCCEEDED");
+                            job.setStage("COMPLETED");
+                            job.setProgress(100);
+                            return true;
+                        });
         return new EmbeddedIngestionWorker(
                 enterprise, documents, ingestion, storage, scanner, parsers, scheduler, pools);
+    }
+
+    private static void stubClaim(
+            KnowledgeEnterpriseRepository enterprise, KnowledgeIngestionJobBO job) {
+        when(enterprise.claimIngestionJob(new TenantId(10L), job.getId()))
+                .thenAnswer(
+                        invocation -> {
+                            if (!"PENDING".equals(job.getJobStatus())) return null;
+                            job.setJobType("INGEST");
+                            job.setJobStatus("RUNNING");
+                            job.setStage("STARTING");
+                            job.setProgress(1);
+                            job.setAttempts((job.getAttempts() == null ? 0 : job.getAttempts()) + 1);
+                            job.setLockVersion((job.getLockVersion() == null ? 0L : job.getLockVersion()) + 1);
+                            return job;
+                        });
     }
 
     private static void invokeExecute(EmbeddedIngestionWorker worker, TenantId tenant, Long id)
@@ -595,6 +632,7 @@ class EmbeddedIngestionWorkerTest {
         value.setId(id);
         value.setTenantId(10L);
         value.setSpaceId(7L);
+        value.setCurrentVersionId(9L);
         value.setDocType(type);
         return value;
     }

@@ -1,5 +1,7 @@
 package com.shiyu.ai.knowledge.implementation.domain.port.provider;
 
+import com.shiyu.ai.kernel.context.TenantId;
+
 import java.util.List;
 
 /**
@@ -21,5 +23,5 @@ public interface RerankProvider {
      * @param topK 用于完成本次业务处理的 topK 参数。
      * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
-    List<Integer> rerank(String query, List<String> candidates, int topK);
+    List<Integer> rerank(TenantId tenantId, String query, List<String> candidates, int topK);
 }

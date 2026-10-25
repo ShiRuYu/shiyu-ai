@@ -14,6 +14,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.shiyu.ai.common.vector.model.VectorRecord;
+
+import org.mockito.ArgumentCaptor;
+
 import com.shiyu.ai.common.foundation.exception.ServiceException;
 import com.shiyu.ai.common.vector.api.VectorStore;
 import com.shiyu.ai.common.vector.api.VectorStoreProvider;
@@ -52,31 +56,27 @@ class EmbeddedIndexRegistryCoverageTest {
         VectorStoreProvider provider = mock(VectorStoreProvider.class);
         when(provider.type()).thenReturn("jvector");
         EmbeddedIndexRegistry registry = registry(provider, 1);
+        EmbeddedIndexStorage storage = new EmbeddedIndexStorage(provider, tempDir.toString(), 5, 1);
         Path vector = tempDir.resolve("vector");
         Files.createDirectories(vector);
+        String namespace = "knowledge/1/10/3/attempt/3";
 
-        invoke(registry, "writeVectorManifest", new Class<?>[] {Path.class, int.class}, vector, 3);
-        Object manifest =
-                invoke(registry, "readVectorManifest", new Class<?>[] {Path.class}, vector);
-        Method providerAccessor = manifest.getClass().getDeclaredMethod("provider");
-        Method dimensionAccessor = manifest.getClass().getDeclaredMethod("dimension");
-        assertEquals("jvector", providerAccessor.invoke(manifest));
-        assertEquals(3, dimensionAccessor.invoke(manifest));
+        storage.writeVectorManifest(vector, 3, namespace);
+        EmbeddedIndexStorage.VectorManifest manifest = storage.readVectorManifest(vector);
+        assertEquals("jvector", manifest.provider());
+        assertEquals(3, manifest.dimension());
+        assertEquals(namespace, manifest.namespace());
 
         Files.delete(vector.resolve("manifest.properties"));
-        assertThrows(
-                Exception.class,
-                () -> invoke(registry, "readVectorManifest", new Class<?>[] {Path.class}, vector));
-        Files.createDirectories(vector);
+        assertThrows(Exception.class, () -> storage.readVectorManifest(vector));
         Files.writeString(
-                vector.resolve("manifest.properties"), "provider=jvector\ndimension=bad\n");
-        assertThrows(
-                Exception.class,
-                () -> invoke(registry, "readVectorManifest", new Class<?>[] {Path.class}, vector));
-        Files.writeString(vector.resolve("manifest.properties"), "provider=\ndimension=0\n");
-        assertThrows(
-                Exception.class,
-                () -> invoke(registry, "readVectorManifest", new Class<?>[] {Path.class}, vector));
+                vector.resolve("manifest.properties"),
+                "provider=jvector\ndimension=bad\nnamespace=knowledge/1/10/3\n");
+        assertThrows(Exception.class, () -> storage.readVectorManifest(vector));
+        Files.writeString(
+                vector.resolve("manifest.properties"),
+                "provider=\ndimension=0\nnamespace=knowledge/1/10/3\n");
+        assertThrows(Exception.class, () -> storage.readVectorManifest(vector));
 
         byte[] bytes =
                 ByteBuffer.allocate(8)
@@ -128,6 +128,7 @@ class EmbeddedIndexRegistryCoverageTest {
         space.setId(10L);
         space.setTenantId(1L);
         space.setActiveIndexVersion(0L);
+        when(enterprise.claimIndexRebuildLease(new TenantId(1L), 10L)).thenReturn(1L);
         when(enterprise.findSpaceByTenant(new com.shiyu.ai.kernel.context.TenantId(1L), 10L))
                 .thenReturn(space);
         when(documents.findBySpace(new com.shiyu.ai.kernel.context.TenantId(1L), 10L))
@@ -327,7 +328,11 @@ class EmbeddedIndexRegistryCoverageTest {
                 1,
                 registry.hybridSearch(new TenantId(1L), 10L, "q", "SEMANTIC", 1, 0.5D, false)
                         .size());
-        when(rerank.rerank("q", java.util.List.of("first", "second"), 2))
+        when(rerank.rerank(
+                        new com.shiyu.ai.kernel.context.TenantId(1L),
+                        "q",
+                        java.util.List.of("first", "second"),
+                        2))
                 .thenReturn(java.util.List.of(1, -1, 99));
         assertFalse(
                 registry.hybridSearch(new TenantId(1L), 10L, "q", "HYBRID", 2, 0D, true).isEmpty());
@@ -407,7 +412,7 @@ class EmbeddedIndexRegistryCoverageTest {
     }
 
     @Test
-    void rejectsMissingOrForeignSpacesAndBuildsChunksWithoutEmbeddings() {
+    void rejectsMissingOrForeignSpacesAndBuildsVersionedChunksWithVectorMetadata() {
         var enterprise = mock(KnowledgeEnterpriseRepository.class);
         var documents = mock(KnowledgeDocumentRepository.class);
         var chunks = mock(KnowledgeChunkRepository.class);
@@ -428,11 +433,16 @@ class EmbeddedIndexRegistryCoverageTest {
                         60,
                         1);
 
+        when(enterprise.claimIndexRebuildLease(new TenantId(1L), 10L))
+                .thenReturn(1L, 2L, 3L);
         assertThrows(RuntimeException.class, () -> registry.rebuild(new TenantId(1L), 10L));
         var foreign = new com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeSpaceBO();
         foreign.setId(10L);
         foreign.setTenantId(2L);
         foreign.setActiveIndexVersion(0L);
+        when(enterprise.activateIndexRebuild(
+                        eq(new TenantId(1L)), eq(10L), eq(3L), eq(0L), eq(3L)))
+                .thenReturn(true);
         when(enterprise.findSpaceByTenant(new com.shiyu.ai.kernel.context.TenantId(1L), 10L))
                 .thenReturn(foreign);
         assertThrows(RuntimeException.class, () -> registry.rebuild(new TenantId(1L), 10L));
@@ -445,18 +455,37 @@ class EmbeddedIndexRegistryCoverageTest {
                 .thenReturn(space);
         var document = new com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO();
         document.setId(20L);
+        document.setCurrentVersionId(40L);
         document.setLifecycleStatus("PUBLISHED");
         document.setTitle("Document");
         var chunk = new KnowledgeChunkBO();
         chunk.setId(30L);
+        chunk.setTenantId(1L);
+        chunk.setSpaceId(10L);
         chunk.setDocumentId(20L);
-        chunk.setContent("without vector");
+        chunk.setVersionId(40L);
+        chunk.setContent("versioned vector content");
+        chunk.setEmbedding("[1.0,0.0]");
+        chunk.setEmbeddingModel("test-embedding");
+        chunk.setEmbeddingDimension(2);
+        chunk.setEmbeddingBinary(
+                ByteBuffer.allocate(2 * Float.BYTES)
+                        .order(ByteOrder.LITTLE_ENDIAN)
+                        .putFloat(1F)
+                        .putFloat(0F)
+                        .array());
+        chunk.setMetadata("{\"source\":\"current-version\"}");
         when(documents.findBySpace(new com.shiyu.ai.kernel.context.TenantId(1L), 10L))
                 .thenReturn(java.util.List.of(document));
         when(chunks.findBySpace(new com.shiyu.ai.kernel.context.TenantId(1L), 10L))
                 .thenReturn(java.util.List.of(chunk));
-        assertEquals(1L, registry.rebuild(new TenantId(1L), 10L));
-        assertEquals(1L, space.getActiveIndexVersion());
+        assertEquals(3L, registry.rebuild(new TenantId(1L), 10L));
+        assertEquals(3L, space.getActiveIndexVersion());
+        ArgumentCaptor<VectorRecord> vectorRecord = ArgumentCaptor.forClass(VectorRecord.class);
+        verify(store).upsert(vectorRecord.capture());
+        assertEquals("30", vectorRecord.getValue().id());
+        assertArrayEquals(new float[] {1F, 0F}, vectorRecord.getValue().vector());
+        assertEquals(20L, vectorRecord.getValue().metadata().get("documentId"));
         verify(store).flush();
         registry.closeAll();
     }

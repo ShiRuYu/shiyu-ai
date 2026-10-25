@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,10 +44,16 @@ class KnowledgeIndexRebuildWorkerTest {
                 .scheduleWithFixedDelay(
                         any(Runnable.class), eq(30L), eq(30L), eq(TimeUnit.SECONDS));
         KnowledgeIngestionJobBO job = job("RUNNING", 1, 3, 4L);
-        when(enterprise.claimIndexRebuildJob(TENANT, 7L)).thenReturn(job);
+        stubClaimedJob(enterprise, job);
         doThrow(new IllegalStateException("index unavailable"))
                 .when(index)
-                .rebuild(TENANT, 5L);
+                .rebuild(
+                        eq(TENANT),
+                        eq(5L),
+                        eq(8L),
+                        eq(7L),
+                        eq(4L),
+                        any(java.util.function.BooleanSupplier.class));
         KnowledgeIndexRebuildWorker worker =
                 new KnowledgeIndexRebuildWorker(
                         enterprise, index, scheduler, mock(ThreadPoolManager.class));
@@ -60,8 +67,9 @@ class KnowledgeIndexRebuildWorkerTest {
                                 updated ->
                                         "PENDING".equals(updated.getJobStatus())
                                                 && "RETRY_WAIT".equals(updated.getStage())
-                                                && updated.getAttempts() == 1));
-        verify(heartbeat).cancel(false);
+                                                && updated.getAttempts() == 2));
+        verify(enterprise).releaseIndexRebuildLease(TENANT, 5L, 8L, false);
+        verify(heartbeat, times(2)).cancel(false);
     }
 
     @Test
@@ -75,8 +83,16 @@ class KnowledgeIndexRebuildWorkerTest {
                 .when(scheduler)
                 .scheduleWithFixedDelay(
                         any(Runnable.class), eq(30L), eq(30L), eq(TimeUnit.SECONDS));
-        when(enterprise.claimIndexRebuildJob(TENANT, 7L)).thenReturn(job("RUNNING", 1, 3, 4L));
-        when(index.rebuild(TENANT, 5L)).thenReturn(2L);
+        KnowledgeIngestionJobBO job = job("RUNNING", 1, 3, 4L);
+        stubClaimedJob(enterprise, job);
+        when(index.rebuild(
+                        eq(TENANT),
+                        eq(5L),
+                        eq(8L),
+                        eq(7L),
+                        eq(4L),
+                        any(java.util.function.BooleanSupplier.class)))
+                .thenReturn(2L);
         KnowledgeIndexRebuildWorker worker =
                 new KnowledgeIndexRebuildWorker(
                         enterprise, index, scheduler, mock(ThreadPoolManager.class));
@@ -90,8 +106,21 @@ class KnowledgeIndexRebuildWorkerTest {
                                 updated ->
                                         "SUCCEEDED".equals(updated.getJobStatus())
                                                 && "COMPLETED".equals(updated.getStage())
-                                                && updated.getProgress() == 100));
-        verify(heartbeat).cancel(false);
+                                                && updated.getProgress() == 100
+                                                && updated.getAttempts() == 2));
+        verify(enterprise).releaseIndexRebuildLease(TENANT, 5L, 8L, true);
+        verify(heartbeat, times(2)).cancel(false);
+    }
+
+    private static void stubClaimedJob(
+            KnowledgeEnterpriseRepository enterprise, KnowledgeIngestionJobBO job) {
+        when(enterprise.claimIndexRebuildJob(TENANT, 7L)).thenReturn(job);
+        when(enterprise.claimIndexRebuildLease(TENANT, 5L, 7L)).thenReturn(8L);
+        when(enterprise.beginIndexRebuildAttempt(TENANT, 7L, 4L)).thenReturn(true);
+        when(enterprise.isIndexRebuildJobCurrent(TENANT, 7L, 4L)).thenReturn(true);
+        when(enterprise.updateIndexRebuildJob(eq(TENANT), any())).thenReturn(true);
+        when(enterprise.releaseIndexRebuildLease(TENANT, 5L, 8L, true)).thenReturn(true);
+        when(enterprise.releaseIndexRebuildLease(TENANT, 5L, 8L, false)).thenReturn(true);
     }
 
     private static KnowledgeIngestionJobBO job(

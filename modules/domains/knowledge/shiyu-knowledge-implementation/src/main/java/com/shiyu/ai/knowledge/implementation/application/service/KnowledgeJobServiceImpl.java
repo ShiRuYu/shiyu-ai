@@ -86,10 +86,13 @@ public class KnowledgeJobServiceImpl implements KnowledgeJobService {
         if ("SUCCEEDED".equals(job.getJobStatus()) || "CANCELLED".equals(job.getJobStatus())) {
             throw new ServiceException("当前任务不能取消");
         }
-        job.setJobStatus("CANCELLED");
-        job.setStage("CANCELLED");
-        job.setFinishedTime(java.time.LocalDateTime.now());
-        repository.updateJob(actor.tenantId(), job);
+        boolean cancelled =
+                "INDEX_REBUILD".equals(job.getJobType())
+                        ? repository.cancelIndexRebuildJob(actor.tenantId(), job)
+                        : repository.cancelIngestionJob(actor.tenantId(), job);
+        if (!cancelled) {
+            throw new ServiceException("任务状态已变化，请刷新后重试");
+        }
     }
 
     /**
@@ -110,6 +113,7 @@ public class KnowledgeJobServiceImpl implements KnowledgeJobService {
         job.setProgress(0);
         job.setErrorMessage(null);
         job.setFinishedTime(null);
+        job.setLockVersion((job.getLockVersion() == null ? 0L : job.getLockVersion()) + 1);
         repository.updateJob(actor.tenantId(), job);
     }
 

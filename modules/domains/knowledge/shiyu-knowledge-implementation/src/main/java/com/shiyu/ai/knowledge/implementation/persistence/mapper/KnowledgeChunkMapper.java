@@ -3,6 +3,8 @@ package com.shiyu.ai.knowledge.implementation.persistence.mapper;
 import com.mybatisflex.annotation.UseDataSource;
 import com.mybatisflex.core.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import com.shiyu.ai.knowledge.implementation.persistence.dataobject.KnowledgeChunkDO;
 

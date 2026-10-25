@@ -291,6 +291,8 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DocumentView approve(ActorContext actor, Long documentId, String comment) {
+        KnowledgeDocumentBO document = requireDocument(actor, documentId);
+        requireRequiredBindings(actor, document);
         return transition(
                 actor,
                 documentId,
@@ -330,16 +332,19 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         KnowledgeDocumentBO document = requireDocument(actor, documentId);
         KnowledgeSpaceBO space =
                 enterpriseRepository.findSpace(actor.tenantId(), document.getSpaceId());
-        if (space != null
-                && "REQUIRED".equals(space.getBindingMode())
-                && documentRelationService.listPointIds(actor, documentId).isEmpty()) {
-            throw new ServiceException("当前知识空间要求文档至少关联一个知识点后才能发布");
+        requireRequiredBindings(actor, document);
+        boolean reviewRequired = space != null && "REQUIRED".equals(space.getReviewMode());
+        if (reviewRequired) {
+            throw new ServiceException("该知识空间要求审核，请通过审核操作发布文档");
         }
-        KnowledgeSpaceService.SpaceRole required =
-                space != null && "REQUIRED".equals(space.getReviewMode())
-                        ? KnowledgeSpaceService.SpaceRole.REVIEWER
-                        : KnowledgeSpaceService.SpaceRole.EDITOR;
-        return transition(actor, documentId, null, "PUBLISHED", "PUBLISH", required, comment);
+        return transition(
+                actor,
+                documentId,
+                null,
+                "PUBLISHED",
+                "PUBLISH",
+                KnowledgeSpaceService.SpaceRole.EDITOR,
+                comment);
     }
 
     /**
@@ -372,26 +377,40 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         spaceService.requireAccess(
                 document.getSpaceId(), KnowledgeSpaceService.SpaceRole.EDITOR, actor);
         boolean wasPublished = "PUBLISHED".equals(document.getLifecycleStatus());
+        KnowledgeSpaceBO space =
+                enterpriseRepository.findSpace(actor.tenantId(), document.getSpaceId());
+        boolean reviewRequired = space != null && "REQUIRED".equals(space.getReviewMode());
+        boolean publishImmediately = wasPublished && !reviewRequired;
         KnowledgeDocumentVersionBO source =
                 enterpriseRepository.findVersion(actor.tenantId(), versionId);
         if (source == null || !documentId.equals(source.getDocumentId())) {
             throw new ServiceException("文档版本不存在");
         }
+        if (!"READY".equals(source.getParseStatus())
+                || !ingestionService.hasChunks(actor.tenantId(), documentId, versionId)) {
+            throw new ServiceException("所选版本没有可用的解析结果和切片，无法回滚");
+        }
         KnowledgeDocumentVersionBO version = copyVersion(source);
         version.setVersionNo(enterpriseRepository.nextVersionNo(actor.tenantId(), documentId));
-        version.setLifecycleStatus("DRAFT");
-        version.setPublishedAt(null);
+        version.setLifecycleStatus(publishImmediately ? "PUBLISHED" : "DRAFT");
+        version.setPublishedAt(publishImmediately ? LocalDateTime.now() : null);
         enterpriseRepository.insertVersion(actor.tenantId(), version);
+        if (version.getId() == null
+                || !ingestionService.copyVersionChunks(
+                        actor.tenantId(), documentId, versionId, version.getId())) {
+            throw new ServiceException("复制文档版本切片失败，无法回滚");
+        }
         document.setCurrentVersionId(version.getId());
         document.setTitle(version.getTitle());
-        document.setLifecycleStatus("DRAFT");
+        document.setLifecycleStatus(publishImmediately ? "PUBLISHED" : "DRAFT");
         document.setParseStatus(version.getParseStatus());
         document.setObjectKey(version.getObjectKey());
         document.setChecksum(version.getChecksum());
+        document.setContent(version.getContent());
         documentRepository.update(actor.tenantId(), document);
         auditService.record(
                 actor, document.getSpaceId(), "DOCUMENT", documentId, "ROLLBACK", versionId);
-        if (wasPublished) {
+        if (publishImmediately) {
             enqueueIndexRebuild(actor.tenantId(), document.getSpaceId());
         }
         return toView(document);
@@ -523,6 +542,16 @@ public class EnterpriseDocumentServiceImpl implements EnterpriseDocumentService 
         job.setLockVersion(0L);
         job.setDelFlag(0);
         enterpriseRepository.insertJob(tenantId, job);
+    }
+
+    private void requireRequiredBindings(ActorContext actor, KnowledgeDocumentBO document) {
+        KnowledgeSpaceBO space =
+                enterpriseRepository.findSpace(actor.tenantId(), document.getSpaceId());
+        if (space != null
+                && "REQUIRED".equals(space.getBindingMode())
+                && documentRelationService.listPointIds(actor, document.getId()).isEmpty()) {
+            throw new ServiceException("当前知识空间要求文档至少关联一个知识点后才能发布");
+        }
     }
 
     private KnowledgeDocumentBO requireDocument(ActorContext actor, Long documentId) {

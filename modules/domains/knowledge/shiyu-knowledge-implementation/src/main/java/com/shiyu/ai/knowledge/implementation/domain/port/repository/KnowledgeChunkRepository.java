@@ -34,6 +34,27 @@ public interface KnowledgeChunkRepository {
      */
     void deleteByDocumentId(TenantId tenantId, Long documentId);
 
+    /** 查询指定不可变文档版本的切片。 */
+    List<KnowledgeChunkBO> findByDocumentVersion(
+            TenantId tenantId, Long documentId, Long versionId);
+
+    /** Replace chunks for one immutable document version. */
+    boolean replaceByDocumentVersion(
+            TenantId tenantId, Long documentId, Long versionId, List<KnowledgeChunkBO> chunks);
+
+    /** Replace chunks only while the provided durable ingestion claim is current. */
+    boolean replaceByDocumentVersionIfClaimed(
+            TenantId tenantId,
+            Long documentId,
+            Long versionId,
+            Long jobId,
+            Long lockVersion,
+            List<KnowledgeChunkBO> chunks);
+
+    /** Copy usable chunks from one immutable version into a newly created version. */
+    boolean copyByDocumentVersion(
+            TenantId tenantId, Long documentId, Long sourceVersionId, Long targetVersionId);
+
     /**
      * 查询 知识 Chunk 相关业务数据，并返回处理结果。
      *

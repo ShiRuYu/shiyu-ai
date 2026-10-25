@@ -31,14 +31,17 @@ import org.apache.lucene.store.FSDirectory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.BooleanSupplier;
 
 /**
  * 负责 Embedded 索引 相关数据的存储或后台处理。
@@ -90,6 +93,23 @@ final class EmbeddedIndexStorage {
                 .resolve(String.valueOf(version));
     }
 
+    Path stagingPath(Long tenantId, Long spaceId, Long fencingVersion) {
+        return indexRoot
+                .resolve(String.valueOf(tenantId))
+                .resolve(String.valueOf(spaceId))
+                .resolve(".staging")
+                .resolve(String.valueOf(fencingVersion));
+    }
+
+    Path stagingLockPath(Long tenantId, Long spaceId, Long fencingVersion) {
+        return indexRoot
+                .resolve(String.valueOf(tenantId))
+                .resolve(String.valueOf(spaceId))
+                .resolve(".staging")
+                .resolve(".locks")
+                .resolve(fencingVersion + ".lock");
+    }
+
     void invalidate(IndexKey key) {
         handles.invalidate(key);
     }
@@ -98,6 +118,15 @@ final class EmbeddedIndexStorage {
             Path directoryPath,
             List<KnowledgeChunkBO> chunks,
             Map<Long, KnowledgeDocumentBO> documents)
+            throws IOException {
+        buildLucene(directoryPath, chunks, documents, () -> true);
+    }
+
+    void buildLucene(
+            Path directoryPath,
+            List<KnowledgeChunkBO> chunks,
+            Map<Long, KnowledgeDocumentBO> documents,
+            BooleanSupplier leaseIsCurrent)
             throws IOException {
         Files.createDirectories(directoryPath);
         try (Directory directory = FSDirectory.open(directoryPath);
@@ -108,6 +137,7 @@ final class EmbeddedIndexStorage {
                                 new IndexWriterConfig(analyzer)
                                         .setOpenMode(IndexWriterConfig.OpenMode.CREATE))) {
             for (KnowledgeChunkBO chunk : chunks) {
+                ensureLeaseCurrent(leaseIsCurrent);
                 KnowledgeDocumentBO source = documents.get(chunk.getDocumentId());
                 Document document = new Document();
                 document.add(
@@ -124,6 +154,7 @@ final class EmbeddedIndexStorage {
                 document.add(new TextField("content", chunk.getContent(), Field.Store.YES));
                 writer.addDocument(document);
             }
+            ensureLeaseCurrent(leaseIsCurrent);
             writer.commit();
         }
     }
@@ -133,7 +164,20 @@ final class EmbeddedIndexStorage {
             Long tenantId,
             Long spaceId,
             long version,
-            List<KnowledgeChunkBO> chunks)
+            List<KnowledgeChunkBO> chunks,
+            long stagingVersion)
+            throws IOException {
+        buildVector(directoryPath, tenantId, spaceId, version, chunks, stagingVersion, () -> true);
+    }
+
+    void buildVector(
+            Path directoryPath,
+            Long tenantId,
+            Long spaceId,
+            long version,
+            List<KnowledgeChunkBO> chunks,
+            long stagingVersion,
+            BooleanSupplier leaseIsCurrent)
             throws IOException {
         int dimension =
                 chunks.stream()
@@ -142,10 +186,14 @@ final class EmbeddedIndexStorage {
                         .findFirst()
                         .orElse(512);
         Files.createDirectories(directoryPath);
-        VectorStoreOptions options =
-                vectorOptions(tenantId, spaceId, version, dimension, directoryPath);
-        try (VectorStore store = vectorStoreProvider.open(options)) {
+        String namespace =
+                "knowledge/" + tenantId + "/" + spaceId + "/" + version + "/attempt/" + stagingVersion;
+        VectorStoreOptions stagingOptions =
+                vectorOptions(namespace, dimension, directoryPath);
+        writeVectorManifest(directoryPath, dimension, namespace);
+        try (VectorStore store = vectorStoreProvider.open(stagingOptions)) {
             for (KnowledgeChunkBO chunk : chunks) {
+                ensureLeaseCurrent(leaseIsCurrent);
                 if (chunk.getEmbeddingBinary() != null) {
                     store.upsert(
                             new VectorRecord(
@@ -155,9 +203,9 @@ final class EmbeddedIndexStorage {
                 }
             }
             store.flush();
-            writeVectorManifest(directoryPath, dimension);
+            writeVectorManifest(directoryPath, dimension, namespace);
         } catch (IOException | RuntimeException exception) {
-            vectorStoreProvider.drop(options);
+            vectorStoreProvider.drop(stagingOptions);
             throw exception;
         }
     }
@@ -194,9 +242,7 @@ final class EmbeddedIndexStorage {
             vectorStore =
                     vectorStoreProvider.open(
                             vectorOptions(
-                                    key.tenantId(),
-                                    key.spaceId(),
-                                    key.version(),
+                                    manifest.namespace(),
                                     manifest.dimension(),
                                     vectorPath));
             return new IndexHandle(
@@ -207,6 +253,67 @@ final class EmbeddedIndexStorage {
             closeQuietly(directory);
             closeQuietly(analyzer);
             throw new IllegalStateException(exception);
+        }
+    }
+
+    void cleanupAbandonedStaging(Long tenantId, Long spaceId, long activeFencingVersion) {
+        cleanupAbandonedStaging(tenantId, spaceId, activeFencingVersion, () -> true);
+    }
+
+    void cleanupAbandonedStaging(
+            Long tenantId,
+            Long spaceId,
+            long activeFencingVersion,
+            BooleanSupplier leaseIsCurrent) {
+        Path stagingRoot =
+                indexRoot.resolve(String.valueOf(tenantId))
+                        .resolve(String.valueOf(spaceId))
+                        .resolve(".staging");
+        if (!Files.isDirectory(stagingRoot)) return;
+        try (var paths = Files.list(stagingRoot)) {
+            paths.filter(Files::isDirectory)
+                    .forEach(
+                            stagingPath -> {
+                                Long fencingVersion = parseVersion(stagingPath.getFileName().toString());
+                                if (fencingVersion == null || fencingVersion >= activeFencingVersion) return;
+                                Path stagingLockPath = stagingLockPath(tenantId, spaceId, fencingVersion);
+                                try {
+                                    Files.createDirectories(stagingLockPath.getParent());
+                                    try (FileChannel channel =
+                                                    FileChannel.open(
+                                                            stagingLockPath,
+                                                            StandardOpenOption.CREATE,
+                                                            StandardOpenOption.WRITE)) {
+                                        var lock = channel.tryLock();
+                                        if (lock == null) return;
+                                        try (lock) {
+                                            ensureLeaseCurrent(leaseIsCurrent);
+                                            Path vectorPath = stagingPath.resolve("vector");
+                                            if (dropVectorStore(
+                                                    tenantId, spaceId, fencingVersion, vectorPath)) {
+                                                deleteTree(stagingPath);
+                                            }
+                                        }
+                                    }
+                                } catch (java.nio.channels.OverlappingFileLockException inUse) {
+                                    return;
+                                } catch (IOException exception) {
+                                    log.debug("Unable to lock abandoned staging index", exception);
+                                } catch (RuntimeException leaseLost) {
+                                    return;
+                                }
+                            });
+        } catch (IOException exception) {
+            log.warn(
+                    "Failed to clean abandoned staging indexes: tenantSelected={}, spacePresent={}, errorType={}",
+                    tenantId != null,
+                    spaceId != null,
+                    exception.getClass().getSimpleName());
+        }
+        try (var remaining = Files.list(stagingRoot)) {
+            if (remaining.findAny().isEmpty()) Files.deleteIfExists(stagingRoot);
+        } catch (IOException exception) {
+            log.debug("Unable to remove empty index staging directory", exception);
         }
     }
 
@@ -235,12 +342,13 @@ final class EmbeddedIndexStorage {
                                     if (version != null && !keep.contains(version)) {
                                         handles.invalidate(
                                                 new IndexKey(tenantId, spaceId, version));
-                                        dropVectorStore(
+                                        if (dropVectorStore(
                                                 tenantId,
                                                 spaceId,
                                                 version,
-                                                versionPath.resolve("vector"));
-                                        deleteTree(versionPath);
+                                                versionPath.resolve("vector"))) {
+                                            deleteTree(versionPath);
+                                        }
                                     }
                                 });
             }
@@ -272,10 +380,11 @@ final class EmbeddedIndexStorage {
         }
     }
 
-    void writeVectorManifest(Path vectorPath, int dimension) throws IOException {
+    void writeVectorManifest(Path vectorPath, int dimension, String namespace) throws IOException {
         Properties properties = new Properties();
         properties.setProperty("provider", vectorStoreProvider.type());
         properties.setProperty("dimension", String.valueOf(dimension));
+        properties.setProperty("namespace", namespace);
         try (var output = Files.newOutputStream(vectorPath.resolve(VECTOR_MANIFEST))) {
             properties.store(output, "Shiyu vector index manifest");
         }
@@ -290,6 +399,7 @@ final class EmbeddedIndexStorage {
             properties.load(input);
         }
         String provider = properties.getProperty("provider");
+        String namespace = properties.getProperty("namespace");
         int dimension;
         try {
             dimension = Integer.parseInt(properties.getProperty("dimension", "0"));
@@ -298,26 +408,40 @@ final class EmbeddedIndexStorage {
         }
         if (provider == null || provider.isBlank() || dimension <= 0)
             throw new IOException("Invalid vector index manifest: " + manifestPath);
-        return new VectorManifest(provider, dimension);
+        if (namespace == null || namespace.isBlank()) {
+            Path versionPath = vectorPath.getParent();
+            Path spacePath = versionPath.getParent();
+            namespace =
+                    "knowledge/" + spacePath.getParent().getFileName()
+                            + "/" + spacePath.getFileName()
+                            + "/" + versionPath.getFileName();
+        }
+        return new VectorManifest(provider, dimension, namespace);
     }
 
-    void dropVectorStore(Long tenantId, Long spaceId, long version, Path vectorPath) {
+    boolean dropVectorStore(Long tenantId, Long spaceId, long version, Path vectorPath) {
+        if (vectorPath == null || !Files.exists(vectorPath.resolve(VECTOR_MANIFEST))) return true;
         try {
             VectorManifest manifest = readVectorManifest(vectorPath);
             vectorStoreProvider.drop(
-                    vectorOptions(tenantId, spaceId, version, manifest.dimension(), vectorPath));
-        } catch (IOException exception) {
-            log.debug("Unable to read vector manifest while dropping index", exception);
+                    vectorOptions(manifest.namespace(), manifest.dimension(), vectorPath));
+            return true;
+        } catch (IOException | RuntimeException exception) {
+            log.warn(
+                    "Unable to drop old index vector namespace: tenantSelected={}, spacePresent={},"
+                            + " versionPresent={}, errorType={}",
+                    tenantId != null,
+                    spaceId != null,
+                    version > 0,
+                    exception.getClass().getSimpleName());
+            return false;
         }
     }
 
-    VectorStoreOptions vectorOptions(
-            Long tenantId, Long spaceId, long version, int dimension, Path directoryPath) {
-        return VectorStoreOptions.of(
-                "knowledge/" + tenantId + "/" + spaceId + "/" + version,
-                dimension,
-                directoryPath.toString());
+    VectorStoreOptions vectorOptions(String namespace, int dimension, Path directoryPath) {
+        return VectorStoreOptions.of(namespace, dimension, directoryPath.toString());
     }
+
 
     float[] fromBytes(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
@@ -354,6 +478,12 @@ final class EmbeddedIndexStorage {
         handles.cleanUp();
     }
 
+    private static void ensureLeaseCurrent(BooleanSupplier leaseIsCurrent) {
+        if (!leaseIsCurrent.getAsBoolean()) {
+            throw new IllegalStateException("Index rebuild lease was lost");
+        }
+    }
+
     private void close(IndexHandle handle) {
         if (handle == null) return;
         try {
@@ -369,7 +499,7 @@ final class EmbeddedIndexStorage {
     /**
      * 封装 向量 Manifest 相关的不可变数据及其字段约束。
      */
-    record VectorManifest(String provider, int dimension) {}
+    record VectorManifest(String provider, int dimension, String namespace) {}
 
     /**
      * 封装 索引 Handle 相关的不可变数据及其字段约束。

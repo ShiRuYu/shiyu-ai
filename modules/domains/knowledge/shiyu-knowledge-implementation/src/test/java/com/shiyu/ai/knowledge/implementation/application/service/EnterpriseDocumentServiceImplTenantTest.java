@@ -256,9 +256,12 @@ class EnterpriseDocumentServiceImplTenantTest {
         KnowledgeEnterpriseRepository enterprise = mock(KnowledgeEnterpriseRepository.class);
         KnowledgeSpaceService spaces = mock(KnowledgeSpaceService.class);
         KnowledgeAuditService audit = mock(KnowledgeAuditService.class);
+        DocumentIngestionService ingestion = mock(DocumentIngestionService.class);
         KnowledgeDocumentBO document = document(10L, 5L, 9L, "DRAFT", "READY");
         KnowledgeDocumentVersionBO version = version(9L, 10L, 1, "DRAFT", "READY");
         when(documents.selectById(new TenantId(1L), 10L)).thenReturn(document);
+        when(ingestion.hasChunks(new TenantId(1L), 10L, 9L)).thenReturn(true);
+        when(ingestion.copyVersionChunks(new TenantId(1L), 10L, 9L, 11L)).thenReturn(true);
         when(enterprise.findVersion(new TenantId(1L), 9L)).thenReturn(version);
         when(enterprise.nextVersionNo(new TenantId(1L), 10L)).thenReturn(2);
         when(enterprise.insertVersion(eq(new TenantId(1L)), any(KnowledgeDocumentVersionBO.class)))
@@ -275,7 +278,7 @@ class EnterpriseDocumentServiceImplTenantTest {
                         spaces,
                         audit,
                         mock(KnowledgeDocumentRelationService.class),
-                        mock(DocumentIngestionService.class),
+                        ingestion,
                         mock(TransactionTemplateExecutor.class),
                         mock(StorageMetadataStore.class),
                         mock(ObjectStorage.class));
@@ -286,6 +289,8 @@ class EnterpriseDocumentServiceImplTenantTest {
         assertEquals("DRAFT", service.reject(actor(1L), 10L, "needs changes").lifecycleStatus());
         document.setLifecycleStatus("DRAFT");
         assertEquals(11L, service.rollback(actor(1L), 10L, 9L).currentVersionId());
+        verify(ingestion).hasChunks(new TenantId(1L), 10L, 9L);
+        verify(ingestion).copyVersionChunks(new TenantId(1L), 10L, 9L, 11L);
         verify(enterprise, atLeast(2)).insertReview(eq(new TenantId(1L)), any());
     }
 
@@ -418,7 +423,7 @@ class EnterpriseDocumentServiceImplTenantTest {
     }
 
     @Test
-    void publishesReadyDocumentWithRequiredBindingAndReviewRole() {
+    void approvesReadyDocumentWithRequiredBindingAndReviewRole() {
         KnowledgeDocumentRepository documents = mock(KnowledgeDocumentRepository.class);
         KnowledgeEnterpriseRepository enterprise = mock(KnowledgeEnterpriseRepository.class);
         KnowledgeSpaceService spaces = mock(KnowledgeSpaceService.class);
@@ -449,7 +454,7 @@ class EnterpriseDocumentServiceImplTenantTest {
         TransactionSynchronizationManager.initSynchronization();
         EnterpriseDocumentService.DocumentView result;
         try {
-            result = service.publish(actor(1L), 10L, "publish");
+            result = service.approve(actor(1L), 10L, "approve");
         } finally {
             TransactionSynchronizationManager.clearSynchronization();
         }
@@ -559,6 +564,8 @@ class EnterpriseDocumentServiceImplTenantTest {
         KnowledgeDocumentVersionBO source = version(41L, 40L, 1, "PUBLISHED", "READY");
         when(documents.selectById(new TenantId(1L), 40L)).thenReturn(published);
         when(enterprise.findVersion(new TenantId(1L), 41L)).thenReturn(source);
+        when(ingestion.hasChunks(new TenantId(1L), 40L, 41L)).thenReturn(true);
+        when(ingestion.copyVersionChunks(new TenantId(1L), 40L, 41L, 42L)).thenReturn(true);
         when(enterprise.findVersions(new TenantId(1L), 40L)).thenReturn(List.of(source));
         assertEquals(1, service.versions(actor, 40L).size());
         assertEquals(40L, service.get(actor, 40L).id());
