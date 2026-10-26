@@ -246,6 +246,7 @@ class UserContextInterceptorTest {
         user.setId(42L);
         user.setStatus(1);
         user.setDelFlag(0);
+        user.setExtInfo("{\"homeTenantId\":7,\"currentTenantId\":7,\"switchMode\":\"NORMAL\",\"currentRole\":{\"roleId\":9,\"roleKey\":\"member\"}}");
         AuthTenantResponse tenant = new AuthTenantResponse();
         tenant.setId(7L);
         tenant.setStatus(1);
@@ -273,6 +274,7 @@ class UserContextInterceptorTest {
         cachedContext.setCurrentTenantId(7L);
         cachedContext.setCurrentRoleId(9L);
         cachedContext.setCurrentRoleCode("member");
+        cachedContext.setSwitchMode("NORMAL");
         UserContextInterceptor interceptor =
                 new UserContextInterceptor(authContextService, clientIpResolver);
         HttpServletRequest request = mock(HttpServletRequest.class);

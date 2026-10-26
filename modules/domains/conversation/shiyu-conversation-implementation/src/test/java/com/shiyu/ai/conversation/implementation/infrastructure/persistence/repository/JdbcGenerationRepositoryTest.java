@@ -17,6 +17,7 @@ import com.shiyu.ai.kernel.context.UserId;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.h2.jdbcx.JdbcDataSource;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -27,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -172,6 +174,27 @@ class JdbcGenerationRepositoryTest {
     }
 
     @Test
+    void touchesRunningGenerationTimestampWithoutChangingItsVersion() throws Exception {
+        JdbcGenerationRepository repository =
+                new JdbcGenerationRepository(mock(DataSource.class), mock(AiRunRepository.class));
+        JdbcTemplate jdbc = mock(JdbcTemplate.class);
+        Field field = JdbcGenerationRepository.class.getDeclaredField("jdbc");
+        field.setAccessible(true);
+        field.set(repository, jdbc);
+        when(jdbc.update(
+                        startsWith("UPDATE CHAT_GENERATION_RUN SET UPDATED_AT=?"),
+                        any(Object[].class)))
+                .thenReturn(1);
+
+        assertEquals(1, repository.touchRunning("g-running", new TenantId(7)));
+
+        verify(jdbc)
+                .update(
+                        contains("WHERE ID=? AND TENANT_ID=? AND STATUS='RUNNING'"),
+                        any(Object[].class));
+    }
+
+    @Test
     void handlesMissingConversationDuplicateReservationAndStaleRecovery() throws Exception {
         AiRunRepository runtime = mock(AiRunRepository.class);
         JdbcGenerationRepository repository =
@@ -215,8 +238,10 @@ class JdbcGenerationRepositoryTest {
     @SuppressWarnings({"unchecked", "rawtypes"})
     void recoversStaleGenerationAndRepairsRuntimeProjection() throws Exception {
         AiRunRepository runtime = mock(AiRunRepository.class);
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setURL("jdbc:h2:mem:generation_recovery_" + UUID.randomUUID());
         JdbcGenerationRepository repository =
-                new JdbcGenerationRepository(mock(DataSource.class), runtime);
+                new JdbcGenerationRepository(dataSource, runtime);
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         Field field = JdbcGenerationRepository.class.getDeclaredField("jdbc");
         field.setAccessible(true);

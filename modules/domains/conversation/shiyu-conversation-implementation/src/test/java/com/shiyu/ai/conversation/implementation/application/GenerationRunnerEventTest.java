@@ -40,6 +40,9 @@ class GenerationRunnerEventTest {
         GenerationRun running = generation(GenerationStatus.RUNNING);
         when(generations.find("g1", new TenantId(7), 8)).thenReturn(Optional.of(running));
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         GenerationRunner runner =
                 new GenerationRunner(
                         engine,
@@ -154,7 +157,12 @@ class GenerationRunnerEventTest {
                 7L,
                 8L,
                 new AtomicInteger());
-        assertEquals(GenerationStatus.CANCELLED, cancelled.get().status());
+        verify(conversations)
+                .transitionRunningGeneration(
+                        argThat(run -> run.status() == GenerationStatus.CANCELLED),
+                        anyLong(),
+                        eq(8L),
+                        anyList());
     }
 
     @Test
@@ -238,8 +246,17 @@ class GenerationRunnerEventTest {
         when(conversations.findMessage("m1", new TenantId(7), 8)).thenReturn(Optional.of(input));
         when(conversations.findConversation("c1", new TenantId(7), 8))
                 .thenReturn(Optional.of(conversation));
-        when(conversations.updateConversation(any(Conversation.class), eq(0L))).thenReturn(1);
-        when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
+        when(conversations.completeGeneration(
+                        any(GenerationRun.class),
+                        anyLong(),
+                        any(ConversationMessage.class),
+                        any(Conversation.class),
+                        anyLong(),
+                        anyList()))
+                .thenReturn(1, 0);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         GenerationRunner runner =
                 new GenerationRunner(
                         mock(ChatEngine.class), generations, conversations, usage, admission);
@@ -262,16 +279,20 @@ class GenerationRunnerEventTest {
                 new AtomicInteger(),
                 "answer");
         verify(conversations)
-                .insertMessage(
+                .completeGeneration(
+                        argThat(run -> run.status() == GenerationStatus.COMPLETED),
+                        anyLong(),
                         argThat(
                                 message ->
                                         message.role() == MessageRole.ASSISTANT
-                                                && "answer".equals(message.textContent())));
+                                                && "answer".equals(message.textContent())),
+                        any(Conversation.class),
+                        anyLong(),
+                        eq(List.of()));
         verify(admission)
                 .settle(any(), argThat(value -> value.status() == GenerationStatus.COMPLETED));
         verify(usage).completed(any(), eq(new TenantId(7L)), eq(new UserId(8L)));
 
-        when(conversations.updateConversation(any(Conversation.class), eq(0L))).thenReturn(0);
         finish.invoke(
                 runner,
                 new AtomicReference<>(running),
@@ -280,8 +301,12 @@ class GenerationRunnerEventTest {
                 8L,
                 new AtomicInteger(),
                 "answer");
-        verify(conversations, atLeastOnce())
-                .deleteMessage(anyString(), eq(new TenantId(7L)), eq(8L));
+        verify(conversations)
+                .transitionRunningGeneration(
+                        argThat(run -> run.status() == GenerationStatus.FAILED),
+                        anyLong(),
+                        eq(8L),
+                        anyList());
     }
 
     @Test
@@ -292,7 +317,9 @@ class GenerationRunnerEventTest {
         GenerationUsageSink usage = mock(GenerationUsageSink.class);
         GenerationRun running = generation(GenerationStatus.RUNNING);
         when(generations.find("g1", new TenantId(7), 8)).thenReturn(Optional.of(running));
-        when(generations.update(any(GenerationRun.class), eq(0L))).thenReturn(1);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1, 0);
         GenerationRunner runner =
                 new GenerationRunner(
                         mock(ChatEngine.class), generations, conversations, usage, admission);
@@ -320,7 +347,6 @@ class GenerationRunnerEventTest {
                 .release(any(), argThat(value -> value.status() == GenerationStatus.FAILED));
         verify(usage).failed(any());
 
-        when(generations.update(any(GenerationRun.class), eq(0L))).thenReturn(0);
         finish.invoke(
                 runner,
                 new AtomicReference<>(running),
@@ -384,6 +410,9 @@ class GenerationRunnerEventTest {
                         0);
         when(generations.find("g1", new TenantId(7), 8)).thenReturn(Optional.of(running));
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         GenerationRunner runner =
                 new GenerationRunner(
                         mock(ChatEngine.class),

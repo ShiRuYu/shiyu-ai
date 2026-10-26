@@ -93,6 +93,11 @@ class AiRuntimeControllerCoverageTest {
         when(runtime.events("run-1", new TenantId(7), 9, 0, 1000)).thenReturn(List.of(event));
         when(runtime.finish("run-1", new TenantId(7), 9, AiRunStatus.CANCELLED, "CLIENT_CANCELLED"))
                 .thenReturn(run);
+        com.shiyu.ai.agent.implementation.execution.Execution cancelledExecution =
+                new com.shiyu.ai.agent.implementation.execution.Execution("agent-1", "v1", Map.of());
+        cancelledExecution.start();
+        cancelledExecution.cancel();
+        when(agents.cancel(ACTOR, "exec-1")).thenReturn(cancelledExecution);
 
         try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
             ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
@@ -380,6 +385,7 @@ class AiRuntimeControllerCoverageTest {
             AiRuntimeController controller = new AiRuntimeController(runtime, agents);
             AiRun running = mock(AiRun.class);
             AiRun terminal = mock(AiRun.class);
+            when(running.id()).thenReturn("run-1");
             when(running.status()).thenReturn(AiRunStatus.RUNNING);
             when(running.executionId()).thenReturn("exec-1");
             when(runtime.requireRun("run-1", new TenantId(7), 9))
@@ -425,6 +431,7 @@ class AiRuntimeControllerCoverageTest {
             AgentRuntime agents = mock(AgentRuntime.class);
             AiRun running = mock(AiRun.class);
             AiRun cancelled = mock(AiRun.class);
+            when(running.id()).thenReturn("run-1");
             when(running.status()).thenReturn(AiRunStatus.RUNNING);
             when(running.executionId()).thenReturn(executionId);
             when(runtime.requireRun("run-1", new TenantId(7), 9)).thenReturn(running);

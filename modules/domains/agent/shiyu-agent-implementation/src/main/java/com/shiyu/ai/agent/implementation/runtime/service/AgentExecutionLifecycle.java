@@ -38,6 +38,8 @@ import org.bsc.langgraph4j.streaming.StreamingOutput;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -81,6 +83,7 @@ final class AgentExecutionLifecycle {
      */
     private final AgentRuntimeEventBridge eventBridge;
     private final ToolApprovalService approvals;
+    private final ConcurrentMap<String, Thread> executionWorkers = new ConcurrentHashMap<>();
 
     AgentExecutionLifecycle(
             AgentCacheManager cacheManager,
@@ -120,62 +123,87 @@ final class AgentExecutionLifecycle {
                     agentExecutor.executeAgent(
                             actor.tenantId(), definition, agentVersion, graphInput, execution,
                             checkpointRecorder(actor, execution));
-            stateStore.save(actor, result);
+            result = stateStore.save(actor, result);
         } catch (Exception e) {
             if (execution.getStatus() == ExecutionStatus.COMPLETED) {
-                // 终态写入的暂时性故障不能将已完成的执行改为 FAILED。
-                // 发布完成事件前，先重试写入相同的终态。
+                // 先重试完成态写入；重载活动态会覆盖本地结果，使其无法重试。
                 try {
-                    stateStore.save(actor, execution);
-                    result = execution;
+                    result = stateStore.save(actor, execution);
                 } catch (RuntimeException retryFailure) {
                     if (retryFailure != e) e.addSuppressed(retryFailure);
                     stateStore.cleanup(actor, execution);
                     throw e;
                 }
             } else {
-                boolean failed = execution.fail(e.getMessage());
-                try {
-                    stateStore.save(actor, execution);
-                } catch (RuntimeException cleanupFailure) {
-                    suppressDistinct(e, cleanupFailure);
-                }
-                try {
-                    eventBridge.finish(runtimeRun, execution);
-                } catch (RuntimeException cleanupFailure) {
-                    suppressDistinct(e, cleanupFailure);
-                }
-                if (failed) {
+                stateStore.effective(actor, execution);
+                if (execution.getStatus() == ExecutionStatus.CANCELLED) {
+                    result = execution;
+                } else if (execution.getStatus() == ExecutionStatus.COMPLETED) {
+                    result = stateStore.save(actor, execution);
+                } else {
+                    boolean failed = execution.fail(e.getMessage());
                     try {
-                        eventPublisher.publish(
-                                new AgentExecutionFailedEvent(
-                                        execution.getExecutionId(),
-                                        agentId,
-                                        AgentRuntimeImpl.publicFailureCode()));
+                        result = stateStore.save(actor, execution);
+                        stateStore.effective(actor, result);
+                    } catch (RuntimeException cleanupFailure) {
+                        suppressDistinct(e, cleanupFailure);
+                        result = execution;
+                    }
+                    AiRun finishedRun = null;
+                    try {
+                        if (result.getStatus().isTerminal()) {
+                            finishedRun = eventBridge.finish(runtimeRun, result);
+                        }
                     } catch (RuntimeException cleanupFailure) {
                         suppressDistinct(e, cleanupFailure);
                     }
+                    if (failed && result.getStatus() == ExecutionStatus.FAILED
+                            && (finishedRun == null
+                                    || finishedRun.status() == AiRunStatus.FAILED)) {
+                        try {
+                            eventPublisher.publish(
+                                    new AgentExecutionFailedEvent(
+                                            result.getExecutionId(),
+                                            agentId,
+                                            AgentRuntimeImpl.publicFailureCode()));
+                        } catch (RuntimeException cleanupFailure) {
+                            suppressDistinct(e, cleanupFailure);
+                        }
+                    }
+                    try {
+                        stateStore.cleanup(actor, result);
+                    } catch (RuntimeException cleanupFailure) {
+                        suppressDistinct(e, cleanupFailure);
+                    }
+                    throw e;
                 }
-                try {
-                    stateStore.cleanup(actor, execution);
-                } catch (RuntimeException cleanupFailure) {
-                    suppressDistinct(e, cleanupFailure);
-                }
-                throw e;
             }
         }
         try {
-            if (result.getStatus() != ExecutionStatus.PAUSED) {
-                eventBridge.finish(runtimeRun, result);
+            AiRun finishedRun = result.getStatus() == ExecutionStatus.PAUSED
+                    ? null : eventBridge.finish(runtimeRun, result);
+            boolean runtimeStatusMatches = finishedRun == null
+                    || finishedRun.status() == runtimeStatus(result.getStatus());
+            if (!runtimeStatusMatches && finishedRun != null) {
+                ExecutionStatus persistedRuntimeStatus = executionStatus(finishedRun.status());
+                AgentExecutionBO persisted = stateStore.persisted(actor, result.getExecutionId());
+                Execution authoritative = persisted == null ? result : stateStore.rebuild(persisted);
+                if (!authoritative.getStatus().isTerminal()) {
+                    authoritative = result;
+                }
+                if (authoritative.getStatus() != persistedRuntimeStatus) {
+                    throw new IllegalStateException("execution and runtime terminal states differ");
+                }
+                result.reconcile(authoritative);
             }
-            if (result.getStatus() == ExecutionStatus.COMPLETED) {
+            if (runtimeStatusMatches && result.getStatus() == ExecutionStatus.COMPLETED) {
                 eventPublisher.publish(
                         new AgentExecutionCompletedEvent(
                                 result.getExecutionId(),
                                 agentId,
                                 result.getOutput(),
                                 result.getDurationMs()));
-            } else if (result.getStatus() == ExecutionStatus.FAILED) {
+            } else if (runtimeStatusMatches && result.getStatus() == ExecutionStatus.FAILED) {
                 eventPublisher.publish(
                         new AgentExecutionFailedEvent(
                                 result.getExecutionId(),
@@ -196,43 +224,120 @@ final class AgentExecutionLifecycle {
 
     Flux<Map<String, Object>> executeStream(
             ActorContext actor, String agentId, String version, Map<String, Object> input) {
-        Map<String, Object> actorInput = withActor(actor, input);
-        Execution execution = createExecution(actor, agentId, version, actorInput);
-        AgentDefinition definition = getAgentDefinition(actor, agentId);
-        AgentVersion agentVersion = requireVersion(definition, execution.getVersion());
-        AiRun runtimeRun = startExecution(actor, agentId, actorInput, execution);
-
         AtomicBoolean subscribed = new AtomicBoolean();
         return Flux.defer(() -> {
             if (!subscribed.compareAndSet(false, true)) {
                 return Flux.<Map<String, Object>>error(
                         new IllegalStateException("同一流式执行不能重复订阅"));
             }
+            Map<String, Object> actorInput = withActor(actor, input);
+            AtomicReference<Execution> executionRef = new AtomicReference<>();
+            AtomicReference<AiRun> runtimeRunRef = new AtomicReference<>();
+            AtomicBoolean cancellationRequested = new AtomicBoolean();
             return Flux.<Map<String, Object>>create(
-                        sink -> TenantScope.withTenant(actor.tenantId(), () -> {
-                            AtomicBoolean clientCancelled = new AtomicBoolean();
-                            AtomicBoolean approvalPaused = new AtomicBoolean();
-                            AtomicReference<Thread> workerThread =
-                                    new AtomicReference<>(Thread.currentThread());
+                    sink -> TenantScope.withTenant(actor.tenantId(), () -> {
+                            Thread worker = Thread.currentThread();
                             sink.onCancel(
                                     () -> {
-                                        if (approvalPaused.get()
-                                                || execution.getStatus() == ExecutionStatus.PAUSED) {
-                                            return;
+                                        cancellationRequested.set(true);
+                                        Execution current = executionRef.get();
+                                        if (current == null) return;
+                                        RuntimeException persistenceFailure = null;
+                                        boolean cancellationAccepted = false;
+                                        try {
+                                            synchronized (current) {
+                                                stateStore.effective(actor, current);
+                                                if (current.getStatus() == ExecutionStatus.RUNNING
+                                                        && current.cancel()) {
+                                                    cancellationAccepted = true;
+                                                    stateStore.save(actor, current);
+                                                    stateStore.effective(actor, current);
+                                                }
+                                            }
+                                        } catch (RuntimeException failure) {
+                                            persistenceFailure = failure;
+                                            if (current.getStatus() == ExecutionStatus.RUNNING) {
+                                                cancellationAccepted = current.cancel();
+                                            }
+                                        } finally {
+                                            if (cancellationAccepted
+                                                    || current.getStatus() == ExecutionStatus.CANCELLED) {
+                                                try {
+                                                    eventBridge.finish(runtimeRunRef.get(), current);
+                                                } catch (RuntimeException finishFailure) {
+                                                    log.warn(
+                                                            "客户端断开后终止运行记录失败: executionIdPresent={}, errorType={}",
+                                                            current.getExecutionId() != null,
+                                                            finishFailure.getClass().getSimpleName());
+                                                }
+                                                executionWorkers.computeIfPresent(
+                                                        current.getExecutionId(),
+                                                        (id, activeWorker) -> {
+                                                            AgentCancellationLogContext.mark(activeWorker);
+                                                            activeWorker.interrupt();
+                                                            return activeWorker;
+                                                        });
+                                            }
                                         }
-                                        clientCancelled.set(true);
-                                        if (!execution.cancel()) return;
-                                        Thread worker = workerThread.get();
-                                        if (worker != null) {
-                                            AgentCancellationLogContext.mark(worker);
-                                            worker.interrupt();
+                                        if (persistenceFailure != null) {
+                                            log.warn(
+                                                    "客户端断开后持久化执行取消失败: executionIdPresent={}, errorType={}",
+                                                    current.getExecutionId() != null,
+                                                    persistenceFailure.getClass().getSimpleName());
                                         }
                                     });
+                            if (cancellationRequested.get() || sink.isCancelled()) return null;
+                            Execution execution = createExecution(actor, agentId, version, actorInput);
+                            executionRef.set(execution);
+                            if (cancellationRequested.get() || sink.isCancelled()) {
+                                execution.cancel();
+                                stateStore.save(actor, execution);
+                                stateStore.cleanup(actor, execution);
+                                return null;
+                            }
+                            AgentDefinition definition = getAgentDefinition(actor, agentId);
+                            AgentVersion agentVersion = requireVersion(definition, execution.getVersion());
+                            if (cancellationRequested.get()
+                                    || sink.isCancelled()
+                                    || Thread.currentThread().isInterrupted()) {
+                                execution.cancel();
+                                stateStore.save(actor, execution);
+                                stateStore.cleanup(actor, execution);
+                                return null;
+                            }
+                            AtomicBoolean completedEventPublicationAttempted =
+                                    new AtomicBoolean();
+                            AiRun runtimeRun;
+                            executionWorkers.put(execution.getExecutionId(), worker);
                             try {
+                                runtimeRun = startExecution(actor, agentId, actorInput, execution);
+                                runtimeRunRef.set(runtimeRun);
+                            } catch (RuntimeException startupFailure) {
+                                executionWorkers.remove(execution.getExecutionId(), worker);
+                                AgentCancellationLogContext.clear(worker);
+                                throw startupFailure;
+                            }
+                            try {
+                                execution.refreshState();
+                                if (cancellationRequested.get()
+                                        || sink.isCancelled()
+                                        || execution.getStatus() != ExecutionStatus.RUNNING
+                                        || Thread.currentThread().isInterrupted()) {
+                                    stateStore.effective(actor, execution);
+                                    if (!execution.getStatus().isTerminal()) execution.cancel();
+                                    emitStreamTerminal(
+                                            actor, agentId, execution, runtimeRun, sink,
+                                            completedEventPublicationAttempted,
+                                            ExecutionStatus.CANCELLED, null);
+                                    return null;
+                                }
                                 Map<String, Object> started = new HashMap<>();
                                 started.put("status", "STARTED");
                                 started.put("executionId", execution.getExecutionId());
                                 if (runtimeRun != null) started.put("runtimeRunId", runtimeRun.id());
+                                if (runtimeRun != null) {
+                                    started.put("sequence", eventBridge.lastSequence(runtimeRun));
+                                }
                                 sink.next(started);
                                 AtomicReference<Map<String, Object>> finalState =
                                         new AtomicReference<>();
@@ -250,26 +355,30 @@ final class AgentExecutionLifecycle {
                                                 .build());
                                 RunnableConfig config = RunnableConfig.builder()
                                         .threadId(execution.getExecutionId()).build();
+                                if (!awaitActiveExecution(actor, execution)
+                                        || execution.getStatus() != ExecutionStatus.RUNNING) {
+                                    throw new ExecutionCancelledException();
+                                }
                                 compiled.stream(GraphInput.args(graphInput), config)
                                         .forEach(
                                                 nodeOutput -> {
-                                                    if (clientCancelled.get()
-                                                            || sink.isCancelled()
-                                                            || !execution
-                                                                    .awaitResumeOrCancellation()) {
+                                                    if (!awaitActiveExecution(actor, execution)) {
                                                         throw new ExecutionCancelledException();
                                                     }
                                                     if (nodeOutput instanceof StreamingOutput<?> streaming) {
                                                         String chunk = streaming.chunk();
                                                         if (chunk != null && !chunk.isEmpty()) {
-                                                            eventBridge.append(runtimeRun,
+                                                            long sequence = eventBridge.append(runtimeRun,
                                                                     AiRunEventType.MODEL_DELTA,
                                                                     JSONUtils.toJsonString(
                                                                             Map.of("content", chunk)));
-                                                            sink.next(Map.of(
-                                                                    "status", "DELTA",
-                                                                    "executionId", execution.getExecutionId(),
-                                                                    "content", chunk));
+                                                            Map<String, Object> delta = new HashMap<>();
+                                                            delta.put("status", "DELTA");
+                                                            delta.put("executionId", execution.getExecutionId());
+                                                            delta.put("content", chunk);
+                                                            if (sequence > 0) delta.put("sequence", sequence);
+                                                            if (runtimeRun != null) delta.put("runtimeRunId", runtimeRun.id());
+                                                            sink.next(delta);
                                                         }
                                                         return;
                                                     }
@@ -284,8 +393,9 @@ final class AgentExecutionLifecycle {
                                                                     Map.of(
                                                                             "node",
                                                                             nodeOutput.node())));
-                                                    if (clientCancelled.get() || sink.isCancelled())
+                                                    if (!awaitActiveExecution(actor, execution)) {
                                                         throw new ExecutionCancelledException();
+                                                    }
                                                     sink.next(
                                                             Map.of(
                                                                     "executionId",
@@ -295,9 +405,7 @@ final class AgentExecutionLifecycle {
                                                                     "state",
                                                                     stateData));
                                                 });
-                                if (clientCancelled.get()
-                                        || sink.isCancelled()
-                                        || !execution.awaitResumeOrCancellation()) {
+                                if (!awaitActiveExecution(actor, execution)) {
                                     throw new ExecutionCancelledException();
                                 }
                                 Map<String, Object> output =
@@ -305,54 +413,58 @@ final class AgentExecutionLifecycle {
                                 if (!execution.complete(output)) {
                                     throw new ExecutionCancelledException();
                                 }
-                                stateStore.save(actor, execution);
-                                eventBridge.finish(runtimeRun, execution);
-                                eventPublisher.publish(
-                                        new AgentExecutionCompletedEvent(
-                                                execution.getExecutionId(),
-                                                agentId,
-                                                output,
-                                                execution.getDurationMs()));
-                                sink.next(
-                                        Map.of(
-                                                "status",
-                                                "COMPLETED",
-                                                "executionId",
-                                                execution.getExecutionId(),
-                                                "output",
-                                                output));
-                                sink.complete();
+                                emitStreamTerminal(
+                                        actor, agentId, execution, runtimeRun, sink,
+                                        completedEventPublicationAttempted, null, null);
                             } catch (ExecutionCancelledException e) {
-                                execution.cancel();
-                                stateStore.save(actor, execution);
-                                eventBridge.finish(runtimeRun, execution);
-                                if (!clientCancelled.get() && !sink.isCancelled()) {
-                                    sink.next(
-                                            Map.of(
-                                                    "status",
-                                                    "CANCELLED",
-                                                    "executionId",
-                                                    execution.getExecutionId()));
+                                stateStore.effective(actor, execution);
+                                if (execution.getStatus() == ExecutionStatus.PAUSED) {
+                                    sink.next(Map.of(
+                                            "status", "PAUSED",
+                                            "executionId", execution.getExecutionId()));
+                                    sink.complete();
+                                } else if (execution.getStatus().isTerminal()) {
+                                    emitStreamTerminal(
+                                            actor, agentId, execution, runtimeRun, sink,
+                                            completedEventPublicationAttempted, null, null);
+                                } else {
+                                    sink.complete();
                                 }
-                                sink.complete();
                             } catch (Exception e) {
-                                if (clientCancelled.get() || sink.isCancelled()
-                                        || execution.getStatus() == ExecutionStatus.CANCELLED) {
-                                    execution.cancel();
-                                    stateStore.save(actor, execution);
-                                    eventBridge.finish(runtimeRun, execution);
+                                stateStore.effective(actor, execution);
+                                if (execution.getStatus().isTerminal()) {
+                                    emitStreamTerminal(
+                                            actor, agentId, execution, runtimeRun, sink,
+                                            completedEventPublicationAttempted, null, e);
+                                    return null;
+                                }
+                                if (execution.getStatus() == ExecutionStatus.PAUSED) {
+                                    sink.next(Map.of(
+                                            "status", "PAUSED",
+                                            "executionId", execution.getExecutionId()));
+                                    sink.complete();
                                     return null;
                                 }
                                 var approvalRequired = AgentExecutor.approvalRequired(e);
                                 if (approvalRequired != null) {
+                                    execution.refreshState();
+                                    if (execution.isSuperseded()) {
+                                        throw new ExecutionCancelledException();
+                                    }
                                     execution.pause();
                                     stateStore.save(actor, execution);
-                                    approvalPaused.set(true);
-                                    sink.next(Map.of(
-                                            "status", "PAUSED",
-                                            "executionId", execution.getExecutionId(),
-                                            "approvalId", approvalRequired.approvalId()));
-                                    sink.complete();
+                                    stateStore.effective(actor, execution);
+                                    if (execution.getStatus() == ExecutionStatus.PAUSED) {
+                                        sink.next(Map.of(
+                                                "status", "PAUSED",
+                                                "executionId", execution.getExecutionId(),
+                                                "approvalId", approvalRequired.approvalId()));
+                                        sink.complete();
+                                    } else {
+                                        emitStreamTerminal(
+                                                actor, agentId, execution, runtimeRun, sink,
+                                                completedEventPublicationAttempted, null, e);
+                                    }
                                     return null;
                                 }
                                 log.error(
@@ -363,22 +475,26 @@ final class AgentExecutionLifecycle {
                                         e.getClass().getSimpleName(),
                                         e.getMessage() == null ? 0 : e.getMessage().length());
                                 if (!execution.fail(e.getMessage())) {
-                                    stateStore.save(actor, execution);
-                                    eventBridge.finish(runtimeRun, execution);
-                                    sink.complete();
+                                    emitStreamTerminal(
+                                            actor, agentId, execution, runtimeRun, sink,
+                                            completedEventPublicationAttempted, null, e);
                                     return null;
                                 }
-                                stateStore.save(actor, execution);
-                                eventBridge.finish(runtimeRun, execution);
-                                eventPublisher.publish(
-                                        new AgentExecutionFailedEvent(
-                                                execution.getExecutionId(),
-                                                agentId,
-                                                AgentRuntimeImpl.publicFailureCode()));
-                                sink.error(e);
+                                try {
+                                    stateStore.save(actor, execution);
+                                    stateStore.effective(actor, execution);
+                                    emitStreamTerminal(
+                                            actor, agentId, execution, runtimeRun, sink,
+                                            completedEventPublicationAttempted,
+                                            ExecutionStatus.FAILED, e);
+                                } catch (RuntimeException terminalFailure) {
+                                    if (terminalFailure != e) terminalFailure.addSuppressed(e);
+                                    sink.error(terminalFailure);
+                                }
                             } finally {
+                                executionWorkers.remove(
+                                        execution.getExecutionId(), Thread.currentThread());
                                 AgentCancellationLogContext.clear(Thread.currentThread());
-                                workerThread.set(null);
                                 stateStore.cleanup(actor, execution);
                             }
                             return null;
@@ -391,9 +507,12 @@ final class AgentExecutionLifecycle {
         Execution execution = stateStore.active(executionId);
         if (execution == null) throw new IllegalStateException("执行实例不存在或已结束: " + executionId);
         stateStore.ensureAccessible(actor, execution);
-        AgentStateMachine.transition(execution.getStatus(), ExecutionStatus.PAUSED);
-        execution.pause();
-        stateStore.save(actor, execution);
+        synchronized (execution) {
+            stateStore.effective(actor, execution);
+            AgentStateMachine.transition(execution.getStatus(), ExecutionStatus.PAUSED);
+            execution.pause();
+            stateStore.save(actor, execution);
+        }
     }
 
     Execution resume(ActorContext actor, String executionId) {
@@ -412,6 +531,7 @@ final class AgentExecutionLifecycle {
                 if (!stateStore.claimPausedForResume(actor, active)) {
                     throw new IllegalStateException("执行已被其他请求恢复或状态已变化");
                 }
+                active.claimForLocalResume();
                 active.resume();
                 return active;
             }
@@ -470,29 +590,40 @@ final class AgentExecutionLifecycle {
         if (!stateStore.claimPausedForResume(actor, execution)) {
             throw new IllegalStateException("执行已被其他请求恢复或状态已变化");
         }
+        execution.claimForLocalResume();
         execution.resume();
         stateStore.put(execution);
         Execution result = agentExecutor.resumeFromCheckpoint(
                 actor, execution, definition, agentVersion, checkpoint,
                 checkpointRecorder(actor, execution), runtimeRun);
-        stateStore.save(actor, result);
+        result = stateStore.save(actor, result);
         if (result.getStatus().isTerminal()) {
-            eventBridge.finish(runtimeRun, result);
-            if (result.getStatus() == ExecutionStatus.COMPLETED) {
-                eventPublisher.publish(new AgentExecutionCompletedEvent(
-                        result.getExecutionId(), result.getAgentId(),
-                        result.getOutput(), result.getDurationMs()));
-            } else if (result.getStatus() == ExecutionStatus.FAILED) {
-                eventPublisher.publish(new AgentExecutionFailedEvent(
-                        result.getExecutionId(), result.getAgentId(),
-                        AgentRuntimeImpl.publicFailureCode()));
+            AiRun finishedRun = eventBridge.finish(runtimeRun, result);
+            if (finishedRun == null || finishedRun.status() == runtimeStatus(result.getStatus())) {
+                if (result.getStatus() == ExecutionStatus.COMPLETED) {
+                    eventPublisher.publish(new AgentExecutionCompletedEvent(
+                            result.getExecutionId(), result.getAgentId(),
+                            result.getOutput(), result.getDurationMs()));
+                } else if (result.getStatus() == ExecutionStatus.FAILED) {
+                    eventPublisher.publish(new AgentExecutionFailedEvent(
+                            result.getExecutionId(), result.getAgentId(),
+                            AgentRuntimeImpl.publicFailureCode()));
+                }
+            } else {
+                AgentExecutionBO persisted = stateStore.persisted(actor, result.getExecutionId());
+                Execution authoritative = persisted == null ? result : stateStore.rebuild(persisted);
+                ExecutionStatus runtimeWon = executionStatus(finishedRun.status());
+                if (authoritative.getStatus() != runtimeWon) {
+                    throw new IllegalStateException("execution and runtime terminal states differ");
+                }
+                result.reconcile(authoritative);
             }
         }
         stateStore.cleanup(actor, result);
         return result;
     }
 
-    void cancel(ActorContext actor, String executionId) {
+    Execution cancel(ActorContext actor, String executionId) {
         Execution execution = stateStore.active(executionId);
         boolean persistedOnly = execution == null;
         if (execution == null) {
@@ -504,22 +635,53 @@ final class AgentExecutionLifecycle {
         boolean approvalPaused = execution.getStatus() == ExecutionStatus.PAUSED
                 && AgentGraphCheckpointSaver.isApprovalPending(
                         checkpointManager.loadLatestCheckpoint(actor.tenantId(), executionId));
-        AgentStateMachine.transition(execution.getStatus(), ExecutionStatus.CANCELLED);
-        if (!execution.cancel()) {
-            throw new IllegalStateException("执行已结束，不能取消");
+        RuntimeException persistenceFailure = null;
+        boolean cancellationRequested = false;
+        synchronized (execution) {
+            stateStore.effective(actor, execution);
+            if (!execution.getStatus().isTerminal()) {
+                AgentStateMachine.transition(execution.getStatus(), ExecutionStatus.CANCELLED);
+                cancellationRequested = execution.cancel();
+                if (cancellationRequested) {
+                    try {
+                        stateStore.save(actor, execution);
+                    } catch (RuntimeException failure) {
+                        persistenceFailure = failure;
+                    }
+                }
+            }
         }
-        stateStore.save(actor, execution);
-        if (persistedOnly || approvalPaused) {
-            eventBridge.finish(eventBridge.executionRun(actor, executionId), execution);
-            stateStore.cleanup(actor, execution);
+        if (cancellationRequested || execution.getStatus() == ExecutionStatus.CANCELLED) {
+            executionWorkers.computeIfPresent(
+                    executionId,
+                    (id, worker) -> {
+                        AgentCancellationLogContext.mark(worker);
+                        worker.interrupt();
+                        return worker;
+                    });
         }
+        if (execution.getStatus() == ExecutionStatus.CANCELLED && persistenceFailure == null) {
+            try {
+                eventBridge.finish(eventBridge.executionRun(actor, executionId), execution);
+            } finally {
+                if (persistedOnly || approvalPaused) stateStore.cleanup(actor, execution);
+            }
+        }
+        if (persistenceFailure != null) {
+            if (persistedOnly || approvalPaused) stateStore.cleanup(actor, execution);
+            throw persistenceFailure;
+        }
+        return execution;
     }
 
     ExecutionStatus getStatus(ActorContext actor, String executionId) {
         Execution active = stateStore.active(executionId);
         if (active != null) {
-            stateStore.ensureAccessible(actor, active);
-            return active.getStatus();
+            synchronized (active) {
+                stateStore.ensureAccessible(actor, active);
+                stateStore.effective(actor, active);
+                return active.getStatus();
+            }
         }
         AgentExecutionBO execBO = stateStore.persisted(actor, executionId);
         if (execBO == null) return null;
@@ -530,8 +692,11 @@ final class AgentExecutionLifecycle {
     Execution getExecution(ActorContext actor, String executionId) {
         Execution active = stateStore.active(executionId);
         if (active != null) {
-            stateStore.ensureAccessible(actor, active);
-            return active;
+            synchronized (active) {
+                stateStore.ensureAccessible(actor, active);
+                stateStore.effective(actor, active);
+                return active;
+            }
         }
         AgentExecutionBO execBO = stateStore.persisted(actor, executionId);
         if (execBO == null) return null;
@@ -603,9 +768,11 @@ final class AgentExecutionLifecycle {
     }
 
     private void beginExecution(ActorContext actor, Execution execution) {
-        execution.start();
-        stateStore.save(actor, execution);
-        stateStore.put(execution);
+        synchronized (execution) {
+            execution.start();
+            stateStore.put(execution);
+            stateStore.save(actor, execution);
+        }
     }
 
     private AiRun startExecution(
@@ -615,24 +782,27 @@ final class AgentExecutionLifecycle {
             Execution execution) {
         AiRun runtimeRun = null;
         try {
+            execution.setStateRefresh(() -> stateStore.effective(actor, execution));
             beginExecution(actor, execution);
             runtimeRun = eventBridge.start(execution, actorInput);
             eventPublisher.publish(new AgentExecutionStartedEvent(
                     execution.getExecutionId(), agentId, actorInput));
             return runtimeRun;
         } catch (RuntimeException failure) {
+            execution.refreshState();
             boolean failed = execution.fail(failure.getMessage());
             try {
                 stateStore.save(actor, execution);
             } catch (RuntimeException cleanupFailure) {
                 suppressDistinct(failure, cleanupFailure);
             }
+            execution.refreshState();
             try {
                 eventBridge.finish(runtimeRun, execution);
             } catch (RuntimeException cleanupFailure) {
                 suppressDistinct(failure, cleanupFailure);
             }
-            if (failed) {
+            if (failed && execution.getStatus() == ExecutionStatus.FAILED) {
                 try {
                     eventPublisher.publish(new AgentExecutionFailedEvent(
                             execution.getExecutionId(), agentId,
@@ -650,6 +820,132 @@ final class AgentExecutionLifecycle {
         }
     }
 
+    private void emitStreamTerminal(
+            ActorContext actor,
+            String agentId,
+            Execution execution,
+            AiRun runtimeRun,
+            reactor.core.publisher.FluxSink<Map<String, Object>> sink,
+            AtomicBoolean completedEventPublicationAttempted,
+            ExecutionStatus requestedTerminal,
+            Throwable failure) {
+        if (requestedTerminal != null && !execution.getStatus().isTerminal()) {
+            switch (requestedTerminal) {
+                case CANCELLED -> execution.cancel();
+                case FAILED -> execution.fail(failure == null ? null : failure.getMessage());
+                default -> throw new IllegalArgumentException("unsupported terminal status");
+            }
+        }
+        Execution effective = stateStore.save(actor, execution);
+        if (effective.isSuperseded()) {
+            stateStore.cleanup(actor, effective);
+            if (effective.getStatus().isTerminal()) {
+                emitStreamTerminal(actor, agentId, effective, runtimeRun, sink,
+                        completedEventPublicationAttempted, null, failure);
+            } else {
+                sink.complete();
+            }
+            return;
+        }
+        if (effective.getStatus().isTerminal()) {
+            stateStore.effective(actor, effective);
+        }
+        if (effective.getStatus() == ExecutionStatus.PAUSED) {
+            if (failure instanceof com.shiyu.ai.agent.contract.node.NodeApprovalRequiredException approval) {
+                sink.next(Map.of(
+                        "status", "PAUSED",
+                        "executionId", execution.getExecutionId(),
+                        "approvalId", approval.approvalId()));
+                sink.complete();
+                return;
+            }
+            if (!sink.isCancelled()) sink.error(failure == null
+                    ? new IllegalStateException("agent execution is paused") : failure);
+            return;
+        }
+        AiRun finishedRun = effective.getStatus().isTerminal()
+                ? eventBridge.finish(runtimeRun, effective) : null;
+        ExecutionStatus status = effective.getStatus();
+        if (finishedRun != null) status = executionStatus(finishedRun.status());
+        if (finishedRun != null && status != effective.getStatus()) {
+            AgentExecutionBO persisted = stateStore.persisted(actor, execution.getExecutionId());
+            Execution authoritative = persisted == null ? effective : stateStore.rebuild(persisted);
+            if (authoritative.getStatus() != status) {
+                throw new IllegalStateException("execution and runtime terminal states differ");
+            }
+            effective.reconcile(authoritative);
+        }
+        if (status == ExecutionStatus.CANCELLED) {
+            if (!sink.isCancelled()) sink.next(Map.of(
+                    "status", "CANCELLED", "executionId", execution.getExecutionId()));
+            sink.complete();
+            return;
+        }
+        if (status == ExecutionStatus.COMPLETED) {
+            Map<String, Object> output = effective.getOutput();
+            Map<String, Object> completed = completedEvent(effective, output, runtimeRun);
+            if (runtimeRun != null) completed.put("sequence", eventBridge.lastSequence(runtimeRun));
+            if (!completedEventPublicationAttempted.get()) {
+                publishCompletedEvent(effective, agentId, output);
+                completedEventPublicationAttempted.set(true);
+            }
+            if (!sink.isCancelled()) sink.next(completed);
+            sink.complete();
+            return;
+        }
+        if (status == ExecutionStatus.FAILED) {
+            if (requestedTerminal == ExecutionStatus.FAILED) {
+                eventPublisher.publish(new AgentExecutionFailedEvent(
+                        effective.getExecutionId(), agentId,
+                        AgentRuntimeImpl.publicFailureCode()));
+            }
+            if (!sink.isCancelled()) sink.error(failure == null
+                    ? new IllegalStateException("agent execution failed") : failure);
+            return;
+        }
+        if (!sink.isCancelled()) sink.error(failure == null
+                ? new IllegalStateException("agent execution did not reach a terminal state")
+                : failure);
+    }
+
+    private static ExecutionStatus executionStatus(AiRunStatus status) {
+        return switch (status) {
+            case COMPLETED -> ExecutionStatus.COMPLETED;
+            case CANCELLED -> ExecutionStatus.CANCELLED;
+            case FAILED -> ExecutionStatus.FAILED;
+            case CREATED, RUNNING -> ExecutionStatus.RUNNING;
+        };
+    }
+
+    private static AiRunStatus runtimeStatus(ExecutionStatus status) {
+        return switch (status) {
+            case COMPLETED -> AiRunStatus.COMPLETED;
+            case FAILED -> AiRunStatus.FAILED;
+            case CANCELLED -> AiRunStatus.CANCELLED;
+            case PENDING, RUNNING, PAUSED -> AiRunStatus.RUNNING;
+        };
+    }
+
+    private Map<String, Object> completedEvent(
+            Execution execution, Map<String, Object> output, AiRun runtimeRun) {
+        Map<String, Object> completed = new HashMap<>();
+        completed.put("status", "COMPLETED");
+        completed.put("executionId", execution.getExecutionId());
+        completed.put("output", output);
+        if (runtimeRun != null) completed.put("runtimeRunId", runtimeRun.id());
+        return completed;
+    }
+
+    private void publishCompletedEvent(
+            Execution execution, String agentId, Map<String, Object> output) {
+        eventPublisher.publish(
+                new AgentExecutionCompletedEvent(
+                        execution.getExecutionId(),
+                        agentId,
+                        output,
+                        execution.getDurationMs()));
+    }
+
     /** 保留清理异常，同时避免同一个异常实例被添加为自己的附加异常。 */
     private static void suppressDistinct(Exception failure, RuntimeException cleanupFailure) {
         if (cleanupFailure != failure) {
@@ -657,11 +953,31 @@ final class AgentExecutionLifecycle {
         }
     }
 
+    private boolean awaitActiveExecution(ActorContext actor, Execution execution) {
+        if (execution.isSuperseded()) return false;
+        execution.setStateRefresh(() -> stateStore.effective(actor, execution));
+        while (execution.getStatus() == ExecutionStatus.PAUSED) {
+            execution.awaitResumeOrCancellation(1000L);
+            if (execution.getStatus().isTerminal() || execution.isSuperseded()) return false;
+        }
+        stateStore.effective(actor, execution);
+        return execution.getStatus() == ExecutionStatus.RUNNING && !execution.isSuperseded();
+    }
+
     private Consumer<String> checkpointRecorder(ActorContext actor, Execution execution) {
         return checkpointId -> {
+            execution.checkCurrentOwnership();
             synchronized (execution) {
-                execution.setLastCheckpointId(checkpointId);
-                stateStore.save(actor, execution);
+                stateStore.recordCheckpoint(actor, execution, checkpointId);
+                if (execution.getStatus() == ExecutionStatus.PAUSED
+                        && !awaitActiveExecution(actor, execution)) {
+                    throw new ExecutionCancelledException();
+                }
+                if (execution.getStatus() != ExecutionStatus.RUNNING
+                        || execution.isSuperseded()) {
+                    stateStore.effective(actor, execution);
+                    throw new ExecutionCancelledException();
+                }
             }
         };
     }

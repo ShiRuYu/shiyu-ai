@@ -6,6 +6,7 @@ import com.shiyu.ai.agent.implementation.runtime.service.AiRuntimeService;
 
 import com.shiyu.ai.agent.contract.runtime.*;
 import com.shiyu.ai.agent.implementation.execution.Execution;
+import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
 import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.foundation.utils.JSONUtils;
@@ -254,7 +255,7 @@ public class AiRuntimeController {
             } catch (NumberFormatException ignored) {
             }
         AiRun run = runtime.requireGenerationRun(generationId, tenant(), user());
-        return eventStream(run, cursor, follow, waitMs);
+        return eventStream(run, cursor, follow, waitMs, actor());
     }
 
     /**
@@ -284,7 +285,7 @@ public class AiRuntimeController {
             } catch (NumberFormatException ignored) {
             }
         AiRun run = runtime.requireRun(id, tenant(), user());
-        return eventStream(run, cursor, follow, waitMs, limit);
+        return eventStream(run, cursor, follow, waitMs, limit, actor());
     }
 
     /**
@@ -343,35 +344,42 @@ public class AiRuntimeController {
      */
     @PostMapping("/runs/{id}/cancel")
     public Result<AiRun> cancel(@PathVariable String id) {
-        AiRun run = runtime.requireRun(id, tenant(), user());
+        return Result.success(cancelRun(runtime.requireRun(id, tenant(), user())));
+    }
+
+    private AiRun cancelRun(AiRun run) {
         if (run.status() == AiRunStatus.COMPLETED || run.status() == AiRunStatus.FAILED
                 || run.status() == AiRunStatus.CANCELLED) {
-            return Result.success(run);
+            return run;
         }
         if (run.executionId() != null && !run.executionId().isBlank()) {
             try {
-                agents.cancel(actor(), run.executionId());
+                Execution cancelled = agents.cancel(actor(), run.executionId());
+                if (cancelled.getStatus() != ExecutionStatus.CANCELLED) {
+                    return runtime.requireRun(run.id(), tenant(), user());
+                }
             } catch (IllegalStateException alreadyFinished) {
                 var status = agents.getStatus(actor(), run.executionId());
-                if (status == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.COMPLETED
-                        || status == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.FAILED
-                        || status == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.CANCELLED) {
-                    return Result.success(runtime.requireRun(id, tenant(), user()));
+                if (status == ExecutionStatus.COMPLETED
+                        || status == ExecutionStatus.FAILED
+                        || status == ExecutionStatus.CANCELLED) {
+                    return runtime.requireRun(run.id(), tenant(), user());
                 }
                 throw alreadyFinished;
             }
         }
-        return Result.success(runtime.finish(id, tenant(), user(), AiRunStatus.CANCELLED,
-                "CLIENT_CANCELLED"));
+        return runtime.finish(run.id(), tenant(), user(), AiRunStatus.CANCELLED,
+                "CLIENT_CANCELLED");
     }
 
     private Flux<org.springframework.http.codec.ServerSentEvent<AiRunEvent>> eventStream(
-            AiRun run, long afterSeq, boolean follow, int waitMs) {
-        return eventStream(run, afterSeq, follow, waitMs, 1000);
+            AiRun run, long afterSeq, boolean follow, int waitMs, ActorContext actor) {
+        return eventStream(run, afterSeq, follow, waitMs, 1000, actor);
     }
 
     private Flux<org.springframework.http.codec.ServerSentEvent<AiRunEvent>> eventStream(
-            AiRun run, long afterSeq, boolean follow, int waitMs, int limit) {
+            AiRun run, long afterSeq, boolean follow, int waitMs, int limit, ActorContext actor) {
+        reconcileExecutionTerminal(run, actor);
         AtomicLong cursor = new AtomicLong(Math.max(0, afterSeq));
         TenantId runTenant = run.tenantId();
         long ownerUserId = run.ownerUserId().value();
@@ -381,6 +389,7 @@ public class AiRuntimeController {
                                 tick ->
                                         Flux.defer(
                                                 () -> {
+                                                    reconcileExecutionTerminal(run, actor);
                                                     List<AiRunEvent> events =
                                                             TenantScope.withTenant(
                                                                     runTenant,
@@ -442,6 +451,45 @@ public class AiRuntimeController {
                                             .build());
         return poll.takeUntil(event -> event.data() != null && isTerminal(event.data().type()))
                 .take(Duration.ofMillis(Math.max(1000, Math.min(waitMs, 120000))));
+    }
+
+    private void reconcileExecutionTerminal(AiRun run, ActorContext actor) {
+        if (run.executionId() == null || run.executionId().isBlank()) return;
+        Execution execution = agents.getExecution(actor, run.executionId());
+        if (execution == null || !execution.getStatus().isTerminal()) return;
+        AiRun currentRun = runtime.requireRun(run.id(), run.tenantId(), run.ownerUserId().value());
+        if (currentRun.status() == AiRunStatus.COMPLETED
+                || currentRun.status() == AiRunStatus.FAILED
+                || currentRun.status() == AiRunStatus.CANCELLED) return;
+        AiRunStatus status = execution.getStatus() == ExecutionStatus.COMPLETED
+                ? AiRunStatus.COMPLETED
+                : execution.getStatus() == ExecutionStatus.CANCELLED
+                        ? AiRunStatus.CANCELLED
+                        : AiRunStatus.FAILED;
+        String errorCode = status == AiRunStatus.FAILED
+                ? "AGENT_EXECUTION_FAILED"
+                : status == AiRunStatus.CANCELLED ? "CLIENT_CANCELLED" : null;
+        AiRunEventType type = status == AiRunStatus.COMPLETED
+                ? AiRunEventType.RUN_COMPLETED
+                : status == AiRunStatus.CANCELLED
+                        ? AiRunEventType.RUN_CANCELLED
+                        : AiRunEventType.RUN_FAILED;
+        try {
+            TenantScope.withTenant(run.tenantId(), () -> {
+                AiRun finished = runtime.finish(
+                        run.id(), run.tenantId(), run.ownerUserId().value(), status, errorCode);
+                if (finished.status() != status) {
+                    throw new IllegalStateException("execution and runtime terminal states differ");
+                }
+                return finished;
+            });
+        } catch (RuntimeException failure) {
+            org.slf4j.LoggerFactory.getLogger(AiRuntimeController.class).warn(
+                    "恢复 Agent 运行终态失败: runIdPresent={}, executionIdPresent={}, errorType={}",
+                    run.id() != null,
+                    run.executionId() != null,
+                    failure.getClass().getSimpleName());
+        }
     }
 
     private boolean isTerminal(AiRunEventType type) {

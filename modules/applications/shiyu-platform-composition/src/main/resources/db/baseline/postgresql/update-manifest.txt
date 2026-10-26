@@ -1,0 +1,18 @@
+-- PostgreSQL resources generated from the H2 resources.
+-- Do not edit this generated file directly; update the source and regenerate.
+-- Ordered PostgreSQL startup updates
+
+db/updates/postgresql/iam/20260914_platform_usage.sql
+db/updates/postgresql/iam/20260916_tenant_module_access.sql
+db/updates/postgresql/iam/20260923_permission_alignment.sql
+db/updates/postgresql/education/20261005_exam_attempt.sql
+db/updates/postgresql/education/20261006_question_purpose.sql
+db/updates/postgresql/knowledge/20261007_demo_education_access.sql
+db/updates/postgresql/education/20261007_practice_submission.sql
+db/updates/postgresql/model/20261011_deepseek_flash.sql
+db/updates/postgresql/agent/20261012_checkpoint_pointer.sql
+db/updates/postgresql/agent/20261013_sample_apps.sql
+db/updates/postgresql/agent/20261014_seed_deepseek_graphs.sql
+db/updates/postgresql/governance/20261024_quota_state.sql
+db/updates/postgresql/conversation/20261024_idempotency_fingerprint.sql
+db/updates/postgresql/conversation/20261024_generation_postprocessing.sql

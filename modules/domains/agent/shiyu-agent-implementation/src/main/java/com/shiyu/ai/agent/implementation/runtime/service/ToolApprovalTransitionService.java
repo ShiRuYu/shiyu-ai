@@ -42,6 +42,26 @@ public class ToolApprovalTransitionService {
         return approval;
     }
 
+    /** 在审批过期后关闭待处理审批；终态运行不再接受非终态事件。 */
+    @Transactional
+    public ToolApproval expireOverdue(String id, TenantId tenantId, long ownerUserId) {
+        ToolApproval before = approvals.require(id, tenantId, ownerUserId);
+        if (before == null || before.status() != ToolApprovalStatus.PENDING) return before;
+        AiRun run = runtime.requireRun(before.runId(), tenantId, ownerUserId);
+        ToolApproval value = approvals.decide(
+                id, tenantId, ownerUserId, ToolApprovalStatus.REJECTED);
+        if (value.status() == ToolApprovalStatus.EXPIRED) {
+            if (run.status() == AiRunStatus.RUNNING) {
+                runtime.append(
+                        run,
+                        AiRunEventType.TOOL_APPROVAL_DECIDED,
+                        "{\"approvalId\":\"" + value.id() + "\",\"status\":\"EXPIRED\"}",
+                        true);
+            }
+        }
+        return value;
+    }
+
     /** 应用审批决定，并与运行事件在同一事务中保存。 */
     @Transactional
     public ToolApproval decide(

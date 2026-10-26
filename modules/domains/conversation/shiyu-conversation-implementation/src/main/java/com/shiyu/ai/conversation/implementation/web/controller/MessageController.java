@@ -3,6 +3,7 @@ package com.shiyu.ai.conversation.implementation.web.controller;
 import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
 import com.shiyu.ai.conversation.contract.model.GenerationRun;
+import com.shiyu.ai.conversation.contract.model.GenerationStatus;
 import com.shiyu.ai.conversation.implementation.application.ConversationService;
 import com.shiyu.ai.conversation.implementation.application.GenerationRunner;
 import com.shiyu.ai.conversation.implementation.domain.model.Conversation;
@@ -81,52 +82,60 @@ public class MessageController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody EditRequest request) {
         String operation = "message.edit:" + messageId;
-        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var existing =
-                    idempotency
-                            .find(tenant(), user(), operation, idempotencyKey)
-                            .flatMap(id -> repository.findMessage(id, tenant(), user()));
-            if (existing.isPresent()) return Result.success(existing.get());
-        }
-        ConversationMessage original =
-                repository
-                        .findMessage(messageId, tenant(), user())
-                        .orElseThrow(
-                                () ->
-                                        new org.springframework.web.server.ResponseStatusException(
-                                                HttpStatus.NOT_FOUND, "message not found"));
         if (request == null || request.content == null || request.content.isBlank()) {
             throw new org.springframework.web.server.ResponseStatusException(
                     HttpStatus.UNPROCESSABLE_CONTENT, "message content is required");
         }
+        TenantId tenantId = tenant();
+        long ownerUserId = user();
+        String fingerprint = IdempotencyRepository.fingerprint(request.content);
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            var existingId = idempotency.find(tenantId, ownerUserId, operation, idempotencyKey);
+            if (existingId.isPresent()) {
+                requireMatchingFingerprint(operation, idempotencyKey, fingerprint);
+                return Result.success(
+                        repository.findMessage(existingId.get(), tenantId, ownerUserId)
+                                .orElseThrow(() -> new IllegalStateException("idempotent message not found")));
+            }
+        }
+        ConversationMessage original =
+                repository
+                        .findMessage(messageId, tenantId, ownerUserId)
+                        .orElseThrow(
+                                () ->
+                                        new org.springframework.web.server.ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "message not found"));
         Conversation conversation =
                 repository
-                        .findConversation(original.conversationId(), tenant(), user())
+                        .findConversation(original.conversationId(), tenantId, ownerUserId)
                         .orElseThrow(
                                 () ->
                                         new org.springframework.web.server.ResponseStatusException(
                                                 HttpStatus.NOT_FOUND, "conversation not found"));
-        ConversationMessage edited =
-                conversations.appendMessage(
-                        conversation,
-                        original.parentMessageId(),
-                        original.role(),
-                        request.content,
-                        null,
-                        null,
-                        original.id());
-        if (idempotencyKey != null
-                && !idempotencyKey.isBlank()
-                && !idempotency.claim(tenant(), user(), operation, idempotencyKey, edited.id())) {
-            var existing =
-                    idempotency
-                            .find(tenant(), user(), operation, idempotencyKey)
-                            .flatMap(id -> repository.findMessage(id, tenant(), user()));
-            if (existing.isPresent()) return Result.success(existing.get());
+        try {
+            ConversationMessage edited =
+                    idempotencyKey == null || idempotencyKey.isBlank()
+                            ? conversations.appendMessage(
+                                    conversation, original.parentMessageId(), original.role(),
+                                    request.content, null, null, original.id())
+                            : conversations.appendMessageIdempotent(
+                                    conversation, original.parentMessageId(), original.role(),
+                                    request.content, original.id(), idempotency, operation,
+                                    idempotencyKey, fingerprint, java.util.UUID.randomUUID().toString());
+            return Result.success(edited);
+        } catch (IllegalStateException conflict) {
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                var existingId = idempotency.find(tenantId, ownerUserId, operation, idempotencyKey);
+                if (existingId.isPresent()) {
+                    requireMatchingFingerprint(operation, idempotencyKey, fingerprint);
+                    return Result.success(
+                            repository.findMessage(existingId.get(), tenantId, ownerUserId)
+                                    .orElseThrow(() -> new IllegalStateException("idempotent message not found")));
+                }
+            }
             throw new org.springframework.web.server.ResponseStatusException(
-                    HttpStatus.CONFLICT, "idempotency key is already in use");
+                    HttpStatus.CONFLICT, conflict.getMessage(), conflict);
         }
-        return Result.success(edited);
     }
 
     /**
@@ -143,12 +152,16 @@ public class MessageController {
         TenantId tenant = tenant();
         long user = user();
         String operation = "message.generation:" + messageId;
-        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var existing =
-                    idempotency
-                            .find(tenant, user, operation, idempotencyKey)
-                            .flatMap(id -> generations.find(id, tenant, user));
-            if (existing.isPresent()) return Result.success(existing.get());
+        String platform = request == null ? null : request.platform;
+        String model = request == null ? null : request.model;
+        String fingerprint = IdempotencyRepository.fingerprint(platform, model);
+        boolean keyed = idempotencyKey != null && !idempotencyKey.isBlank();
+        if (keyed) {
+            var existingId = idempotency.find(tenant, user, operation, idempotencyKey);
+            if (existingId.isPresent()) {
+                requireMatchingFingerprint(operation, idempotencyKey, fingerprint);
+                return Result.success(requireReplayableGeneration(existingId.get(), tenant, user));
+            }
         }
         ConversationMessage input =
                 repository
@@ -168,59 +181,85 @@ public class MessageController {
                                 () ->
                                         new org.springframework.web.server.ResponseStatusException(
                                                 HttpStatus.NOT_FOUND, "conversation not found"));
-        if (!messageId.equals(conversation.activeLeafMessageId())) {
-            Conversation active =
-                    new Conversation(
-                            conversation.id(),
-                            conversation.tenantId(),
-                            conversation.ownerUserId(),
-                            conversation.sceneType(),
-                            conversation.title(),
-                            conversation.status(),
-                            conversation.parentConversationId(),
-                            conversation.branchFromMessageId(),
-                            input.id(),
-                            conversation.rollingSummary(),
-                            conversation.platform(),
-                            conversation.model(),
-                            conversation.version() + 1,
-                            conversation.createdAt(),
-                            java.time.Instant.now());
-            if (repository.updateConversation(active, conversation.version()) != 1) {
-                throw new org.springframework.web.server.ResponseStatusException(
-                        HttpStatus.CONFLICT, "conversation was modified");
-            }
-            conversation = active;
-        }
-        String platform = request == null ? null : request.platform;
-        String model = request == null ? null : request.model;
+        String previousLeaf = conversation.activeLeafMessageId();
+        boolean moveLeaf = !messageId.equals(previousLeaf);
         GenerationRun run;
         try {
-            run = conversations.createGeneration(conversation, input, platform, model);
+            if (keyed) {
+                run = conversations.createGenerationIdempotent(
+                        conversation, input, platform, model, operation, idempotencyKey,
+                        fingerprint, java.util.UUID.randomUUID().toString(), moveLeaf);
+            } else {
+                if (moveLeaf) {
+                    Conversation active = new Conversation(
+                            conversation.id(), conversation.tenantId(), conversation.ownerUserId(),
+                            conversation.sceneType(), conversation.title(), conversation.status(),
+                            conversation.parentConversationId(), conversation.branchFromMessageId(),
+                            input.id(), conversation.rollingSummary(), conversation.platform(),
+                            conversation.model(), conversation.version() + 1,
+                            conversation.createdAt(), java.time.Instant.now());
+                    if (repository.updateConversation(active, conversation.version()) != 1) {
+                        throw new IllegalStateException("conversation was modified");
+                    }
+                    conversation = active;
+                }
+                run = conversations.createGeneration(conversation, input, platform, model);
+            }
         } catch (IllegalStateException conflict) {
+            if (keyed) return replayOrConflict(operation, idempotencyKey, fingerprint);
             throw new org.springframework.web.server.ResponseStatusException(
                     HttpStatus.CONFLICT, conflict.getMessage(), conflict);
-        }
-        if (idempotencyKey != null
-                && !idempotencyKey.isBlank()
-                && !idempotency.claim(tenant, user, operation, idempotencyKey, run.id())) {
-            var existing =
-                    idempotency
-                            .find(tenant, user, operation, idempotencyKey)
-                            .flatMap(id -> generations.find(id, tenant, user));
-            if (existing.isPresent()) return Result.success(existing.get());
-            throw new org.springframework.web.server.ResponseStatusException(
-                    HttpStatus.CONFLICT, "idempotency key is already in use");
         }
         try {
             runner.start(run, tenant, user);
         } catch (
                 com.shiyu.ai.conversation.implementation.application.GenerationAdmissionException
                         denied) {
+            conversations.rollbackRejectedGeneration(
+                    run, tenant, user, false, moveLeaf, previousLeaf, operation,
+                    keyed ? idempotencyKey : null);
             throw new org.springframework.web.server.ResponseStatusException(
                     HttpStatus.TOO_MANY_REQUESTS, denied.errorCode(), denied);
         }
         return Result.success(run);
+    }
+
+    private GenerationRun requireReplayableGeneration(
+            String generationId, TenantId tenantId, long ownerUserId) {
+        GenerationRun generation =
+                generations
+                        .find(generationId, tenantId, ownerUserId)
+                        .orElseThrow(
+                                () ->
+                                        new org.springframework.web.server.ResponseStatusException(
+                                                HttpStatus.CONFLICT,
+                                                "generation admission was rolled back; retry the request"));
+        if (generation.status() == GenerationStatus.CREATED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.CONFLICT, "generation admission is still in progress; retry the request");
+        }
+        return generation;
+    }
+
+    private void requireMatchingFingerprint(
+            String operation, String key, String fingerprint) {
+        if (!idempotency.findFingerprint(tenant(), user(), operation, key)
+                .filter(fingerprint::equals)
+                .isPresent()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.CONFLICT, "idempotency key was used for a different request");
+        }
+    }
+
+    private Result<GenerationRun> replayOrConflict(
+            String operation, String key, String fingerprint) {
+        var existingId = idempotency.find(tenant(), user(), operation, key);
+        if (existingId.isPresent()) {
+            requireMatchingFingerprint(operation, key, fingerprint);
+            return Result.success(requireReplayableGeneration(existingId.get(), tenant(), user()));
+        }
+        throw new org.springframework.web.server.ResponseStatusException(
+                HttpStatus.CONFLICT, "idempotency key is already in use");
     }
 
     private TenantId tenant() {

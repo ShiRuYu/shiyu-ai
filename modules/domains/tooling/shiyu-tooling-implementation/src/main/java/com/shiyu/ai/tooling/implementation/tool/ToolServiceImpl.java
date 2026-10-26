@@ -224,6 +224,9 @@ public class ToolServiceImpl implements ToolService {
         try {
             Map<String, Object> mergedParams = mergeParameters(def, parameters);
             Object result = executor.apply(mergedParams, context);
+            if (result instanceof ToolExecutionResult executionResult) {
+                return executionResult;
+            }
 
             Map<String, Object> enriched = new HashMap<>();
             enriched.put("tool", toolName);
@@ -310,30 +313,13 @@ public class ToolServiceImpl implements ToolService {
         // 1. 天气查询
         registerBuiltinTool(
                 "WEATHER",
-                "查询指定城市的当前天气信息",
-                Map.of("location", new ParameterInfo("string", "城市名称，如 北京、上海（支持别名映射）", true, null)),
-                params -> {
-                    String location = (String) params.get("location");
-                    String city = location != null ? location : "未知";
-                    int code = Math.floorMod(city.hashCode(), 6);
-                    String[] conditions = {"晴", "多云", "阴天", "小雨", "中雨", "微风"};
-                    String condition = conditions[code];
-                    int temp = 20 + Math.floorMod(city.hashCode(), 15);
-                    return Map.of(
-                            "city",
-                            city,
-                            "temperature",
-                            temp + "°C",
-                            "condition",
-                            condition,
-                            "humidity",
-                            (40 + Math.floorMod(city.hashCode() * 7, 40)) + "%",
-                            "wind",
-                            (2 + Math.floorMod(city.hashCode() * 3, 4)) + "级",
-                            "updated_at",
-                            LocalDateTime.now()
-                                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
-                });
+                "查询指定城市的当前天气信息（当前未配置天气数据提供方）",
+                Map.of("location", new ParameterInfo("string", "城市名称，如 北京、上海", true, null)),
+                params ->
+                        new ToolExecutionResult(
+                                false,
+                                null,
+                                "天气查询暂不可用：未配置真实天气数据提供方"));
 
         // 2. 计算器
         registerBuiltinTool(

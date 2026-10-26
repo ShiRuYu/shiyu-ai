@@ -1,4 +1,4 @@
-"""Keep PostgreSQL reserved identifiers valid when converting the H2 baseline."""
+"""Keep generated PostgreSQL runtime resources aligned with H2 initialization."""
 
 import importlib.util
 from pathlib import Path
@@ -65,11 +65,58 @@ CREATE CACHED TABLE "PUBLIC"."EDU_QUESTION"(
             MODULE.ROOT
             / "modules/applications/shiyu-platform-composition/src/main/java/com/shiyu/ai/composition/database/DatabaseInitializer.java"
         ).read_text(encoding="utf-8")
-        h2_updates = re.findall(r'"classpath:(db/updates/[^\"]+)"', initializer)
-        postgresql_updates = [
-            path.split("/src/main/resources/", 1)[1] for path in MODULE.UPDATES
+        h2_updates = re.findall(r'"classpath:(db/updates/[^"]+)"', initializer)
+        expected_updates = [
+            f"db/updates/postgresql/{path.removeprefix('db/updates/')}"
+            for path in h2_updates
         ]
-        self.assertEqual(h2_updates, postgresql_updates)
+        self.assertEqual(
+            expected_updates,
+            [MODULE.postgresql_update_resource(path) for path in MODULE.UPDATES],
+        )
+
+    def test_runtime_generation_separates_seed_and_updates(self) -> None:
+        MODULE.write_baseline_resources()
+        resources = MODULE.RUNTIME_RESOURCES / "db/baseline/postgresql"
+        runtime_seed = (resources / "seed.sql").read_text(encoding="utf-8")
+        runtime_updates = [
+            (MODULE.RUNTIME_RESOURCES / MODULE.postgresql_update_resource(path)).read_text(
+                encoding="utf-8"
+            )
+            for path in MODULE.UPDATES
+        ]
+        self.assertNotIn("CREATE TABLE", runtime_seed)
+        self.assertTrue(all(sql.strip() for sql in runtime_updates))
+        self.assertIn("shiyu_touch_", (resources / "education-schema.sql").read_text(encoding="utf-8"))
+        identity_sql = (resources / "identity-sequences.sql").read_text(encoding="utf-8")
+        self.assertIn("DO $$", identity_sql)
+        self.assertIn("'common_dict'", identity_sql)
+        self.assertNotIn("AND table_name IN ()", identity_sql)
+        baseline_seed = (MODULE.OUT / "baseline-seed.sql").read_text(encoding="utf-8")
+        self.assertLess(
+            baseline_seed.index("20261024_generation_postprocessing.sql"),
+            baseline_seed.index("DO $$"),
+        )
+        self.assertEqual(
+            [MODULE.postgresql_update_resource(path) for path in MODULE.UPDATES],
+            [
+                line
+                for line in (resources / "update-manifest.txt").read_text(encoding="utf-8").splitlines()
+                if line and not line.startswith("--")
+            ],
+        )
+
+    def test_education_resources_are_separate_from_platform_resources(self) -> None:
+        MODULE.write_baseline_resources()
+        resources = MODULE.RUNTIME_RESOURCES / "db/baseline/postgresql"
+        platform_schema = (resources / "schema.sql").read_text(encoding="utf-8")
+        education_schema = (resources / "education-schema.sql").read_text(encoding="utf-8")
+        platform_seed = (resources / "seed.sql").read_text(encoding="utf-8")
+        education_seed = (resources / "education-seed.sql").read_text(encoding="utf-8")
+        self.assertNotIn('CREATE TABLE "edu_', platform_schema)
+        self.assertIn('CREATE TABLE "edu_', education_schema)
+        self.assertNotIn('INSERT INTO "edu_', platform_seed)
+        self.assertIn('INSERT INTO "edu_', education_seed)
 
 
 if __name__ == "__main__":

@@ -109,4 +109,45 @@ public interface ConversationRepository {
      * @return 受影响的记录数或生成的序号。
      */
     int deleteMessage(String id, TenantId tenantId, long ownerUserId);
+
+    default int completeGeneration(
+            com.shiyu.ai.conversation.contract.model.GenerationRun completed,
+            long expectedGenerationVersion,
+            ConversationMessage assistant,
+            Conversation updatedConversation,
+            long expectedConversationVersion,
+            java.util.List<com.shiyu.ai.agent.contract.runtime.AiRunEventType> runtimeEvents) {
+        return 0;
+    }
+
+    default int transitionRunningGeneration(
+            com.shiyu.ai.conversation.contract.model.GenerationRun terminal,
+            long expectedGenerationVersion,
+            long ownerUserId,
+            java.util.List<com.shiyu.ai.agent.contract.runtime.AiRunEventType> runtimeEvents) {
+        return 0;
+    }
+
+    default java.util.Optional<com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing>
+            claimGenerationPostProcessing(String generationId) {
+        return java.util.Optional.empty();
+    }
+
+    default java.util.Optional<com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing>
+            claimGenerationPostProcessingNext() {
+        return java.util.Optional.empty();
+    }
+
+    default int completeGenerationPostProcessing(
+            String generationId,
+            com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.Step step,
+            String claimToken) {
+        return 0;
+    }
+
+    default int releaseGenerationPostProcessing(
+            String generationId, String claimToken, long retryDelayMillis) {
+        return 0;
+    }
+
 }

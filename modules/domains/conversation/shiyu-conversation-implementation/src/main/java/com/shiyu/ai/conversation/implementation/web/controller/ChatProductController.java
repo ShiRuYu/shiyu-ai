@@ -687,22 +687,20 @@ public class ChatProductController {
                     "platform and model are required");
         }
         GenerationRun run;
+        String previousLeaf = conversation.activeLeafMessageId();
         try {
-            var input = conversationService.appendUserMessage(conversation, request.content);
-            var latestConversation =
-                    conversations
-                            .findConversation(
-                                    request.conversationId,
-                                    new com.shiyu.ai.kernel.context.TenantId(tenant()),
-                                    user())
-                            .orElseThrow(
-                                    () -> new IllegalArgumentException("conversation not found"));
             run =
-                    conversationService.createGeneration(
-                            latestConversation,
-                            input,
+                    conversationService.createMessageGeneration(
+                            conversation,
+                            request.content,
                             platform,
                             model,
+                            null,
+                            "group.turn:" + request.conversationId,
+                            null,
+                            null,
+                            id(),
+                            id(),
                             decision.participant().id());
         } catch (IllegalStateException ex) {
             throw new org.springframework.web.server.ResponseStatusException(
@@ -713,6 +711,9 @@ public class ChatProductController {
         } catch (
                 com.shiyu.ai.conversation.implementation.application.GenerationAdmissionException
                         denied) {
+            conversationService.rollbackRejectedGeneration(
+                    run, new TenantId(tenant()), user(), true, true, previousLeaf,
+                    "group.turn:" + request.conversationId, null);
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.TOO_MANY_REQUESTS,
                     denied.errorCode(),

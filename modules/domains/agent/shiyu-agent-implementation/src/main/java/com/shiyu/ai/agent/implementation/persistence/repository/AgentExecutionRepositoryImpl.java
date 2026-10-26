@@ -42,6 +42,42 @@ public class AgentExecutionRepositoryImpl
     }
 
     @Override
+    public int updateIfStatus(TenantId tenantId, AgentExecutionBO bo, Integer expectedStatus) {
+        if (tenantId == null || bo == null || bo.getExecutionId() == null
+                || bo.getExecutionId().isBlank() || expectedStatus == null) {
+            throw new IllegalArgumentException("execution tenant, ID, and expected status are required");
+        }
+        AgentExecutionDO update = MapstructUtils.convert(bo, AgentExecutionDO.class);
+        update.setTenantId(tenantId.value());
+        QueryWrapper query = new QueryWrapper();
+        query.eq(AgentExecutionDO::getTenantId, tenantId.value());
+        query.eq(AgentExecutionDO::getExecutionId, bo.getExecutionId());
+        query.eq(AgentExecutionDO::getStatus, expectedStatus);
+        query.in(
+                AgentExecutionDO::getStatus,
+                AgentExecutionStatus.RUNNING.getCode(),
+                AgentExecutionStatus.PAUSED.getCode());
+        return agentExecutionMapper.updateByQuery(update, query);
+    }
+
+    @Override
+    public int updateCheckpointIfStatus(
+            TenantId tenantId, String executionId, String checkpointId, Integer expectedStatus) {
+        if (tenantId == null || executionId == null || executionId.isBlank()
+                || expectedStatus == null) {
+            throw new IllegalArgumentException("execution tenant, ID, and expected status are required");
+        }
+        AgentExecutionDO update = new AgentExecutionDO();
+        update.setTenantId(tenantId.value());
+        update.setLastCheckpointId(checkpointId);
+        QueryWrapper query = new QueryWrapper();
+        query.eq(AgentExecutionDO::getTenantId, tenantId.value());
+        query.eq(AgentExecutionDO::getExecutionId, executionId);
+        query.eq(AgentExecutionDO::getStatus, expectedStatus);
+        return agentExecutionMapper.updateByQuery(update, query);
+    }
+
+    @Override
     public boolean claimPausedForResume(
             TenantId tenantId, String executionId, String expectedCheckpointId) {
         if (tenantId == null || executionId == null || executionId.isBlank()) {

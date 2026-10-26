@@ -103,12 +103,21 @@ public final class ToolExecutionPipeline {
         try {
             value = executor.apply(request.arguments(), executionContext);
         } catch (RuntimeException ex) {
-            runtime.append(
-                    run,
-                    AiRunEventType.TOOL_COMPLETED,
-                    "{\"toolName\":\"" + escape(request.toolName()) + "\",\"success\":false}",
-                    true);
-            throw ex;
+            ToolSideEffectStatus outcome = ToolSideEffectStatus.UNCERTAIN;
+            try {
+                runtime.append(
+                        run,
+                        AiRunEventType.TOOL_COMPLETED,
+                        "{\"toolName\":\"" + escape(request.toolName())
+                                + "\",\"success\":false,\"outcome\":\"FAILED\""
+                                + ",\"sideEffectStatus\":\"" + outcome.name()
+                                + "\",\"automaticReplay\":false}",
+                        true);
+            } catch (RuntimeException auditFailure) {
+                if (auditFailure != ex) ex.addSuppressed(auditFailure);
+            }
+            throw new ToolExecutionFailureException(outcome,
+                    "tool execution failed; external side effect is uncertain", ex);
         }
         String payload =
                 "{\"toolName\":\"" + escape(request.toolName()) + "\",\"success\":true}";
@@ -195,6 +204,27 @@ public final class ToolExecutionPipeline {
             return collection.stream().map(ToolExecutionPipeline::canonicalize).toList();
         }
         return value;
+    }
+
+    /** 外部工具调用失败后可能已经产生副作用；调用方必须人工核对，不得自动重放。 */
+    public enum ToolSideEffectStatus {
+        UNCERTAIN
+    }
+
+    /** 表示工具调用失败且其外部副作用无法确认。 */
+    public static final class ToolExecutionFailureException extends IllegalStateException {
+        @java.io.Serial private static final long serialVersionUID = 1L;
+        private final ToolSideEffectStatus outcome;
+
+        public ToolExecutionFailureException(
+                ToolSideEffectStatus outcome, String message, Throwable cause) {
+            super(message, cause);
+            this.outcome = Objects.requireNonNull(outcome, "outcome");
+        }
+
+        public ToolSideEffectStatus outcome() {
+            return outcome;
+        }
     }
 
     /**

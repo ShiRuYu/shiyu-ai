@@ -1,6 +1,8 @@
 package com.shiyu.ai.conversation.implementation.application;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -20,6 +22,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 验证 生成 Runner Edge 相关功能、边界条件、异常路径和协作行为。
@@ -73,7 +81,7 @@ class GenerationRunnerEdgeTest {
     }
 
     @Test
-    void releasesAdmissionWhenInitialGenerationCasLoses() {
+    void doesNotReleaseSharedAdmissionWhenInitialGenerationCasLoses() {
         ChatEngine engine = mock(ChatEngine.class);
         GenerationRepository generations = mock(GenerationRepository.class);
         ConversationRepository conversations = mock(ConversationRepository.class);
@@ -91,7 +99,59 @@ class GenerationRunnerEdgeTest {
                                         mock(GenerationUsageSink.class),
                                         admission)
                                 .start(created, new TenantId(1), 2));
-        verify(admission).release(any(), eq(created));
+        verify(admission, never()).release(any(), any());
+    }
+
+    @Test
+    void duplicateConcurrentLocalStartDoesNotReserveOrReleaseTheWinningReservation() throws Exception {
+        ChatEngine engine = mock(ChatEngine.class);
+        GenerationRepository generations = mock(GenerationRepository.class);
+        ConversationRepository conversations = mock(ConversationRepository.class);
+        GenerationAdmission admission = mock(GenerationAdmission.class);
+        GenerationRun created = generation("g-local-duplicate-start");
+        CountDownLatch bothLoadedInput = new CountDownLatch(2);
+        doAnswer(
+                        invocation -> {
+                            bothLoadedInput.countDown();
+                            if (!bothLoadedInput.await(5, TimeUnit.SECONDS)) {
+                                throw new AssertionError("both duplicate starts did not load input");
+                            }
+                            return Optional.of(message("m1", "c1", 0));
+                        })
+                .when(conversations)
+                .findMessage("m1", new TenantId(1), 2);
+        when(conversations.findConversation("c1", new TenantId(1), 2))
+                .thenReturn(Optional.of(conversation("c1", "m1")));
+        when(conversations.listMessages("c1", new TenantId(1), 2, 1000))
+                .thenReturn(List.of(message("m1", "c1", 0)));
+        when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
+        when(engine.stream(any())).thenReturn(Flux.never());
+
+        GenerationRunner runner =
+                runner(engine, generations, conversations, mock(GenerationUsageSink.class), admission);
+        ExecutorService starters = Executors.newFixedThreadPool(2);
+        try {
+            Future<?> firstStart =
+                    starters.submit(() -> runner.start(created, new TenantId(1), 2));
+            Future<?> secondStart =
+                    starters.submit(() -> runner.start(created, new TenantId(1), 2));
+            int successfulStarts = 0;
+            for (Future<?> start : List.of(firstStart, secondStart)) {
+                try {
+                    start.get(5, TimeUnit.SECONDS);
+                    successfulStarts++;
+                } catch (ExecutionException duplicate) {
+                    assertTrue(duplicate.getCause() instanceof IllegalStateException);
+                }
+            }
+            assertEquals(1, successfulStarts);
+        } finally {
+            starters.shutdownNow();
+        }
+
+        verify(admission, times(1)).reserve(any(), eq(created), anyInt());
+        verify(admission, never()).release(any(), any());
+        verify(engine).stream(any());
     }
 
     @Test
@@ -105,6 +165,9 @@ class GenerationRunnerEdgeTest {
         GenerationRun created = generation("g-stream");
         GenerationRun running = created.transition(GenerationStatus.RUNNING);
         when(generations.find("g-stream", new TenantId(1), 2)).thenReturn(Optional.of(running));
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         when(engine.stream(any())).thenReturn(null);
         runner(engine, generations, conversations, usage, admission)
                 .start(created, new TenantId(1), 2);
@@ -141,6 +204,9 @@ class GenerationRunnerEdgeTest {
         GenerationRun running = created.transition(GenerationStatus.RUNNING);
         when(generations.find("g-cas", new TenantId(1), 2)).thenReturn(Optional.of(running));
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1, 0);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         when(engine.stream(any()))
                 .thenReturn(
                         Flux.just(
@@ -149,7 +215,12 @@ class GenerationRunnerEdgeTest {
         when(conversations.updateConversation(any(), anyLong())).thenReturn(0);
         runner(engine, generations, conversations, usage, admission)
                 .start(created, new TenantId(1), 2);
-        verify(conversations).deleteMessage(anyString(), eq(new TenantId(1L)), eq(2L));
+        verify(conversations)
+                .transitionRunningGeneration(
+                        argThat(run -> run.status() == GenerationStatus.FAILED),
+                        anyLong(),
+                        eq(2L),
+                        anyList());
     }
 
     private static GenerationRunner runner(

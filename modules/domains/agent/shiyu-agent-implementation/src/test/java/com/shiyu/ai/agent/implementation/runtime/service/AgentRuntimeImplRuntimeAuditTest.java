@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -63,6 +64,10 @@ class AgentRuntimeImplRuntimeAuditTest {
         AiRun run = run();
         when(runtime.startRun(any(), any(AiRunSource.class), any(String.class), any(), any()))
                 .thenReturn(run);
+        when(runtime.requireRun("run-1", ACTOR.tenantId(), ACTOR.userId().value()))
+                .thenReturn(run);
+        when(runtime.finish("run-1", ACTOR.tenantId(), ACTOR.userId().value(),
+                AiRunStatus.COMPLETED, null)).thenReturn(run.transition(AiRunStatus.COMPLETED));
         AgentRuntimeImpl service = newRuntime(executions, runtime);
 
         assertEquals(
@@ -111,7 +116,9 @@ class AgentRuntimeImplRuntimeAuditTest {
 
             assertThrows(IllegalStateException.class, () -> {
                 if (streaming) {
-                    service.executeStream(ACTOR, "agent-1", Map.of("__appId", "app-1"));
+                    service.executeStream(ACTOR, "agent-1", Map.of("__appId", "app-1"))
+                            .collectList()
+                            .block();
                 } else {
                     service.execute(ACTOR, "agent-1", Map.of("__appId", "app-1"));
                 }
@@ -138,6 +145,11 @@ class AgentRuntimeImplRuntimeAuditTest {
         AiRun run = run();
         when(runtime.startRun(any(), any(AiRunSource.class), anyString(),
                 nullable(String.class), anyString())).thenReturn(run);
+        when(runtime.requireRun("run-1", ACTOR.tenantId(), ACTOR.userId().value()))
+                .thenReturn(run);
+        when(runtime.finish("run-1", ACTOR.tenantId(), ACTOR.userId().value(),
+                AiRunStatus.FAILED, "AGENT_EXECUTION_FAILED"))
+                .thenReturn(run.transition(AiRunStatus.FAILED));
         EventPublisher publisher = mock(EventPublisher.class);
         doThrow(new IllegalStateException("event bus unavailable"))
                 .when(publisher).publish(any(AgentExecutionStartedEvent.class));
@@ -193,6 +205,9 @@ class AgentRuntimeImplRuntimeAuditTest {
     private AgentRuntimeImpl newRuntime(
             AgentExecutionRepository executions, AiRuntimeService runtime,
             EventPublisher publisher) {
+        when(executions.updateCheckpointIfStatus(
+                        any(TenantId.class), anyString(), anyString(), anyInt()))
+                .thenReturn(1);
         AgentCacheManager cache =
                 new AgentCacheManager(mock(AgentAdminRepository.class), mock(AgentLoader.class));
         BaseNode node =

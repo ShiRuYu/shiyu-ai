@@ -27,6 +27,7 @@ public class JdbcConversationRepository implements ConversationRepository {
      * JDBC，表示当前对象中的对应属性。
      */
     private final JdbcTemplate jdbc;
+    private final com.shiyu.ai.agent.contract.runtime.AiRunRepository runtimeRuns;
 
     /**
      * 执行 Jdbc 会话 相关业务操作，并维护必要的状态和协作关系。
@@ -34,7 +35,15 @@ public class JdbcConversationRepository implements ConversationRepository {
      * @param dataSource 用于完成本次业务处理的 dataSource 参数。
      */
     public JdbcConversationRepository(@Qualifier("agentDataSource") DataSource dataSource) {
+        this(dataSource, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public JdbcConversationRepository(
+            @Qualifier("agentDataSource") DataSource dataSource,
+            com.shiyu.ai.agent.contract.runtime.AiRunRepository runtimeRuns) {
         this.jdbc = new JdbcTemplate(dataSource);
+        this.runtimeRuns = runtimeRuns;
     }
 
     /**
@@ -251,6 +260,216 @@ public class JdbcConversationRepository implements ConversationRepository {
      * @return 返回 Jdbc 会话 相关操作生成的结果数据。
      */
     @Override
+    @org.springframework.transaction.annotation.Transactional
+    public int completeGeneration(
+            com.shiyu.ai.conversation.contract.model.GenerationRun completed,
+            long expectedGenerationVersion,
+            ConversationMessage assistant,
+            Conversation updatedConversation,
+            long expectedConversationVersion,
+            List<com.shiyu.ai.agent.contract.runtime.AiRunEventType> runtimeEvents) {
+        TenantId tenantId = new TenantId(updatedConversation.tenantId());
+        requireTenant(tenantId.value());
+        if (!assistant.conversationId().equals(updatedConversation.id())
+                || assistant.role() != MessageRole.ASSISTANT
+                || !assistant.id().equals(completed.assistantMessageId())) {
+            throw new IllegalArgumentException("assistant message does not belong to generation");
+        }
+        if (completed.runtimeRunId() == null && runtimeRuns != null) {
+            String linkedRuntimeId = jdbc.query(
+                    "SELECT RUNTIME_RUN_ID FROM CHAT_GENERATION_RUN WHERE ID=? AND TENANT_ID=?",
+                    rs -> rs.next() ? rs.getString(1) : null,
+                    completed.id(), tenantId.value());
+            if (linkedRuntimeId != null) completed = completed.withRuntimeRunId(linkedRuntimeId);
+        }
+        int updatedGeneration =
+                jdbc.update(
+                        "UPDATE CHAT_GENERATION_RUN SET STATUS=?,PROMPT_TOKENS=?,COMPLETION_TOKENS=?,LATENCY_MS=?,ERROR_CODE=?,LAST_EVENT_SEQUENCE=?,CANCEL_REQUESTED=?,VERSION=?,UPDATED_AT=?,ASSISTANT_MESSAGE_ID=?,RUNTIME_RUN_ID=COALESCE(?,RUNTIME_RUN_ID) WHERE ID=? AND TENANT_ID=? AND STATUS='RUNNING' AND VERSION=? AND CANCEL_REQUESTED=FALSE",
+                        completed.status().name(),
+                        completed.promptTokens(),
+                        completed.completionTokens(),
+                        completed.latencyMs(),
+                        completed.errorCode(),
+                        completed.lastEventSequence(),
+                        completed.cancelRequested(),
+                        completed.version(),
+                        ts(completed.updatedAt()),
+                        assistant.id(),
+                        completed.runtimeRunId(),
+                        completed.id(),
+                        tenantId.value(),
+                        expectedGenerationVersion);
+        if (updatedGeneration != 1) return 0;
+        try {
+            insertMessage(assistant);
+            int updatedConversationRows =
+                    updateConversation(updatedConversation, expectedConversationVersion);
+            if (updatedConversationRows != 1) {
+                throw new IllegalStateException("conversation was modified during completion");
+            }
+            jdbc.update(
+                    "DELETE FROM CHAT_GENERATION_ACTIVE WHERE GENERATION_ID=? AND TENANT_ID=?",
+                    completed.id(),
+                    tenantId.value());
+            if (completed.runtimeRunId() != null) {
+                runtimeRuns.finishGenerationRun(
+                        completed.runtimeRunId(),
+                        tenantId,
+                        updatedConversation.ownerUserId(),
+                        com.shiyu.ai.agent.contract.runtime.AiRunStatus.COMPLETED,
+                        null,
+                        runtimeEvents,
+                        "turn-" + completed.id(),
+                        "model-" + completed.id());
+            }
+            enqueueGenerationPostProcessing(completed, tenantId, updatedConversation.ownerUserId());
+            return 1;
+        } catch (RuntimeException failure) {
+            throw failure;
+        }
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public int transitionRunningGeneration(
+            com.shiyu.ai.conversation.contract.model.GenerationRun terminal,
+            long expectedGenerationVersion,
+            long ownerUserId,
+            List<com.shiyu.ai.agent.contract.runtime.AiRunEventType> runtimeEvents) {
+        TenantId tenantId = TenantScope.current().orElseThrow(
+                () -> new IllegalStateException("tenant scope is required"));
+        requireTenant(tenantId.value());
+        if (terminal.status() != com.shiyu.ai.conversation.contract.model.GenerationStatus.FAILED
+                && terminal.status() != com.shiyu.ai.conversation.contract.model.GenerationStatus.CANCELLED) {
+            throw new IllegalArgumentException("terminal status must be FAILED or CANCELLED");
+        }
+        if (terminal.runtimeRunId() == null) {
+            String linkedRuntimeId = jdbc.query(
+                    "SELECT RUNTIME_RUN_ID FROM CHAT_GENERATION_RUN WHERE ID=? AND TENANT_ID=?",
+                    rs -> rs.next() ? rs.getString(1) : null,
+                    terminal.id(), tenantId.value());
+            if (linkedRuntimeId != null) terminal = terminal.withRuntimeRunId(linkedRuntimeId);
+        }
+        int updated =
+                jdbc.update(
+                        "UPDATE CHAT_GENERATION_RUN SET STATUS=?,PROMPT_TOKENS=?,COMPLETION_TOKENS=?,LATENCY_MS=?,ERROR_CODE=?,LAST_EVENT_SEQUENCE=?,CANCEL_REQUESTED=?,VERSION=?,UPDATED_AT=?,RUNTIME_RUN_ID=COALESCE(?,RUNTIME_RUN_ID) WHERE ID=? AND TENANT_ID=? AND STATUS='RUNNING' AND VERSION=?",
+                        terminal.status().name(), terminal.promptTokens(), terminal.completionTokens(),
+                        terminal.latencyMs(), terminal.errorCode(), terminal.lastEventSequence(),
+                        terminal.cancelRequested(), terminal.version(), ts(terminal.updatedAt()),
+                        terminal.runtimeRunId(), terminal.id(), tenantId.value(), expectedGenerationVersion);
+        if (updated != 1) return 0;
+        if (terminal.runtimeRunId() != null && !terminal.runtimeRunId().isBlank()) {
+            var runtimeStatus = terminal.status()
+                    == com.shiyu.ai.conversation.contract.model.GenerationStatus.CANCELLED
+                    ? com.shiyu.ai.agent.contract.runtime.AiRunStatus.CANCELLED
+                    : com.shiyu.ai.agent.contract.runtime.AiRunStatus.FAILED;
+            runtimeRuns.finishGenerationRun(
+                    terminal.runtimeRunId(), tenantId, ownerUserId, runtimeStatus,
+                    terminal.errorCode(), runtimeEvents,
+                    "turn-" + terminal.id(), "model-" + terminal.id());
+        }
+        jdbc.update(
+                "DELETE FROM CHAT_GENERATION_ACTIVE WHERE GENERATION_ID=? AND TENANT_ID=?",
+                terminal.id(), tenantId.value());
+        enqueueGenerationPostProcessing(terminal, tenantId, ownerUserId);
+        return 1;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public java.util.Optional<com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing>
+            claimGenerationPostProcessingNext() {
+        String generationId =
+                jdbc.query(
+                        "SELECT GENERATION_ID FROM CHAT_GENERATION_POSTPROCESSING WHERE NEXT_ATTEMPT_AT<=CURRENT_TIMESTAMP AND (CLAIMED_UNTIL IS NULL OR CLAIMED_UNTIL<CURRENT_TIMESTAMP) ORDER BY NEXT_ATTEMPT_AT,GENERATION_ID LIMIT 1",
+                        rs -> rs.next() ? rs.getString(1) : null);
+        if (generationId == null) return java.util.Optional.empty();
+        return claimGenerationPostProcessing(generationId);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public java.util.Optional<com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing>
+            claimGenerationPostProcessing(String generationId) {
+        String claimToken = java.util.UUID.randomUUID().toString();
+        int updated =
+                jdbc.update(
+                        "UPDATE CHAT_GENERATION_POSTPROCESSING SET CLAIM_TOKEN=?,CLAIMED_UNTIL=? WHERE GENERATION_ID=? AND NEXT_ATTEMPT_AT<=CURRENT_TIMESTAMP AND (CLAIMED_UNTIL IS NULL OR CLAIMED_UNTIL<CURRENT_TIMESTAMP)",
+                        claimToken,
+                        ts(Instant.now().plusSeconds(300)),
+                        generationId);
+        return updated == 1
+                ? mapClaimedPostProcessing(generationId, claimToken)
+                : java.util.Optional.empty();
+    }
+
+    private java.util.Optional<com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing>
+            mapClaimedPostProcessing(String generationId, String claimToken) {
+        String claimFilter =
+                claimToken == null
+                        ? "p.CLAIM_TOKEN IS NULL"
+                        : "p.CLAIM_TOKEN=?";
+        Object[] params =
+                claimToken == null
+                        ? new Object[] {generationId}
+                        : new Object[] {generationId, claimToken};
+        return jdbc.query(
+                "SELECT p.QUOTA_ACTION,p.USAGE_ACTION,p.QUOTA_DONE,p.USAGE_DONE,p.ATTEMPTS,g.*,c.OWNER_USER_ID FROM CHAT_GENERATION_POSTPROCESSING p JOIN CHAT_GENERATION_RUN g ON g.ID=p.GENERATION_ID AND g.TENANT_ID=p.TENANT_ID JOIN CHAT_CONVERSATION c ON c.ID=g.CONVERSATION_ID AND c.TENANT_ID=g.TENANT_ID WHERE p.GENERATION_ID=? AND " + claimFilter,
+                rs -> {
+                    if (!rs.next()) return java.util.Optional.empty();
+                    long tenantValue = rs.getLong("TENANT_ID");
+                    return java.util.Optional.of(
+                            new com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing(
+                                    mapGeneration(rs),
+                                    new TenantId(tenantValue),
+                                    rs.getLong("OWNER_USER_ID"),
+                                    com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.QuotaAction.valueOf(rs.getString("QUOTA_ACTION")),
+                                    com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.UsageAction.valueOf(rs.getString("USAGE_ACTION")),
+                                    rs.getBoolean("QUOTA_DONE"),
+                                    rs.getBoolean("USAGE_DONE"),
+                                    rs.getInt("ATTEMPTS"),
+                                    claimToken));
+                },
+                params);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public int completeGenerationPostProcessing(
+            String generationId,
+            com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.Step step,
+            String claimToken) {
+        String column = step == com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.Step.QUOTA
+                ? "QUOTA_DONE"
+                : "USAGE_DONE";
+        int updated =
+                jdbc.update(
+                        "UPDATE CHAT_GENERATION_POSTPROCESSING SET "
+                                + column
+                                + "=TRUE WHERE GENERATION_ID=? AND CLAIM_TOKEN=?",
+                        generationId,
+                        claimToken);
+        if (updated == 1) {
+            jdbc.update(
+                    "DELETE FROM CHAT_GENERATION_POSTPROCESSING WHERE GENERATION_ID=? AND QUOTA_DONE=TRUE AND USAGE_DONE=TRUE AND CLAIM_TOKEN=?",
+                    generationId,
+                    claimToken);
+        }
+        return updated;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public int releaseGenerationPostProcessing(
+            String generationId, String claimToken, long retryDelayMillis) {
+        return jdbc.update(
+                "UPDATE CHAT_GENERATION_POSTPROCESSING SET ATTEMPTS=ATTEMPTS+1,NEXT_ATTEMPT_AT=?,CLAIM_TOKEN=NULL,CLAIMED_UNTIL=NULL WHERE GENERATION_ID=? AND CLAIM_TOKEN=?",
+                ts(Instant.now().plusMillis(Math.max(1000L, retryDelayMillis))),
+                generationId,
+                claimToken);
+    }
+
+    @Override
     public int deleteConversation(String id, TenantId tenantId, long ownerUserId) {
         TenantScope.requireMatches(tenantId);
         return jdbc.update(
@@ -275,11 +494,70 @@ public class JdbcConversationRepository implements ConversationRepository {
         TenantScope.requireMatches(tenantId);
         return jdbc.update(
                 "DELETE FROM CHAT_MESSAGE WHERE ID=? AND TENANT_ID=? AND CONVERSATION_ID IN (SELECT"
-                        + " ID FROM CHAT_CONVERSATION WHERE TENANT_ID=? AND OWNER_USER_ID=?)",
+                        + " ID FROM CHAT_CONVERSATION WHERE TENANT_ID=? AND OWNER_USER_ID=?)"
+                        + " AND NOT EXISTS (SELECT 1 FROM CHAT_MESSAGE child"
+                        + " WHERE child.TENANT_ID=CHAT_MESSAGE.TENANT_ID"
+                        + " AND child.PARENT_MESSAGE_ID=CHAT_MESSAGE.ID)"
+                        + " AND NOT EXISTS (SELECT 1 FROM CHAT_CONVERSATION reference"
+                        + " WHERE reference.TENANT_ID=CHAT_MESSAGE.TENANT_ID"
+                        + " AND (reference.ACTIVE_LEAF_MESSAGE_ID=CHAT_MESSAGE.ID"
+                        + " OR reference.BRANCH_FROM_MESSAGE_ID=CHAT_MESSAGE.ID))",
                 id,
                 tenantId.value(),
                 tenantId.value(),
                 ownerUserId);
+    }
+
+    private void enqueueGenerationPostProcessing(
+            com.shiyu.ai.conversation.contract.model.GenerationRun run,
+            TenantId tenantId,
+            long ownerUserId) {
+        var quotaAction =
+                run.status() == com.shiyu.ai.conversation.contract.model.GenerationStatus.COMPLETED
+                        ? com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.QuotaAction.SETTLE
+                        : com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.QuotaAction.RELEASE;
+        var usageAction =
+                switch (run.status()) {
+                    case COMPLETED -> com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.UsageAction.COMPLETED;
+                    case FAILED -> com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.UsageAction.FAILED;
+                    case CANCELLED -> com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.UsageAction.NONE;
+                    default -> throw new IllegalArgumentException("generation must be terminal");
+                };
+        jdbc.update(
+                "INSERT INTO CHAT_GENERATION_POSTPROCESSING (GENERATION_ID,TENANT_ID,OWNER_USER_ID,QUOTA_ACTION,USAGE_ACTION,QUOTA_DONE,USAGE_DONE,ATTEMPTS,NEXT_ATTEMPT_AT,CREATED_AT) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                run.id(),
+                tenantId.value(),
+                ownerUserId,
+                quotaAction.name(),
+                usageAction.name(),
+                quotaAction == com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.QuotaAction.NONE,
+                usageAction == com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.UsageAction.NONE,
+                0,
+                ts(Instant.now()),
+                ts(Instant.now()));
+    }
+
+    private com.shiyu.ai.conversation.contract.model.GenerationRun mapGeneration(
+            ResultSet r) throws java.sql.SQLException {
+        return new com.shiyu.ai.conversation.contract.model.GenerationRun(
+                r.getString("ID"),
+                r.getString("CONVERSATION_ID"),
+                r.getString("INPUT_MESSAGE_ID"),
+                r.getString("ASSISTANT_MESSAGE_ID"),
+                r.getString("SPEAKER_ID"),
+                r.getString("PLATFORM"),
+                r.getString("MODEL"),
+                com.shiyu.ai.conversation.contract.model.GenerationStatus.valueOf(r.getString("STATUS")),
+                r.getLong("PROMPT_TOKENS"),
+                r.getLong("COMPLETION_TOKENS"),
+                r.getLong("LATENCY_MS"),
+                r.getString("ERROR_CODE"),
+                r.getInt("LAST_EVENT_SEQUENCE"),
+                r.getBoolean("CANCEL_REQUESTED"),
+                r.getLong("VERSION"),
+                instant(r.getTimestamp("CREATED_AT")),
+                instant(r.getTimestamp("UPDATED_AT")),
+                r.getString("RUNTIME_RUN_ID"));
     }
 
     private Conversation mapConversation(ResultSet r, int n) throws java.sql.SQLException {

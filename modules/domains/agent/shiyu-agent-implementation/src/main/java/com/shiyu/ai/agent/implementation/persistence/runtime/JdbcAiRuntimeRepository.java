@@ -227,6 +227,21 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
         return run.withLastEventSeq(seq);
     }
 
+    @Override
+    @Transactional
+    public AiRun finishGenerationRun(
+            String id,
+            TenantId tenantId,
+            long ownerUserId,
+            AiRunStatus terminal,
+            String errorCode,
+            List<AiRunEventType> precedingEvents,
+            String turnId,
+            String stepId) {
+        return AiRunRepository.super.finishGenerationRun(
+                id, tenantId, ownerUserId, terminal, errorCode, precedingEvents, turnId, stepId);
+    }
+
     /**
      * 执行 Jdbc AI Runtime 相关业务数据，并返回处理结果。
      *
@@ -306,6 +321,18 @@ public class JdbcAiRuntimeRepository implements AiRunRepository {
                     || !java.util.Objects.equals(existing.payload(), normalizedPayload)
                     || existing.redacted() != redacted) {
                 throw new IllegalStateException("run already has a different terminal event");
+            }
+            if (current != existing.seq()
+                    && jdbc.update(
+                                    "UPDATE AI_RUN SET LAST_EVENT_SEQ=? WHERE ID=? AND TENANT_ID=? AND"
+                                            + " OWNER_USER_ID=? AND LAST_EVENT_SEQ=?",
+                                    existing.seq(),
+                                    runId,
+                                    tenant(tenantId),
+                                    ownerUserId,
+                                    current)
+                            != 1) {
+                throw new IllegalStateException("run event sequence was modified");
             }
             return existing.seq();
         }

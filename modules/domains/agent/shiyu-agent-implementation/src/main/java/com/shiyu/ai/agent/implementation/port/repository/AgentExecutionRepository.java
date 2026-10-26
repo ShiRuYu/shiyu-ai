@@ -25,6 +25,13 @@ public interface AgentExecutionRepository {
      */
     void update(TenantId tenantId, AgentExecutionBO bo);
 
+    /** 按期望状态更新执行记录，避免旧 worker 覆盖并发状态变更。 */
+    int updateIfStatus(TenantId tenantId, AgentExecutionBO bo, Integer expectedStatus);
+
+    /** 按期望状态更新最近检查点，调用方仅可使用观察到的活动状态。 */
+    int updateCheckpointIfStatus(
+            TenantId tenantId, String executionId, String checkpointId, Integer expectedStatus);
+
     /**
      * 原子认领一个仍处于暂停状态且检查点指针未变化的执行，以防多个实例同时续跑。
      *

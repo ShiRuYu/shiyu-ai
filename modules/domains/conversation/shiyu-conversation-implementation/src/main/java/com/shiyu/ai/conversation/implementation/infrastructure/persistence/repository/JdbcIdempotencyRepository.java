@@ -71,23 +71,66 @@ public class JdbcIdempotencyRepository implements IdempotencyRepository {
      * @return 返回本次条件判断是否成立。
      */
     @Override
+    public Optional<String> findFingerprint(
+            TenantId tenantId, long ownerUserId, String operation, String key) {
+        TenantScope.requireMatches(tenantId);
+        return jdbc.query(
+                        "SELECT FINGERPRINT FROM CHAT_IDEMPOTENCY_KEY WHERE TENANT_ID=? AND"
+                                + " OWNER_USER_ID=? AND OPERATION=? AND KEY_VALUE=?",
+                        (r, n) -> r.getString(1),
+                        tenantId.value(),
+                        ownerUserId,
+                        operation,
+                        key)
+                .stream()
+                .filter(java.util.Objects::nonNull)
+                .findFirst();
+    }
+
+    @Override
     public boolean claim(
             TenantId tenantId, long ownerUserId, String operation, String key, String resourceId) {
+        return claim(tenantId, ownerUserId, operation, key, null, resourceId);
+    }
+
+    @Override
+    public boolean claim(
+            TenantId tenantId,
+            long ownerUserId,
+            String operation,
+            String key,
+            String fingerprint,
+            String resourceId) {
         TenantScope.requireMatches(tenantId);
         try {
             jdbc.update(
                     "INSERT INTO CHAT_IDEMPOTENCY_KEY"
-                        + " (TENANT_ID,OWNER_USER_ID,KEY_VALUE,OPERATION,RESOURCE_ID,CREATED_AT)"
-                        + " VALUES (?,?,?,?,?,?)",
+                        + " (TENANT_ID,OWNER_USER_ID,KEY_VALUE,OPERATION,FINGERPRINT,RESOURCE_ID,CREATED_AT)"
+                        + " VALUES (?,?,?,?,?,?,?)",
                     tenantId.value(),
                     ownerUserId,
                     key,
                     operation,
+                    fingerprint,
                     resourceId,
                     Timestamp.from(Instant.now()));
             return true;
         } catch (DuplicateKeyException duplicate) {
             return false;
         }
+    }
+
+    @Override
+    public int deleteClaim(
+            TenantId tenantId, long ownerUserId, String operation, String key, String resourceId) {
+        TenantScope.requireMatches(tenantId);
+        return jdbc.update(
+                "DELETE FROM CHAT_IDEMPOTENCY_KEY WHERE TENANT_ID=? AND OWNER_USER_ID=? AND"
+                        + " OPERATION=? AND KEY_VALUE=? AND RESOURCE_ID=?",
+                tenantId.value(),
+                ownerUserId,
+                operation,
+                key,
+                resourceId);
     }
 }

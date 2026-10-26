@@ -259,6 +259,50 @@ class AgentConversationServiceTest {
     }
 
     @Test
+    void preservesCompletedOutcomeWhenClientDisconnectsDuringFinalization() {
+        ConversationRepository repository = mock(ConversationRepository.class);
+        ConversationService conversations = mock(ConversationService.class);
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntime agents = mock(AgentRuntime.class);
+        Conversation conversation = mock(Conversation.class);
+        ConversationMessage input = mock(ConversationMessage.class);
+        ConversationMessage assistant = mock(ConversationMessage.class);
+        Execution completed = mock(Execution.class);
+        when(conversation.sceneType()).thenReturn("agent");
+        when(conversation.activeLeafMessageId()).thenReturn("user-1");
+        when(input.id()).thenReturn("user-1");
+        when(assistant.id()).thenReturn("assistant-1");
+        when(repository.findConversation("conversation-1", ACTOR.tenantId(), 9L))
+                .thenReturn(Optional.of(conversation));
+        when(conversations.appendUserMessage(conversation, "hello")).thenReturn(input);
+        when(conversations.appendMessage(eq(conversation), eq("user-1"),
+                eq(MessageRole.ASSISTANT), eq("finished answer"), isNull(), anyMap()))
+                .thenReturn(assistant);
+        when(runtime.requirePublishedVersion("app-1", ACTOR.tenantId(), 9L))
+                .thenReturn(new AiAppVersion("version-1", "app-1", ACTOR.tenantId(),
+                        "1", "{\"agentId\":\"agent-1\"}", "PUBLISHED",
+                        Instant.now(), Instant.now()));
+        when(agents.executeStream(eq(ACTOR), eq("agent-1"), isNull(), anyMap()))
+                .thenReturn(Flux.<Map<String, Object>>just(Map.of("status", "STARTED",
+                        "executionId", "exec-1", "runtimeRunId", "run-1"))
+                        .concatWith(Flux.never()));
+        when(agents.getExecution(ACTOR, "exec-1")).thenReturn(completed);
+        when(completed.getStatus()).thenReturn(ExecutionStatus.COMPLETED);
+        when(completed.getOutput()).thenReturn(Map.of("content", "finished answer"));
+
+        var events = new AgentConversationService(repository, conversations, runtime, agents)
+                .execute(ACTOR, "conversation-1", "app-1", null, "hello", null)
+                .take(1).collectList().block();
+
+        assertNotNull(events);
+        assertEquals("STARTED", events.getFirst().get("status"));
+        verify(conversations).appendMessage(eq(conversation), eq("user-1"),
+                eq(MessageRole.ASSISTANT), eq("finished answer"), isNull(),
+                argThat(trace -> "COMPLETED".equals(trace.get("status"))
+                        && "run-1".equals(trace.get("runtimeRunId"))));
+    }
+
+    @Test
     void recordsCancellationWhenClientDisconnectsAfterStart() {
         ConversationRepository repository = mock(ConversationRepository.class);
         ConversationService conversations = mock(ConversationService.class);

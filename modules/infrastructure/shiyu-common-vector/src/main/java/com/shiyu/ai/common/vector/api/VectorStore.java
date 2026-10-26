@@ -4,6 +4,7 @@ import com.shiyu.ai.common.vector.model.VectorRecord;
 import com.shiyu.ai.common.vector.model.VectorSearchRequest;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 管理 向量 相关的运行时状态、注册信息或临时数据。
@@ -30,6 +31,9 @@ public interface VectorStore extends AutoCloseable {
     default List<VectorRecord> search(VectorSearchRequest request) {
         return search(request.getQueryVector(), request.getTopK());
     }
+
+    /** Count records whose metadata matches all supplied filters. */
+    int count(Map<String, Object> filter);
 
     /** 删除记录 */
     void delete(String id);

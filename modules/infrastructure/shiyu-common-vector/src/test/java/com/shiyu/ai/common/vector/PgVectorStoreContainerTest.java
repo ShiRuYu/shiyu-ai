@@ -35,10 +35,30 @@ class PgVectorStoreContainerTest {
         PgVectorStore tenantOne = new PgVectorStore(jdbc, "tenant/1", 3);
         PgVectorStore tenantTwo = new PgVectorStore(jdbc, "tenant/2", 3);
 
-        tenantOne.upsert(new VectorRecord("doc-1", new float[] {1, 0, 0}, Map.of("tenant", "1")));
-        tenantTwo.upsert(new VectorRecord("doc-1", new float[] {0, 1, 0}, Map.of("tenant", "2")));
+        tenantOne.upsert(
+                new VectorRecord(
+                        "doc-1",
+                        new float[] {1, 0, 0},
+                        Map.of("tenant", "1", "numericTenant", 1)));
+        tenantTwo.upsert(
+                new VectorRecord(
+                        "doc-1",
+                        new float[] {0, 1, 0},
+                        Map.of("tenant", "2", "numericTenant", "2")));
 
         assertThat(tenantOne.size()).isEqualTo(1);
+        assertThat(tenantOne.count(Map.of("tenant", "1"))).isEqualTo(1);
+        assertThat(tenantOne.count(Map.of("numericTenant", 1))).isEqualTo(1);
+        assertThat(tenantOne.count(Map.of("numericTenant", "1"))).isZero();
+        assertThat(tenantOne.count(Map.of("tenant", "2"))).isZero();
+        assertThat(
+                        tenantOne.search(
+                                com.shiyu.ai.common.vector.model.VectorSearchRequest.builder()
+                                        .queryVector(new float[] {1, 0, 0})
+                                        .topK(5)
+                                        .filter(Map.of("numericTenant", "1"))
+                                        .build()))
+                .isEmpty();
         assertThat(tenantOne.search(new float[] {1, 0, 0}, 5))
                 .singleElement()
                 .extracting(VectorRecord::id)

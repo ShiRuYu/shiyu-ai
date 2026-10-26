@@ -137,6 +137,9 @@ public class DatabaseInitializer {
                     "AI_RUN",
                     "AI_RUN_EVENT",
                     "AI_TOOL_APPROVAL",
+                    "GOVERNANCE_QUOTA_TENANT",
+                    "GOVERNANCE_QUOTA_RESERVATION",
+                    "CHAT_GENERATION_POSTPROCESSING",
                     "AGENT_EVAL_DATASET",
                     "AGENT_EVAL_CASE",
                     "AGENT_EVAL_RUN",
@@ -157,7 +160,13 @@ public class DatabaseInitializer {
             Set.of("SHIYU_VECTOR_ITEM", "SHIYU_EVENT_OUTBOX", "SHIYU_EVENT_INBOX");
 
     /** 由幂等增补脚本创建、但不属于破坏式 baseline 的表。 */
-    private static final Set<String> UPDATE_TABLES = Set.of("AUTH_TENANT_MODULE");
+    private static final Set<String> UPDATE_TABLES =
+            Set.of(
+                    "AUTH_TENANT_MODULE",
+                    "GOVERNANCE_QUOTA_TENANT",
+                    "GOVERNANCE_QUOTA_RESERVATION",
+                    "CHAT_GENERATION_POSTPROCESSING",
+                    "CHAT_IDEMPOTENCY_KEY");
 
     /**
      * dataSources 属性，保存当前对象中的业务数据或协作依赖。
@@ -235,6 +244,10 @@ public class DatabaseInitializer {
             databaseProperties.validate();
             String productName = connection.getMetaData().getDatabaseProductName();
             validateProvider(productName);
+            if (productName.toLowerCase(Locale.ROOT).contains("postgresql")) {
+                initializePostgresql(connection);
+                return;
+            }
             if (!"H2".equalsIgnoreCase(productName)) {
                 validateExternalDatabase(connection, productName);
                 return;
@@ -253,7 +266,8 @@ public class DatabaseInitializer {
 
             if (existingTables.contains(BASELINE_TABLE)) {
                 BaselineMarker marker = readBaselineMarker(connection);
-                if (BASELINE_VERSION.equals(marker.version())) {
+                if (BASELINE_VERSION.equals(marker.version())
+                        && SEED_PROFILE.equals(marker.seedProfile())) {
                     installPermissionUpdates(connection);
                     assertExpectedTables(loadPublicTables(connection));
                     assertExpectedColumns(connection);
@@ -354,6 +368,136 @@ public class DatabaseInitializer {
         }
     }
 
+    private void initializePostgresql(Connection connection) throws Exception {
+        boolean originalAutoCommit = connection.getAutoCommit();
+        try {
+            connection.setAutoCommit(false);
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("SET LOCAL search_path TO public");
+                statement.execute("SELECT pg_advisory_xact_lock(746821044, 4)");
+            }
+
+            Set<String> existingTables = loadPublicTables(connection);
+            boolean freshInstall = existingTables.isEmpty();
+            if (freshInstall) {
+                executePostgresqlResource(
+                        connection,
+                        "classpath:db/baseline/postgresql/schema.sql",
+                        "schema");
+                if (hasEducationBaselineContributor()) {
+                    executePostgresqlResource(
+                            connection,
+                            "classpath:db/baseline/postgresql/education-schema.sql",
+                            "education schema");
+                }
+                executePostgresqlResource(
+                        connection,
+                        "classpath:db/baseline/postgresql/seed.sql",
+                        "seed");
+                if (hasEducationBaselineContributor()) {
+                    executePostgresqlResource(
+                            connection,
+                            "classpath:db/baseline/postgresql/education-seed.sql",
+                            "education seed");
+                }
+                insertBaselineMarker(connection);
+            } else if (existingTables.contains(BASELINE_TABLE)) {
+                try (Statement statement = connection.createStatement();
+                        ResultSet markerRow = statement.executeQuery(
+                                "SELECT ID FROM COMMON_SCHEMA_BASELINE WHERE ID=1 FOR UPDATE")) {
+                    if (!markerRow.next()) {
+                        throw new IllegalStateException("Database baseline marker is missing");
+                    }
+                }
+                BaselineMarker marker = readBaselineMarker(connection);
+                if (!BASELINE_VERSION.equals(marker.version())
+                        || !SEED_PROFILE.equals(marker.seedProfile())) {
+                    throw unsupportedBaseline(marker);
+                }
+            } else {
+                throw new IllegalStateException(
+                        "Refusing to initialize a non-empty PostgreSQL database without "
+                                + BASELINE_TABLE
+                                + "; existing tables="
+                                + new TreeSet<>(existingTables));
+            }
+
+            executePostgresqlUpdates(connection);
+            if (freshInstall) {
+                executePostgresqlResource(
+                        connection,
+                        "classpath:db/baseline/postgresql/identity-sequences.sql",
+                        "identity sequence");
+            }
+            assertExpectedTables(loadPublicTables(connection));
+            assertExpectedColumns(connection);
+            connection.commit();
+            log.info(
+                    "PostgreSQL database baseline {} ({}) initialized or validated: {} application tables",
+                    BASELINE_VERSION,
+                    SEED_PROFILE,
+                    expectedTables().size() - 1);
+        } catch (Exception failure) {
+            rollbackQuietly(connection, failure);
+            throw failure;
+        } finally {
+            if (!connection.isClosed()) {
+                connection.setAutoCommit(originalAutoCommit);
+            }
+        }
+    }
+
+    private void executePostgresqlUpdates(Connection connection) throws Exception {
+        if (!hasEducationBaselineContributor()) {
+            Set<String> tables = loadPublicTables(connection);
+            if (tables.stream().anyMatch(table -> table.startsWith("EDU_"))) {
+                throw new IllegalStateException(
+                        "Education tables exist but no education baseline contributor is active");
+            }
+        }
+        Resource manifest = resourceResolver.getResource(
+                "classpath:db/baseline/postgresql/update-manifest.txt");
+        if (!manifest.exists()) {
+            throw new IllegalStateException("Missing PostgreSQL update manifest");
+        }
+        List<String> resources = new ArrayList<>();
+        try (var reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(manifest.getInputStream(), StandardCharsets.UTF_8))) {
+            String resource;
+            while ((resource = reader.readLine()) != null) {
+                resource = resource.trim();
+                if (!resource.isEmpty() && !resource.startsWith("--")) {
+                    resources.add("classpath:" + resource);
+                }
+            }
+        }
+        boolean educationEnabled = hasEducationBaselineContributor();
+        resources.stream()
+                .filter(resource -> educationEnabled || !resource.contains("/education/"))
+                .forEach(resource -> executePostgresqlResource(connection, resource, "update"));
+    }
+
+    private void executePostgresqlResource(Connection connection, String location, String phase) {
+        Resource resource = resourceResolver.getResource(location);
+        if (!resource.exists()) {
+            throw new IllegalStateException(
+                    "Missing PostgreSQL database " + phase + " resource: " + location);
+        }
+        log.info("Executing PostgreSQL database {} resource: {}", phase, location);
+        try (var input = resource.getInputStream()) {
+            String sql = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            for (String statementSql : PostgresqlScriptExecutor.splitStatements(sql)) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute(statementSql);
+                }
+            }
+        } catch (Exception exception) {
+            throw new IllegalStateException(
+                    "Failed to execute PostgreSQL database " + phase + " resource: " + location,
+                    exception);
+        }
+    }
+
     private void validateExternalDatabase(Connection connection, String productName)
             throws Exception {
         Set<String> existingTables = loadPublicTables(connection);
@@ -399,6 +543,13 @@ public class DatabaseInitializer {
         }
     }
 
+    private boolean hasEducationBaselineContributor() {
+        return contributors.stream()
+                .map(DatabaseBaselineContributor::expectedTables)
+                .filter(java.util.Objects::nonNull)
+                .anyMatch(tables -> tables.stream().anyMatch(table -> table.startsWith("EDU_")));
+    }
+
     private void installPermissionUpdates(Connection connection) throws Exception {
         boolean originalAutoCommit = connection.getAutoCommit();
         try {
@@ -411,20 +562,30 @@ public class DatabaseInitializer {
                     throw new IllegalStateException("Database baseline marker is missing");
                 }
             }
-            executeResources(connection,
+            boolean educationEnabled = hasEducationBaselineContributor();
+            List<String> updateResources =
                     List.of(
-                            "classpath:db/updates/iam/20260914_platform_usage.sql",
-                            "classpath:db/updates/iam/20260916_tenant_module_access.sql",
-                            "classpath:db/updates/iam/20260923_permission_alignment.sql",
-                            "classpath:db/updates/education/20261005_exam_attempt.sql",
-                            "classpath:db/updates/education/20261006_question_purpose.sql",
-                            "classpath:db/updates/knowledge/20261007_demo_education_access.sql",
-                            "classpath:db/updates/education/20261007_practice_submission.sql",
-                            "classpath:db/updates/model/20261011_deepseek_flash.sql",
-                            "classpath:db/updates/agent/20261012_checkpoint_pointer.sql",
-                            "classpath:db/updates/agent/20261013_sample_apps.sql",
-                            "classpath:db/updates/agent/20261014_seed_deepseek_graphs.sql"),
-                    "permission update");
+                                    "classpath:db/updates/iam/20260914_platform_usage.sql",
+                                    "classpath:db/updates/iam/20260916_tenant_module_access.sql",
+                                    "classpath:db/updates/iam/20260923_permission_alignment.sql",
+                                    "classpath:db/updates/education/20261005_exam_attempt.sql",
+                                    "classpath:db/updates/education/20261006_question_purpose.sql",
+                                    "classpath:db/updates/knowledge/20261007_demo_education_access.sql",
+                                    "classpath:db/updates/education/20261007_practice_submission.sql",
+                                    "classpath:db/updates/model/20261011_deepseek_flash.sql",
+                                    "classpath:db/updates/agent/20261012_checkpoint_pointer.sql",
+                                    "classpath:db/updates/agent/20261013_sample_apps.sql",
+                                    "classpath:db/updates/agent/20261014_seed_deepseek_graphs.sql",
+                                    "classpath:db/updates/governance/20261024_quota_state.sql",
+                                    "classpath:db/updates/conversation/20261024_idempotency_fingerprint.sql",
+                                    "classpath:db/updates/conversation/20261024_generation_postprocessing.sql")
+                            .stream()
+                            .filter(
+                                    resource ->
+                                            educationEnabled
+                                                    || !resource.contains("/updates/education/"))
+                            .toList();
+            executeResources(connection, updateResources, "permission update");
             connection.commit();
         } catch (Exception failure) {
             rollbackQuietly(connection, failure);
@@ -542,22 +703,65 @@ public class DatabaseInitializer {
     }
 
     private void assertExpectedColumns(Connection connection) throws Exception {
-        boolean found = false;
+        Set<String> requiredColumns =
+                Set.of(
+                        "MODEL_AI_PLATFORM.ADAPTER_TYPE",
+                        "CHAT_IDEMPOTENCY_KEY.FINGERPRINT",
+                        "GOVERNANCE_QUOTA_TENANT.TENANT_ID",
+                        "GOVERNANCE_QUOTA_TENANT.DAY_START",
+                        "GOVERNANCE_QUOTA_TENANT.MINUTE_START_EPOCH_SECOND",
+                        "GOVERNANCE_QUOTA_TENANT.TOKENS_USED",
+                        "GOVERNANCE_QUOTA_TENANT.TOKENS_RESERVED",
+                        "GOVERNANCE_QUOTA_TENANT.REQUESTS_THIS_MINUTE",
+                        "GOVERNANCE_QUOTA_TENANT.ACTIVE_RESERVATIONS",
+                        "GOVERNANCE_QUOTA_RESERVATION.ID",
+                        "GOVERNANCE_QUOTA_RESERVATION.TENANT_ID",
+                        "GOVERNANCE_QUOTA_RESERVATION.REFERENCE_KEY",
+                        "GOVERNANCE_QUOTA_RESERVATION.RESERVED_ON_DATE",
+                        "GOVERNANCE_QUOTA_RESERVATION.ESTIMATED_TOKENS",
+                        "GOVERNANCE_QUOTA_RESERVATION.STATUS",
+                        "GOVERNANCE_QUOTA_RESERVATION.CREATED_AT_EPOCH_MILLIS",
+                        "GOVERNANCE_QUOTA_RESERVATION.EXPIRES_AT_EPOCH_MILLIS",
+                        "CHAT_GENERATION_POSTPROCESSING.GENERATION_ID",
+                        "CHAT_GENERATION_POSTPROCESSING.TENANT_ID",
+                        "CHAT_GENERATION_POSTPROCESSING.OWNER_USER_ID",
+                        "CHAT_GENERATION_POSTPROCESSING.QUOTA_ACTION",
+                        "CHAT_GENERATION_POSTPROCESSING.USAGE_ACTION",
+                        "CHAT_GENERATION_POSTPROCESSING.QUOTA_DONE",
+                        "CHAT_GENERATION_POSTPROCESSING.USAGE_DONE",
+                        "CHAT_GENERATION_POSTPROCESSING.ATTEMPTS",
+                        "CHAT_GENERATION_POSTPROCESSING.NEXT_ATTEMPT_AT",
+                        "CHAT_GENERATION_POSTPROCESSING.CLAIM_TOKEN",
+                        "CHAT_GENERATION_POSTPROCESSING.CLAIMED_UNTIL",
+                        "CHAT_GENERATION_POSTPROCESSING.CREATED_AT");
+        Set<String> foundColumns = new HashSet<>();
+        String product = connection.getMetaData().getDatabaseProductName().toLowerCase(Locale.ROOT);
+        String catalog = connection.getCatalog();
         try (ResultSet resultSet = connection.getMetaData().getColumns(null, null, "%", "%")) {
             while (resultSet.next()) {
-                String table = resultSet.getString("TABLE_NAME");
-                String column = resultSet.getString("COLUMN_NAME");
-                if ("MODEL_AI_PLATFORM".equalsIgnoreCase(table)
-                        && "ADAPTER_TYPE".equalsIgnoreCase(column)) {
-                    found = true;
-                    break;
+                String tableCatalog = resultSet.getString("TABLE_CAT");
+                String tableSchema = resultSet.getString("TABLE_SCHEM");
+                boolean applicationSchema =
+                        product.contains("mysql")
+                                ? catalog != null && catalog.equalsIgnoreCase(tableCatalog)
+                                : isApplicationSchema(product, tableSchema, catalog);
+                if (!applicationSchema) {
+                    continue;
                 }
+                foundColumns.add(
+                        (resultSet.getString("TABLE_NAME")
+                                        + "."
+                                        + resultSet.getString("COLUMN_NAME"))
+                                .toUpperCase(Locale.ROOT));
             }
         }
-        if (!found) {
+        Set<String> missingColumns = new TreeSet<>(requiredColumns);
+        missingColumns.removeAll(foundColumns);
+        if (!missingColumns.isEmpty()) {
             throw new IllegalStateException(
-                    "Database schema does not match baseline; "
-                            + "missing=[MODEL_AI_PLATFORM.ADAPTER_TYPE]; manual rebuild required");
+                    "Database schema does not match baseline; missing="
+                            + missingColumns
+                            + "; manual rebuild required");
         }
     }
 

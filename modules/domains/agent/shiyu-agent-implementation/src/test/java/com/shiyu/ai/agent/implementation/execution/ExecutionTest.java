@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -64,13 +65,13 @@ class ExecutionTest {
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         try {
-            Future<Boolean> resumed = executor.submit(execution::awaitResumeOrCancellation);
+            Future<Boolean> resumed = executor.submit((Callable<Boolean>) execution::awaitResumeOrCancellation);
             assertFalse(resumed.isDone());
             execution.resume();
             assertTrue(resumed.get(1, TimeUnit.SECONDS));
 
             execution.pause();
-            Future<Boolean> cancelled = executor.submit(execution::awaitResumeOrCancellation);
+            Future<Boolean> cancelled = executor.submit((Callable<Boolean>) execution::awaitResumeOrCancellation);
             assertFalse(cancelled.isDone());
             execution.cancel();
             assertFalse(cancelled.get(1, TimeUnit.SECONDS));

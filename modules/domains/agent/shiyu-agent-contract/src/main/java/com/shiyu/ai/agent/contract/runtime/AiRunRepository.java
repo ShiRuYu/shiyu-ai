@@ -113,6 +113,101 @@ public interface AiRunRepository {
     }
 
     /**
+     * 按生成终态完成关联运行记录，并追加对应的终态事件。
+     *
+     * @param id 运行记录标识。
+     * @param tenantId 租户标识。
+     * @param ownerUserId 所有者用户标识。
+     * @param terminal 目标终态。
+     * @param errorCode 失败或取消原因。
+     * @return 已完成的运行记录。
+     */
+    default AiRun finishGenerationRun(
+            String id,
+            TenantId tenantId,
+            long ownerUserId,
+            AiRunStatus terminal,
+            String errorCode,
+            List<AiRunEventType> precedingEvents,
+            String turnId,
+            String stepId) {
+        AiRun current =
+                find(id, tenantId, ownerUserId)
+                        .orElseThrow(() -> new IllegalArgumentException("run not found"));
+        AiRunEventType eventType =
+                terminal == AiRunStatus.COMPLETED
+                        ? AiRunEventType.RUN_COMPLETED
+                        : terminal == AiRunStatus.CANCELLED
+                                ? AiRunEventType.RUN_CANCELLED
+                                : AiRunEventType.RUN_FAILED;
+        String payload = terminalPayload(errorCode);
+        if (current.status() == terminal) {
+            long seq = current.lastEventSeq();
+            if (seq > 0) {
+                List<AiRunEvent> lastEvent = events(id, tenantId, ownerUserId, seq - 1, 1);
+                if (!lastEvent.isEmpty()) {
+                    AiRunEvent event = lastEvent.getFirst();
+                    if (event.seq() == seq
+                            && event.type() == eventType
+                            && java.util.Objects.equals(event.payload(), payload)
+                            && event.redacted()) {
+                        return current;
+                    }
+                }
+            }
+            long appendedSeq = appendNextEvent(
+                    id, tenantId, ownerUserId, eventType, payload,
+                    true, Instant.now(), turnId, stepId, null);
+            return current.withLastEventSeq(appendedSeq);
+        }
+        if (current.status() == AiRunStatus.COMPLETED
+                || current.status() == AiRunStatus.FAILED
+                || current.status() == AiRunStatus.CANCELLED) {
+            throw new IllegalStateException("run already has a different terminal status");
+        }
+        AiRun transitioned = current.transition(terminal);
+        AiRun next =
+                new AiRun(
+                        transitioned.id(), transitioned.tenantId(), transitioned.ownerUserId(),
+                        transitioned.appId(), transitioned.appVersionId(), transitioned.sourceType(),
+                        transitioned.sourceId(), transitioned.parentRunId(), transitioned.traceId(),
+                        transitioned.conversationId(), transitioned.generationId(), transitioned.executionId(),
+                        transitioned.model(), transitioned.promptHash(), transitioned.status(),
+                        transitioned.promptTokens(), transitioned.completionTokens(), transitioned.estimatedUsage(),
+                        transitioned.costSnapshot(), transitioned.createdAt(), transitioned.completedAt(), errorCode,
+                        transitioned.version(), transitioned.lastEventSeq());
+        for (AiRunEventType event : precedingEvents == null ? List.<AiRunEventType>of() : precedingEvents) {
+            appendNextEvent(id, tenantId, ownerUserId, event, "{}", true, Instant.now(), turnId, stepId, null);
+        }
+        return updateTerminalAndAppend(next, current.version(), eventType, payload, true);
+    }
+
+    private static String terminalPayload(String errorCode) {
+        if (errorCode == null) return "{}";
+        StringBuilder payload = new StringBuilder("{\"errorCode\":\"");
+        for (int i = 0; i < errorCode.length(); i++) {
+            char value = errorCode.charAt(i);
+            switch (value) {
+                case '\\' -> payload.append("\\\\");
+                case '"' -> payload.append("\\\"");
+                case '\b' -> payload.append("\\b");
+                case '\f' -> payload.append("\\f");
+                case '\n' -> payload.append("\\n");
+                case '\r' -> payload.append("\\r");
+                case '\t' -> payload.append("\\t");
+                default -> {
+                    if (value < 0x20) {
+                        payload.append(String.format("\\u%04x", (int) value));
+                    } else {
+                        payload.append(value);
+                    }
+                }
+            }
+        }
+        return payload.append("\"}").toString();
+    }
+
+    /**
      * 为运行记录追加下一个事件并分配序号。
      *
      * @param runId 运行记录标识。

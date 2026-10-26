@@ -27,6 +27,10 @@ public class Execution {
      * 状态，表示当前对象中的对应属性。
      */
     private volatile ExecutionStatus status;
+    private boolean locallyPaused;
+    private volatile boolean superseded;
+    private volatile boolean yieldAfterCheckpoint;
+    private volatile Runnable stateRefresh = () -> {};
     /**
      * 输入，表示当前对象中的对应属性。
      */
@@ -161,14 +165,20 @@ public class Execution {
      * @param output 成功执行生成的最终图状态
      * @return 本次调用成功确定完成终态时返回 true
      */
-    public synchronized boolean complete(Map<String, Object> output) {
-        if (isTerminal()) return false;
-        this.status = ExecutionStatus.COMPLETED;
-        this.output = output;
-        this.endTime = LocalDateTime.now();
-        this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
-        notifyAll();
-        return true;
+    public boolean complete(Map<String, Object> output) {
+        if (isSuperseded()) stateRefresh.run();
+        synchronized (this) {
+            if (superseded || status != ExecutionStatus.RUNNING) return false;
+        }
+        synchronized (this) {
+            if (superseded || status != ExecutionStatus.RUNNING) return false;
+            this.status = ExecutionStatus.COMPLETED;
+            this.output = output;
+            this.endTime = LocalDateTime.now();
+            this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
+            notifyAll();
+            return true;
+        }
     }
 
     /**
@@ -177,32 +187,41 @@ public class Execution {
      * @param errorMessage 供执行详情展示的失败原因
      * @return 本次调用成功确定失败终态时返回 true
      */
-    public synchronized boolean fail(String errorMessage) {
-        if (isTerminal()) return false;
-        this.status = ExecutionStatus.FAILED;
-        this.errorMessage = errorMessage;
-        this.endTime = LocalDateTime.now();
-        if (startTime != null) {
-            this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
+    public boolean fail(String errorMessage) {
+        if (isSuperseded()) stateRefresh.run();
+        synchronized (this) {
+            if (superseded || status != ExecutionStatus.RUNNING) return false;
+            this.status = ExecutionStatus.FAILED;
+            this.errorMessage = errorMessage;
+            this.endTime = LocalDateTime.now();
+            if (startTime != null) {
+                this.durationMs = java.time.Duration.between(startTime, endTime).toMillis();
+            }
+            notifyAll();
+            return true;
         }
-        notifyAll();
-        return true;
     }
 
     /**
      * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      */
     public synchronized void pause() {
-        requireNonTerminal();
+        if (superseded || status != ExecutionStatus.RUNNING) {
+            throw new IllegalStateException("只有运行中的执行可以暂停");
+        }
         this.status = ExecutionStatus.PAUSED;
+        this.locallyPaused = true;
     }
 
     /**
      * 执行 Execution 相关业务操作，并维护必要的状态和协作关系。
      */
     public synchronized void resume() {
-        requireNonTerminal();
+        if (status != ExecutionStatus.PAUSED) {
+            throw new IllegalStateException("只有暂停中的执行可以恢复");
+        }
         this.status = ExecutionStatus.RUNNING;
+        this.locallyPaused = false;
         notifyAll();
     }
 
@@ -212,7 +231,7 @@ public class Execution {
      * @return 本次调用成功确定取消终态时返回 true
      */
     public synchronized boolean cancel() {
-        if (isTerminal()) return false;
+        if (superseded || isTerminal()) return false;
         this.status = ExecutionStatus.CANCELLED;
         this.endTime = LocalDateTime.now();
         if (startTime != null) {
@@ -220,6 +239,76 @@ public class Execution {
         }
         notifyAll();
         return true;
+    }
+
+    /** 将权威执行快照复制到本地对象，协调多实例状态竞争。 */
+    public synchronized void reconcile(Execution authoritative) {
+        if (authoritative == null) throw new IllegalArgumentException("execution is required");
+        boolean wasLocallyPaused = this.locallyPaused;
+        if (isTerminal() && !authoritative.status.isTerminal()) return;
+        boolean pauseWonElsewhere = !isTerminal()
+                && (status == ExecutionStatus.PAUSED
+                        && authoritative.status == ExecutionStatus.RUNNING
+                        || status == ExecutionStatus.RUNNING
+                                && authoritative.status == ExecutionStatus.PAUSED
+                                && !wasLocallyPaused);
+        if (!isTerminal()
+                && (pauseWonElsewhere
+                        || authoritative.status == ExecutionStatus.RUNNING
+                                && wasLocallyPaused)) {
+            superseded = true;
+            yieldAfterCheckpoint = status == ExecutionStatus.PAUSED
+                    && authoritative.status == ExecutionStatus.RUNNING;
+            status = authoritative.status;
+            locallyPaused = false;
+            output = authoritative.output;
+            errorMessage = authoritative.errorMessage;
+            endTime = authoritative.endTime;
+            durationMs = authoritative.durationMs;
+            lastCheckpointId = authoritative.lastCheckpointId;
+            notifyAll();
+            return;
+        }
+        if (status == ExecutionStatus.RUNNING
+                && authoritative.status == ExecutionStatus.RUNNING
+                && (endTime != null || output != null || errorMessage != null)) {
+            return;
+        }
+        this.status = authoritative.status;
+        this.locallyPaused = authoritative.status == ExecutionStatus.PAUSED
+                && wasLocallyPaused;
+        this.output = authoritative.output;
+        this.errorMessage = authoritative.errorMessage;
+        this.endTime = authoritative.endTime;
+        this.durationMs = authoritative.durationMs;
+        this.lastCheckpointId = authoritative.lastCheckpointId;
+        notifyAll();
+    }
+
+    public synchronized boolean isSuperseded() {
+        return superseded;
+    }
+
+    public boolean shouldYieldAfterCheckpoint() {
+        return yieldAfterCheckpoint;
+    }
+
+    public void claimForLocalResume() {
+        superseded = false;
+        yieldAfterCheckpoint = false;
+    }
+
+    public void setStateRefresh(Runnable stateRefresh) {
+        this.stateRefresh = stateRefresh == null ? () -> {} : stateRefresh;
+    }
+
+    public void refreshState() {
+        stateRefresh.run();
+    }
+
+    public void checkCurrentOwnership() {
+        if (isSuperseded()) stateRefresh.run();
+        if (isSuperseded()) throw new IllegalStateException("执行已由其他 runtime 接管");
     }
 
     private boolean isTerminal() {
@@ -240,7 +329,7 @@ public class Execution {
      * @return 判断结果。
      */
     public synchronized boolean awaitResumeOrCancellation() {
-        while (status == ExecutionStatus.PAUSED) {
+        while (status == ExecutionStatus.PAUSED && locallyPaused) {
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -249,7 +338,31 @@ public class Execution {
                 return false;
             }
         }
-        return status != ExecutionStatus.CANCELLED;
+        return status == ExecutionStatus.RUNNING && !superseded;
+    }
+
+    /** 在暂停期间定时返回，使调用方可以轮询其他 runtime 的状态变更。 */
+    public boolean awaitResumeOrCancellation(long waitMillis) {
+        if (waitMillis <= 0) throw new IllegalArgumentException("wait interval must be positive");
+        synchronized (this) {
+            if (status != ExecutionStatus.PAUSED) {
+                return status == ExecutionStatus.RUNNING && !superseded;
+            }
+            if (locallyPaused) {
+                try {
+                    wait(waitMillis);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    cancel();
+                    return false;
+                }
+            }
+            if (superseded) return false;
+        }
+        stateRefresh.run();
+        synchronized (this) {
+            return status == ExecutionStatus.RUNNING && !superseded;
+        }
     }
 
     /**

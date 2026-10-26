@@ -35,10 +35,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SuppressWarnings({"unchecked", "varargs"})
 class GenerationControllerRuntimeTest {
     private final GenerationRepository generations = mock(GenerationRepository.class);
-    private final GenerationAdmission admission = mock(GenerationAdmission.class);
+    private final ConversationRepository conversations = mock(ConversationRepository.class);
+    private final GenerationRunner runner = mock(GenerationRunner.class);
     private final AiRuntimePort runtime = mock(AiRuntimePort.class);
     private final GenerationController controller =
-            new GenerationController(generations, admission, runtime);
+            new GenerationController(generations, runtime, runner, conversations);
     private final Instant now = Instant.now();
 
     @BeforeEach
@@ -114,44 +115,38 @@ class GenerationControllerRuntimeTest {
     }
 
     @Test
-    void cancelsThroughRuntimeAndRejectsCasConflict() {
+    void cancelsThroughConversationCasAndRejectsCasConflict() {
         GenerationRun generation = generation(GenerationStatus.RUNNING);
-        AiRun run =
-                new AiRun(
-                        "r1",
-                        new TenantId(7),
-                        new UserId(8),
-                        null,
-                        null,
-                        AiRunSource.GENERATION,
-                        "g1",
-                        null,
-                        null,
-                        "c1",
-                        "g1",
-                        null,
-                        "gpt",
-                        "hash",
-                        AiRunStatus.RUNNING,
-                        0,
-                        0,
-                        false,
-                        null,
-                        now,
-                        null,
-                        null,
-                        0);
         when(generations.find("g1", new TenantId(7), 8)).thenReturn(Optional.of(generation));
-        when(generations.update(any(GenerationRun.class), eq(0L))).thenReturn(1);
-        when(runtime.requireGenerationRun("g1", new TenantId(7), 8)).thenReturn(run);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), eq(0L), eq(8L), anyList()))
+                .thenReturn(1);
         assertTrue(controller.cancel("g1").isSuccess());
-        verify(runtime).finish("r1", new TenantId(7), 8, AiRunStatus.CANCELLED, "CLIENT_CANCELLED");
+        verify(conversations)
+                .transitionRunningGeneration(
+                        argThat(
+                                cancelled ->
+                                        cancelled.status() == GenerationStatus.CANCELLED
+                                                && cancelled.cancelRequested()
+                                                && cancelled.version() == 1),
+                        eq(0L),
+                        eq(8L),
+                        eq(List.of()));
+        verify(runner).cancel("g1");
+        verify(runner).processTerminalPostProcessing("g1");
+        verify(generations, never()).update(any(GenerationRun.class), anyLong());
         verify(generations, never()).appendEvent(any(), any(TenantId.class));
+        verify(runtime, never()).requireGenerationRun(anyString(), any(TenantId.class), anyLong());
+        verify(runtime, never())
+                .finish(anyString(), any(TenantId.class), anyLong(), any(), anyString());
 
-        when(generations.update(any(GenerationRun.class), eq(0L))).thenReturn(0);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), eq(0L), eq(8L), anyList()))
+                .thenReturn(0);
         assertThrows(
                 org.springframework.web.server.ResponseStatusException.class,
                 () -> controller.cancel("g1"));
+        verify(runner, times(1)).cancel("g1");
     }
 
     @Test

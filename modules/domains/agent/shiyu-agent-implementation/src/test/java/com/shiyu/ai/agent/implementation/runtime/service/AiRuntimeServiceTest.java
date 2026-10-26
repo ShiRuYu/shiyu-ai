@@ -155,10 +155,10 @@ class AiRuntimeServiceTest {
         assertEquals(
                 AiRunEventType.RUN_COMPLETED,
                 service.events(run.id(), new TenantId(1), 2, 0, 20).get(2).type());
-        assertEquals(
-                AiRunStatus.COMPLETED,
-                service.finish(run.id(), new TenantId(1), 2, AiRunStatus.CANCELLED, "late_cancel")
-                        .status());
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.finish(
+                        run.id(), new TenantId(1), 2, AiRunStatus.CANCELLED, "late_cancel"));
     }
 
     @Test

@@ -50,7 +50,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 验证 对话 Product Controller 相关功能、边界条件、异常路径和协作行为。
@@ -418,21 +417,6 @@ class ChatProductControllerTest {
         when(repository.findGroup(new TenantId(7), 8, "g2"))
                 .thenReturn(Optional.of(new GroupChatAsset("g2", 7, 8, open, now, now)));
         when(generations.listConversation("c1", new TenantId(7), 1000)).thenReturn(List.of());
-        ConversationMessage input =
-                new ConversationMessage(
-                        "m1",
-                        "c1",
-                        null,
-                        null,
-                        MessageRole.USER,
-                        List.of(ContentPart.text("next")),
-                        Map.of(),
-                        MessageStatus.COMPLETED,
-                        0,
-                        null,
-                        now,
-                        now);
-        when(conversationService.appendUserMessage(conversation, "next")).thenReturn(input);
         when(conversations.findConversation("c1", new TenantId(7), 8))
                 .thenReturn(Optional.of(conversation));
         GenerationRun created =
@@ -454,12 +438,36 @@ class ChatProductControllerTest {
                         0,
                         now,
                         now);
-        when(conversationService.createGeneration(conversation, input, "OPENAI", "gpt", "ava"))
+        when(conversationService.createMessageGeneration(
+                        eq(conversation),
+                        eq("next"),
+                        eq("OPENAI"),
+                        eq("gpt"),
+                        isNull(),
+                        eq("group.turn:c1"),
+                        isNull(),
+                        isNull(),
+                        anyString(),
+                        anyString(),
+                        eq("ava")))
                 .thenReturn(created);
         exhausted = new ChatProductController.TurnRunRequest();
         exhausted.conversationId = "c1";
         exhausted.content = "next";
         assertEquals("g-new", controller.runTurn("g2", exhausted).getData().generationId());
+        verify(conversationService)
+                .createMessageGeneration(
+                        eq(conversation),
+                        eq("next"),
+                        eq("OPENAI"),
+                        eq("gpt"),
+                        isNull(),
+                        eq("group.turn:c1"),
+                        isNull(),
+                        isNull(),
+                        anyString(),
+                        anyString(),
+                        eq("ava"));
         verify(generationRunner).start(created, new TenantId(7), 8);
     }
 
@@ -666,20 +674,6 @@ class ChatProductControllerTest {
         explicit.content = "hello";
         explicit.platform = "ANTHROPIC";
         explicit.model = "claude";
-        ConversationMessage input =
-                new ConversationMessage(
-                        "m4",
-                        "c4",
-                        null,
-                        null,
-                        MessageRole.USER,
-                        List.of(ContentPart.text("hello")),
-                        Map.of(),
-                        MessageStatus.COMPLETED,
-                        0,
-                        null,
-                        now,
-                        now);
         GenerationRun run =
                 new GenerationRun(
                         "run4",
@@ -699,35 +693,66 @@ class ChatProductControllerTest {
                         0,
                         now,
                         now);
-        when(conversationService.appendUserMessage(conversation, "hello")).thenReturn(input);
-        when(conversationService.createGeneration(
-                        conversation, input, "ANTHROPIC", "claude", "ava"))
+        when(conversationService.createMessageGeneration(
+                        eq(conversation),
+                        eq("hello"),
+                        eq("ANTHROPIC"),
+                        eq("claude"),
+                        isNull(),
+                        eq("group.turn:c4"),
+                        isNull(),
+                        isNull(),
+                        anyString(),
+                        anyString(),
+                        eq("ava")))
                 .thenReturn(run);
         assertEquals("run4", controller.runTurn("g4", explicit).getData().generationId());
         verify(generationRunner).start(run, new TenantId(7), 8);
 
-        when(conversationService.appendUserMessage(conversation, "boom"))
+        when(conversationService.createMessageGeneration(
+                        eq(conversation),
+                        eq("boom"),
+                        eq("ANTHROPIC"),
+                        eq("claude"),
+                        isNull(),
+                        eq("group.turn:c4"),
+                        isNull(),
+                        isNull(),
+                        anyString(),
+                        anyString(),
+                        eq("ava")))
                 .thenThrow(new IllegalStateException("duplicate"));
         explicit.content = "boom";
         assertThrows(ResponseStatusException.class, () -> controller.runTurn("g4", explicit));
 
-        AtomicInteger latestLookup = new AtomicInteger();
-        when(conversations.findConversation("c4", new TenantId(7), 8))
-                .thenAnswer(
-                        invocation ->
-                                latestLookup.getAndIncrement() == 0
-                                        ? Optional.of(conversation)
-                                        : Optional.empty());
-        when(conversationService.appendUserMessage(conversation, "missing latest"))
-                .thenReturn(input);
+        when(conversationService.createMessageGeneration(
+                        eq(conversation),
+                        eq("missing latest"),
+                        eq("ANTHROPIC"),
+                        eq("claude"),
+                        isNull(),
+                        eq("group.turn:c4"),
+                        isNull(),
+                        isNull(),
+                        anyString(),
+                        anyString(),
+                        eq("ava")))
+                .thenThrow(new IllegalArgumentException("conversation not found"));
         explicit.content = "missing latest";
         assertThrows(IllegalArgumentException.class, () -> controller.runTurn("g4", explicit));
 
-        when(conversations.findConversation("c4", new TenantId(7), 8))
-                .thenReturn(Optional.of(conversation));
-        when(conversationService.appendUserMessage(conversation, "quota")).thenReturn(input);
-        when(conversationService.createGeneration(
-                        conversation, input, "ANTHROPIC", "claude", "ava"))
+        when(conversationService.createMessageGeneration(
+                        eq(conversation),
+                        eq("quota"),
+                        eq("ANTHROPIC"),
+                        eq("claude"),
+                        isNull(),
+                        eq("group.turn:c4"),
+                        isNull(),
+                        isNull(),
+                        anyString(),
+                        anyString(),
+                        eq("ava")))
                 .thenReturn(run);
         doThrow(
                         new com.shiyu.ai.conversation.implementation.application

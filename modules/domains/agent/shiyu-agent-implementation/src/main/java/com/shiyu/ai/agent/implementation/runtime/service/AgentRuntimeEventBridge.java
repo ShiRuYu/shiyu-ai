@@ -44,6 +44,7 @@ final class AgentRuntimeEventBridge {
                         : execution.getUserId();
         if (tenant <= 0 || owner <= 0) return null;
         AiRun run = null;
+        boolean startedEventAppended = false;
         try {
             String appId = string(input == null ? null : input.get("__appId"));
             String appVersionId = string(input == null ? null : input.get("__appVersionId"));
@@ -64,16 +65,21 @@ final class AgentRuntimeEventBridge {
                             null,
                             JSONUtils.toJsonString(input));
             runtime.append(run, AiRunEventType.MODEL_STARTED, "{}", true);
-            return run;
+            startedEventAppended = true;
+            return runtime.requireRun(run.id(), run.tenantId(), run.ownerUserId().value());
         } catch (RuntimeException failure) {
             if (run != null) {
                 try {
                     runtime.finish(run.id(), run.tenantId(), run.ownerUserId().value(),
                             AiRunStatus.FAILED, "RUN_EVENT_WRITE_FAILED");
                 } catch (RuntimeException cleanupFailure) {
+                    if (cleanupFailure != failure) failure.addSuppressed(cleanupFailure);
                     log.warn("运行记录事件失败后终止运行记录失败: runIdPresent={}, errorType={}",
                             run.id() != null, cleanupFailure.getClass().getSimpleName());
                 }
+            }
+            if (startedEventAppended) {
+                throw new IllegalStateException("runtime run could not be loaded after admission", failure);
             }
             if (input != null && input.get("__appId") != null) {
                 throw new IllegalStateException("runtime admission failed", failure);
@@ -82,27 +88,53 @@ final class AgentRuntimeEventBridge {
         }
     }
 
-    void append(AiRun run, AiRunEventType type, String payload) {
-        if (run == null || runtime == null) return;
-        runtime.append(run, type, payload, true);
+    long append(AiRun run, AiRunEventType type, String payload) {
+        if (run == null || runtime == null) return 0;
+        return runtime.append(run, type, payload, true);
     }
 
-    void finish(AiRun run, Execution execution) {
-        if (run == null || runtime == null) return;
+    long lastSequence(AiRun run) {
+        if (run == null || runtime == null) return 0;
+        return runtime.requireRun(run.id(), run.tenantId(), run.ownerUserId().value())
+                .lastEventSeq();
+    }
+
+    AiRun finish(AiRun run, Execution execution) {
+        if (run == null || runtime == null) return null;
+        AiRunStatus status =
+                execution.getStatus() == ExecutionStatus.COMPLETED
+                        ? AiRunStatus.COMPLETED
+                        : execution.getStatus() == ExecutionStatus.CANCELLED
+                                ? AiRunStatus.CANCELLED
+                                : execution.getStatus() == ExecutionStatus.FAILED
+                                        ? AiRunStatus.FAILED
+                                        : null;
+        if (status == null) {
+            throw new IllegalStateException("agent execution is not terminal");
+        }
+        String errorCode = status == AiRunStatus.FAILED
+                ? "AGENT_EXECUTION_FAILED"
+                : status == AiRunStatus.CANCELLED ? "CLIENT_CANCELLED" : null;
         try {
-            AiRunStatus status =
-                    execution.getStatus() == ExecutionStatus.COMPLETED
-                            ? AiRunStatus.COMPLETED
-                            : execution.getStatus() == ExecutionStatus.CANCELLED
-                                    ? AiRunStatus.CANCELLED
-                                    : AiRunStatus.FAILED;
-            runtime.finish(
+            return runtime.finish(
+                    run.id(), run.tenantId(), run.ownerUserId().value(), status, errorCode);
+        } catch (RuntimeException finishFailure) {
+            AiRun current =
+                    runtime.requireRun(run.id(), run.tenantId(), run.ownerUserId().value());
+            if (current.status() == status) {
+                if (!java.util.Objects.equals(current.errorCode(), errorCode)) throw finishFailure;
+            } else if (current.status() != AiRunStatus.COMPLETED
+                    && current.status() != AiRunStatus.CANCELLED
+                    && current.status() != AiRunStatus.FAILED) {
+                return runtime.finish(
+                        run.id(), run.tenantId(), run.ownerUserId().value(), status, errorCode);
+            }
+            return runtime.finish(
                     run.id(),
                     run.tenantId(),
                     run.ownerUserId().value(),
-                    status,
-                    status == AiRunStatus.FAILED ? "AGENT_EXECUTION_FAILED" : null);
-        } catch (RuntimeException ignored) {
+                    current.status(),
+                    current.errorCode());
         }
     }
 

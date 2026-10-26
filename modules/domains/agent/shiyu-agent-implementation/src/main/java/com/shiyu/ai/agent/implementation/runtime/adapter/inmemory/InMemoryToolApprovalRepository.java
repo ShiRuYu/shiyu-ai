@@ -142,15 +142,63 @@ public class InMemoryToolApprovalRepository implements ToolApprovalRepository {
     }
 
     @Override
-    public List<ToolApproval> findOverdueRunning(Instant now, int limit) {
+    public List<ToolApproval> findExpiryCompensationWork(Instant now, int limit) {
         return values.values().stream()
-                .filter(value -> value.status() == ToolApprovalStatus.PENDING
-                        || value.status() == ToolApprovalStatus.EXPIRED)
-                .filter(value -> value.expiresAt().isBefore(now))
+                .filter(value -> (value.status() == ToolApprovalStatus.PENDING
+                                && value.expiresAt().isBefore(now))
+                        || value.status() == ToolApprovalStatus.EXPIRED
+                        || (value.status() == ToolApprovalStatus.COMPENSATING
+                                && value.decidedAt() != null
+                                && !value.decidedAt().isAfter(now)))
                 .sorted(java.util.Comparator.comparing(ToolApproval::expiresAt)
                         .thenComparing(ToolApproval::id))
                 .limit(Math.max(1, Math.min(limit, 100)))
                 .toList();
+    }
+
+    @Override
+    public int claimExpiryCompensation(
+            ToolApproval candidate, Instant now, Instant leaseUntil) {
+        ToolApproval[] claimed = {null};
+        values.computeIfPresent(candidate.id(), (id, current) -> {
+            boolean eligible = current.status() == ToolApprovalStatus.EXPIRED
+                    || current.status() == ToolApprovalStatus.PENDING
+                            && current.expiresAt().isBefore(now)
+                    || current.status() == ToolApprovalStatus.COMPENSATING
+                            && current.decidedAt() != null
+                            && !current.decidedAt().isAfter(now);
+            if (!eligible || current.status() != candidate.status()
+                    || !java.util.Objects.equals(current.decidedAt(), candidate.decidedAt())
+                    || current.tenantId() != candidate.tenantId()
+                    || current.ownerUserId() != candidate.ownerUserId()) return current;
+            claimed[0] = new ToolApproval(
+                    current.id(), current.runId(), current.tenantId(), current.ownerUserId(),
+                    current.toolName(), current.argumentsRedacted(),
+                    ToolApprovalStatus.COMPENSATING, current.createdAt(), leaseUntil,
+                    current.expiresAt());
+            return claimed[0];
+        });
+        return claimed[0] == null ? 0 : 1;
+    }
+
+    @Override
+    public int completeExpiryCompensation(
+            String id, TenantId tenantId, long ownerUserId,
+            Instant leaseUntil, Instant completedAt) {
+        long value = tenant(tenantId);
+        ToolApproval[] completed = {null};
+        values.computeIfPresent(id, (key, current) -> {
+            if (current.tenantId() != value || current.ownerUserId() != ownerUserId
+                    || current.status() != ToolApprovalStatus.COMPENSATING
+                    || !java.util.Objects.equals(current.decidedAt(), leaseUntil)) return current;
+            completed[0] = new ToolApproval(
+                    current.id(), current.runId(), current.tenantId(), current.ownerUserId(),
+                    current.toolName(), current.argumentsRedacted(),
+                    ToolApprovalStatus.COMPENSATED, current.createdAt(), completedAt,
+                    current.expiresAt());
+            return completed[0];
+        });
+        return completed[0] == null ? 0 : 1;
     }
 
     private static long tenant(TenantId tenantId) {

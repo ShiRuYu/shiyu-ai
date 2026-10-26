@@ -69,8 +69,8 @@ class ToolServiceImplTest {
         assertFalse(invalidWeather.success());
         assertTrue(invalidWeather.errorMessage().contains("类型"));
         var weather = service.execute("WEATHER", Map.of("location", "上海"));
-        assertTrue(weather.success());
-        assertEquals("WEATHER", ((Map<?, ?>) weather.result()).get("tool"));
+        assertFalse(weather.success());
+        assertTrue(weather.errorMessage().contains("天气查询暂不可用"));
 
         var text = service.execute("TEXT_STATS", Map.of("text", "你好 world\n第二行"));
         assertTrue(text.success());

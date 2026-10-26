@@ -9,6 +9,8 @@ import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -24,6 +26,29 @@ class InMemoryQuotaGovernanceTest {
             Clock.fixed(Instant.parse("2026-01-01T00:00:30Z"), ZoneOffset.UTC);
 
     @Test
+    void minimumReservationTtlRenewsBeforeItCanExpire() {
+        org.h2.jdbcx.JdbcDataSource dataSource = new org.h2.jdbcx.JdbcDataSource();
+        dataSource.setURL(
+                "jdbc:h2:mem:quota_ttl_"
+                        + java.util.UUID.randomUUID()
+                        + ";MODE=MySQL;DB_CLOSE_DELAY=-1");
+        new ResourceDatabasePopulator(
+                        new ClassPathResource("db/baseline/h2/schema/governance/05_governance.sql"))
+                .execute(dataSource);
+        MutableClock clock = new MutableClock(Instant.parse("2026-01-01T00:00:30Z"));
+        InMemoryQuotaGovernance quota =
+                new InMemoryQuotaGovernance(100, 1, 100, 1_000L, clock, dataSource);
+
+        var reservation = quota.reserve(ACTOR, new QuotaRequest(1, 0), "g-short-ttl");
+        assertTrue(reservation.allowed());
+        assertEquals(333L, quota.reservationRenewalIntervalMillis());
+        clock.advanceMillis(quota.reservationRenewalIntervalMillis());
+        assertTrue(quota.renew(ACTOR, "g-short-ttl"));
+        clock.advanceMillis(800);
+        assertEquals("QUOTA_CONCURRENT", quota.reserve(ACTOR, new QuotaRequest(1, 0)).errorCode());
+    }
+
+    @Test
     void reservesSettlesAndEnforcesDailyTokensPerTenant() {
         InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(10, 2, 100, CLOCK);
 
@@ -34,6 +59,20 @@ class InMemoryQuotaGovernanceTest {
         var denied = quota.reserve(ACTOR, new QuotaRequest(3, 0));
         assertFalse(denied.allowed());
         assertEquals("QUOTA_TOKENS", denied.errorCode());
+    }
+
+    @Test
+    void activeReservationContinuesToCountAgainstTheDailyLimitAfterMidnight() {
+        MutableClock clock = new MutableClock(Instant.parse("2026-01-01T23:58:30Z"));
+        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(10, 2, 100, clock);
+        var reservation = quota.reserve(ACTOR, new QuotaRequest(8, 0));
+        assertTrue(reservation.allowed());
+
+        clock.advanceSeconds(120);
+        assertEquals("QUOTA_TOKENS", quota.reserve(ACTOR, new QuotaRequest(3, 0)).errorCode());
+
+        quota.settle(ACTOR, reservation.reservationId(), new QuotaUsage(8, 0));
+        assertTrue(quota.reserve(ACTOR, new QuotaRequest(2, 0)).allowed());
     }
 
     @Test
@@ -91,11 +130,24 @@ class InMemoryQuotaGovernanceTest {
         assertTrue(quota.reserve(ACTOR, new QuotaRequest(1, 0)).allowed());
     }
 
+    @Test
+    void samplesQuotaWindowAfterWaitingForTenantLock() {
+        MutableClock clock = new MutableClock(Instant.parse("2026-01-01T00:00:59Z"));
+        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(100, 2, 1, clock);
+        clock.afterFirstRead(() -> clock.advanceSeconds(2));
+
+        assertTrue(quota.reserve(ACTOR, new QuotaRequest(1, 0)).allowed());
+        assertEquals(
+                "QUOTA_RPM", quota.reserve(ACTOR, new QuotaRequest(1, 0)).errorCode());
+    }
+
     /**
      * 验证 Mutable Clock 相关功能、边界条件、异常路径和协作行为。
      */
     private static final class MutableClock extends java.time.Clock {
         private Instant instant;
+        private Runnable firstReadCallback;
+        private boolean callbackPending;
 
         private MutableClock(Instant instant) {
             this.instant = instant;
@@ -103,6 +155,15 @@ class InMemoryQuotaGovernanceTest {
 
         private void advanceSeconds(long seconds) {
             instant = instant.plusSeconds(seconds);
+        }
+
+        private void advanceMillis(long millis) {
+            instant = instant.plusMillis(millis);
+        }
+
+        private void afterFirstRead(Runnable callback) {
+            firstReadCallback = callback;
+            callbackPending = true;
         }
 
         @Override
@@ -117,7 +178,12 @@ class InMemoryQuotaGovernanceTest {
 
         @Override
         public Instant instant() {
-            return instant;
+            Instant current = instant;
+            if (callbackPending) {
+                callbackPending = false;
+                firstReadCallback.run();
+            }
+            return current;
         }
     }
 }

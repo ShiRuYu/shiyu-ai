@@ -210,8 +210,8 @@ public class AgentRuntimeImpl implements AgentRuntime {
      * @param executionId 用于定位execution的标识。
      */
     @Override
-    public void cancel(ActorContext actor, String executionId) {
-        lifecycle.cancel(actor, executionId);
+    public Execution cancel(ActorContext actor, String executionId) {
+        return lifecycle.cancel(actor, executionId);
     }
 
     /**

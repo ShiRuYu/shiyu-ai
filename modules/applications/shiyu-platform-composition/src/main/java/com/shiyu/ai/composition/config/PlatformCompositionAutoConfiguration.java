@@ -4,9 +4,14 @@ import com.shiyu.ai.common.mybatis.config.AgentDataSourceConfiguration;
 import com.shiyu.ai.common.mybatis.tenant.ContextTenantFactory;
 import com.shiyu.ai.common.mybatis.config.DatabaseInfrastructureConfiguration;
 import com.shiyu.ai.common.mybatis.config.TenantFlexConfig;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
+import org.springframework.util.StringUtils;
 
 /**
  * 定义 平台 Composition Auto 基础设施或应用能力的配置项及装配规则。
@@ -33,4 +38,21 @@ import org.springframework.context.annotation.Import;
             "com.shiyu.ai.common.storage",
             "com.shiyu.ai.web"
         })
-public class PlatformCompositionAutoConfiguration {}
+public class PlatformCompositionAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingClass(
+            "com.shiyu.ai.common.event.config.EventInfrastructureConfiguration")
+    InitializingBean eventInfrastructureAvailabilityCheck(Environment environment) {
+        return () -> {
+            String provider = environment.getProperty("shiyu.infrastructure.event.provider");
+            if (StringUtils.hasText(provider)) {
+                throw new IllegalStateException(
+                        "Event provider '" + provider.trim()
+                                + "' is configured, but shiyu-common-event is not on the classpath. "
+                                + "Add the optional shiyu-common-event dependency or remove "
+                                + "shiyu.infrastructure.event.provider.");
+            }
+        };
+    }
+}

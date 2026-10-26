@@ -103,21 +103,29 @@ class MessageControllerCoverageTest {
         when(repository.findMessage("m1", new TenantId(7), 9)).thenReturn(Optional.of(USER));
         when(repository.findConversation("c1", new TenantId(7), 9))
                 .thenReturn(Optional.of(CONVERSATION));
-        when(conversations.appendMessage(
+        when(conversations.appendMessageIdempotent(
                         any(),
                         isNull(),
                         eq(MessageRole.USER),
                         eq("edited"),
-                        isNull(),
-                        isNull(),
-                        eq("m1")))
+                        eq("m1"),
+                        same(idempotency),
+                        eq("message.edit:m1"),
+                        eq("edit-key"),
+                        eq(IdempotencyRepository.fingerprint("edited")),
+                        anyString()))
                 .thenReturn(edited);
-        when(idempotency.claim(new TenantId(7), 9, "message.edit:m1", "edit-key", "m2"))
-                .thenReturn(true);
-        when(conversations.createGeneration(any(), eq(USER), eq("OPENAI"), eq("gpt")))
+        when(conversations.createGenerationIdempotent(
+                        any(),
+                        eq(USER),
+                        eq("OPENAI"),
+                        eq("gpt"),
+                        eq("message.generation:m1"),
+                        eq("gen-key"),
+                        eq(IdempotencyRepository.fingerprint("OPENAI", "gpt")),
+                        anyString(),
+                        eq(false)))
                 .thenReturn(generation);
-        when(idempotency.claim(new TenantId(7), 9, "message.generation:m1", "gen-key", "g1"))
-                .thenReturn(true);
         try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
             ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
             ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
@@ -149,7 +157,7 @@ class MessageControllerCoverageTest {
                         null,
                         "OPENAI",
                         "gpt",
-                        GenerationStatus.CREATED,
+                        GenerationStatus.RUNNING,
                         0,
                         0,
                         0,
@@ -159,26 +167,50 @@ class MessageControllerCoverageTest {
                         0,
                         NOW,
                         NOW);
+        ConversationMessage persistedEdit =
+                new ConversationMessage(
+                        "m2",
+                        "c1",
+                        null,
+                        null,
+                        MessageRole.USER,
+                        List.of(ContentPart.text("x")),
+                        Map.of(),
+                        MessageStatus.COMPLETED,
+                        0,
+                        "m1",
+                        NOW,
+                        NOW);
         when(idempotency.find(new TenantId(7), 9, "message.edit:m1", "existing"))
                 .thenReturn(Optional.of("m2"));
-        when(repository.findMessage("m2", new TenantId(7), 9)).thenReturn(Optional.of(USER));
+        when(idempotency.findFingerprint(new TenantId(7), 9, "message.edit:m1", "existing"))
+                .thenReturn(Optional.of(IdempotencyRepository.fingerprint("x")));
+        when(repository.findMessage("m2", new TenantId(7), 9)).thenReturn(Optional.of(persistedEdit));
         when(idempotency.find(new TenantId(7), 9, "message.generation:m1", "existing"))
                 .thenReturn(Optional.of("g1"));
+        when(idempotency.findFingerprint(new TenantId(7), 9, "message.generation:m1", "existing"))
+                .thenReturn(Optional.of(IdempotencyRepository.fingerprint(null, null)));
         when(generations.find("g1", new TenantId(7), 9)).thenReturn(Optional.of(generation));
         when(repository.findMessage("m1", new TenantId(7), 9)).thenReturn(Optional.of(USER));
         when(repository.findConversation("c1", new TenantId(7), 9))
                 .thenReturn(Optional.of(CONVERSATION));
-        when(conversations.appendMessage(
-                        any(), any(), any(), anyString(), isNull(), isNull(), any()))
-                .thenReturn(USER);
-        when(conversations.createGeneration(any(), eq(USER), isNull(), isNull()))
+        when(conversations.createGenerationIdempotent(
+                        any(),
+                        eq(USER),
+                        isNull(),
+                        isNull(),
+                        eq("message.generation:m1"),
+                        eq("quota"),
+                        eq(IdempotencyRepository.fingerprint(null, null)),
+                        anyString(),
+                        eq(false)))
                 .thenReturn(generation);
         try (var ignored = mockStatic(ActorContextHttpAdapter.class)) {
             ignored.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
             ignored.when(ActorContextHttpAdapter::userId).thenReturn(9L);
             MessageController.EditRequest edit = new MessageController.EditRequest();
             edit.setContent("x");
-            assertEquals(USER, controller.edit("m1", "existing", edit).getData());
+            assertEquals(persistedEdit, controller.edit("m1", "existing", edit).getData());
             assertEquals(generation, controller.retry("m1", "existing", null).getData());
             edit.setContent(" ");
             assertThrows(
@@ -213,8 +245,6 @@ class MessageControllerCoverageTest {
                     .start(generation, new TenantId(7), 9);
             when(idempotency.find(new TenantId(7), 9, "message.generation:m1", "quota"))
                     .thenReturn(Optional.empty());
-            when(idempotency.claim(new TenantId(7), 9, "message.generation:m1", "quota", "g1"))
-                    .thenReturn(true);
             assertThrows(
                     org.springframework.web.server.ResponseStatusException.class,
                     () -> controller.retry("m1", "quota", null));

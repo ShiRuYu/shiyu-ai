@@ -77,8 +77,10 @@ public class ToolCallNode extends BaseNode {
             ToolExecutionPipeline executionPipeline) {
         super(config != null ? config : new ToolCallConfig());
         this.config = config != null ? config : new ToolCallConfig();
-        // 设置节点类型为 TOOL_CALL
+        // Tool calls can have external side effects: fail the graph and never replay the node.
         this.config.setNodeType(NodeType.TOOL_CALL);
+        this.config.setRetryCount(0);
+        this.config.setErrorStrategy("THROW");
         this.toolService = toolService;
         this.executionPipeline = executionPipeline;
     }
@@ -241,21 +243,20 @@ public class ToolCallNode extends BaseNode {
                 result = toolService.execute(toolName, parameters);
             }
 
-            // 4. 构建输出结果
-            NodeOutput output = new NodeOutput();
-            output.setSuccess(result.success());
-            output.setMsg(result.success() ? "工具调用成功" : "工具调用失败，请稍后重试");
-
-            if (result.success()) {
-                output.addData(FieldKey.TOOL_NAME, toolName);
-                output.addData(FieldKey.TOOL_RESULT, normalizeToolResult(result.result()));
-                log.info("工具调用成功：{}", toolName);
-            } else {
+            if (!result.success()) {
                 log.error(
                         "工具调用失败：errorMessageLength={}",
                         result.errorMessage() == null ? 0 : result.errorMessage().length());
+                throw new IllegalStateException(
+                        "tool execution failed; side effect outcome=UNCERTAIN; automatic replay disabled");
             }
 
+            NodeOutput output = new NodeOutput();
+            output.setSuccess(true);
+            output.setMsg("工具调用成功");
+            output.addData(FieldKey.TOOL_NAME, toolName);
+            output.addData(FieldKey.TOOL_RESULT, normalizeToolResult(result.result()));
+            log.info("工具调用成功：{}", toolName);
             log.info("工具调用节点执行完成");
             return output;
 
@@ -263,10 +264,9 @@ public class ToolCallNode extends BaseNode {
             throw pending;
         } catch (Exception e) {
             log.error("工具调用节点执行失败", e);
-            NodeOutput output = new NodeOutput();
-            output.setSuccess(false);
-            output.setMsg("工具调用节点执行失败，请稍后重试");
-            return output;
+            throw new IllegalStateException(
+                    "tool execution failed; side effect outcome=UNCERTAIN; automatic replay disabled",
+                    e);
         }
     }
 

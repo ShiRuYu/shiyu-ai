@@ -12,6 +12,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.TenantScope;
 import com.shiyu.ai.kernel.context.UserId;
 import java.time.Instant;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
@@ -46,7 +47,7 @@ class JdbcToolApprovalExpiryQueryTest {
     }
 
     @Test
-    void selectsOnlyOverdueApprovalsOnOwnedRunningRuns() {
+    void selectsOverdueApprovalsOnOwnedRunsForTerminalCompensation() {
         var database = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
                 .addScript("db/baseline/h2/schema/agent/16_ai_runtime.sql").build();
         try {
@@ -64,8 +65,8 @@ class JdbcToolApprovalExpiryQueryTest {
                 approvals.insert(approval("foreign", "active", 7, 10, now.minusSeconds(1)));
                 return null;
             });
-            assertEquals("due", approvals.findOverdueRunning(now, 100).getFirst().id());
-            assertEquals(1, approvals.findOverdueRunning(now, 100).size());
+            assertEquals(List.of("due", "ended"), approvals.findOverdueRunning(now, 100)
+                    .stream().map(ToolApproval::id).toList());
         } finally {
             database.shutdown();
         }

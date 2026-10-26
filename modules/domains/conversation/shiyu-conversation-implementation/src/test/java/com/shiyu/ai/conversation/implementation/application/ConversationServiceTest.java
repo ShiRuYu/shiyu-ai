@@ -97,6 +97,38 @@ class ConversationServiceTest {
     }
 
     @Test
+    void rejectsIdempotentGenerationWhenActiveLeafChangesAfterInitialRead() {
+        Conversation initial = conversation("c1", "m1", 1);
+        Conversation latest = conversation("c1", "m2", 2);
+        ConversationMessage input = message("m1", "c1", 1);
+        IdempotencyRepository idempotency = mock(IdempotencyRepository.class);
+        ConversationService idempotentService =
+                new ConversationService(conversations, generations, idempotency);
+        when(idempotency.claim(
+                        eq(new TenantId(7)), eq(8L), eq("message.generation:m1"),
+                        eq("request-1"), anyString(), anyString()))
+                .thenReturn(true);
+        when(conversations.findConversation("c1", new TenantId(7), 8))
+                .thenReturn(Optional.of(latest));
+
+        assertThrows(
+                IllegalStateException.class,
+                () ->
+                        idempotentService.createGenerationIdempotent(
+                                initial,
+                                input,
+                                "OPENAI",
+                                "gpt",
+                                "message.generation:m1",
+                                "request-1",
+                                IdempotencyRepository.fingerprint("OPENAI", "gpt"),
+                                "g1",
+                                false));
+
+        verify(generations, never()).insert(any(GenerationRun.class));
+    }
+
+    @Test
     void recordsCompletedGenerationAndEvents() {
         Conversation conversation = conversation("c1", "m1", 1);
         ConversationMessage input = message("m1", "c1", 1);
@@ -104,7 +136,10 @@ class ConversationServiceTest {
                 .thenReturn(Optional.of(conversation));
         when(generations.hasRunning("c1", "m1", new TenantId(7))).thenReturn(false);
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
-        when(conversations.updateConversation(any(Conversation.class), anyLong())).thenReturn(1);
+        when(conversations.completeGeneration(
+                        any(GenerationRun.class), anyLong(), any(ConversationMessage.class),
+                        any(Conversation.class), anyLong(), anyList()))
+                .thenReturn(1);
 
         GenerationRun completed =
                 service.recordCompletedGeneration(
@@ -114,12 +149,16 @@ class ConversationServiceTest {
         assertEquals(4, completed.promptTokens());
         assertEquals(6, completed.completionTokens());
         verify(conversations)
-                .insertMessage(
-                        argThat(
-                                message ->
-                                        message.role() == MessageRole.ASSISTANT
-                                                && message.textContent().equals("answer")));
-        verify(generations, atLeast(4))
+                .completeGeneration(
+                        argThat(run -> run.status() == GenerationStatus.COMPLETED),
+                        anyLong(),
+                        argThat(message ->
+                                message.role() == MessageRole.ASSISTANT
+                                        && message.textContent().equals("answer")),
+                        any(Conversation.class),
+                        anyLong(),
+                        eq(List.of()));
+        verify(generations, atLeast(3))
                 .appendEvent(any(GenerationEvent.class), eq(new TenantId(7)));
     }
 
@@ -131,18 +170,26 @@ class ConversationServiceTest {
                 .thenReturn(Optional.of(conversation));
         when(generations.hasRunning("c1", "m1", new TenantId(7))).thenReturn(false);
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
-        when(conversations.updateConversation(any(Conversation.class), anyLong())).thenReturn(0);
+        when(conversations.completeGeneration(
+                        any(GenerationRun.class), anyLong(), any(ConversationMessage.class),
+                        any(Conversation.class), anyLong(), anyList()))
+                .thenReturn(0);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
 
         assertThrows(
                 IllegalStateException.class,
                 () ->
                         service.recordCompletedGeneration(
                                 conversation, input, "answer", "OPENAI", "gpt", 1, 1));
-        verify(conversations).deleteMessage(anyString(), eq(new TenantId(7)), eq(8L));
-        verify(generations)
-                .appendEvent(
-                        argThat(event -> event.type() == GenerationEventType.FAILED),
-                        eq(new TenantId(7)));
+        verify(conversations)
+                .transitionRunningGeneration(
+                        argThat(run -> run.status() == GenerationStatus.FAILED),
+                        anyLong(),
+                        eq(8L),
+                        anyList());
+        verify(conversations, never()).insertMessage(any());
     }
 
     @Test
@@ -179,7 +226,10 @@ class ConversationServiceTest {
                 .thenReturn(Optional.of(conversation));
         when(generations.hasRunning("c1", "m1", new TenantId(7))).thenReturn(false);
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
-        when(conversations.updateConversation(any(Conversation.class), anyLong())).thenReturn(1);
+        when(conversations.completeGeneration(
+                        any(GenerationRun.class), anyLong(), any(ConversationMessage.class),
+                        any(Conversation.class), anyLong(), anyList()))
+                .thenReturn(1);
         when(runtime.linkGeneration(eq(runtimeRun), anyString())).thenReturn(runtimeRun);
         GenerationRun completed =
                 service.recordCompletedGeneration(
@@ -195,13 +245,18 @@ class ConversationServiceTest {
                         eq(6L),
                         eq(false),
                         isNull());
-        verify(runtime)
-                .finish(
-                        eq("r1"),
-                        eq(new TenantId(7L)),
-                        eq(8L),
-                        eq(AiRunStatus.COMPLETED),
-                        isNull());
+        verify(conversations)
+                .completeGeneration(
+                        argThat(run -> "r1".equals(run.runtimeRunId())),
+                        anyLong(),
+                        any(ConversationMessage.class),
+                        any(Conversation.class),
+                        anyLong(),
+                        eq(List.of(
+                                AiRunEventType.MODEL_COMPLETED,
+                                AiRunEventType.STEP_COMPLETED,
+                                AiRunEventType.TURN_COMPLETED)));
+        verify(runtime, never()).finish(anyString(), any(TenantId.class), anyLong(), any(), any());
         verify(generations, never()).appendEvent(any(), any(TenantId.class));
     }
 
@@ -219,8 +274,14 @@ class ConversationServiceTest {
         when(conversations.findConversation("c1", new TenantId(7), 8))
                 .thenReturn(Optional.of(conversation));
         when(generations.hasRunning("c1", "m1", new TenantId(7))).thenReturn(false);
-        when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1, 0);
-        when(conversations.updateConversation(any(Conversation.class), anyLong())).thenReturn(1);
+        when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
+        when(conversations.completeGeneration(
+                        any(GenerationRun.class), anyLong(), any(ConversationMessage.class),
+                        any(Conversation.class), anyLong(), anyList()))
+                .thenReturn(0);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         assertThrows(
                 IllegalStateException.class,
                 () ->
@@ -262,15 +323,17 @@ class ConversationServiceTest {
                 .thenReturn(Optional.of(conversation));
         when(generations.hasRunning("c1", "m1", new TenantId(7))).thenReturn(false);
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
-        when(conversations.updateConversation(any(Conversation.class), anyLong())).thenReturn(0);
+        when(conversations.completeGeneration(
+                        any(GenerationRun.class), anyLong(), any(ConversationMessage.class),
+                        any(Conversation.class), anyLong(), anyList()))
+                .thenThrow(new IllegalStateException("repository unavailable"));
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(0);
         doThrow(new IllegalStateException("runtime unavailable"))
                 .when(runtime)
-                .finish(
-                        anyString(),
-                        any(TenantId.class),
-                        anyLong(),
-                        eq(AiRunStatus.FAILED),
-                        anyString());
+                .append(any(AiRun.class), any(AiRunEventType.class), anyString(), anyBoolean());
+        when(runtime.linkGeneration(eq(runtimeRun), anyString())).thenReturn(runtimeRun);
         assertThrows(
                 IllegalStateException.class,
                 () ->

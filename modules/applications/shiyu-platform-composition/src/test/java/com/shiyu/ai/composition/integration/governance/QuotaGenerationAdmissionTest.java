@@ -43,12 +43,12 @@ class QuotaGenerationAdmissionTest {
     @Test
     void failedReleaseRetainsReservationForRetry() {
         QuotaGovernance quota = mock(QuotaGovernance.class);
-        when(quota.reserve(ACTOR, new QuotaRequest(20, 0)))
+        when(quota.reserve(ACTOR, new QuotaRequest(20, 0), RUN.id()))
                 .thenReturn(new QuotaDecision(true, null, 41));
         doThrow(new IllegalStateException("temporary quota failure"))
                 .doNothing()
                 .when(quota)
-                .release(ACTOR, 41);
+                .release(ACTOR, RUN.id());
         QuotaGenerationAdmission admission = new QuotaGenerationAdmission(quota);
         admission.reserve(ACTOR, RUN, 20);
 
@@ -56,6 +56,6 @@ class QuotaGenerationAdmissionTest {
         admission.release(ACTOR, RUN);
         admission.release(ACTOR, RUN);
 
-        verify(quota, times(2)).release(ACTOR, 41);
+        verify(quota, times(3)).release(ACTOR, RUN.id());
     }
 }

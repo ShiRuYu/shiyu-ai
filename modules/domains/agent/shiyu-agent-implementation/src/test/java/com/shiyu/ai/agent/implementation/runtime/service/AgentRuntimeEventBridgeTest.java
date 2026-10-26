@@ -83,6 +83,10 @@ class AgentRuntimeEventBridgeTest {
                 0, 0, true, null, Instant.now(), null, null, 1);
         when(runtime.startRun(any(AiRunContext.class), eq(AiRunSource.AGENT),
                 eq("agent-1"), isNull(), anyString())).thenReturn(admitted);
+        AiRun completed = admitted.transition(AiRunStatus.COMPLETED);
+        when(runtime.requireRun("run-2", admitted.tenantId(), 7L)).thenReturn(admitted);
+        when(runtime.finish("run-2", admitted.tenantId(), 7L,
+                AiRunStatus.COMPLETED, null)).thenReturn(completed);
         AgentRuntimeEventBridge bridge = new AgentRuntimeEventBridge(runtime);
         Execution execution = new Execution("agent-1", "v1", Map.of());
         execution.setUserId(7L);
@@ -126,16 +130,122 @@ class AgentRuntimeEventBridgeTest {
         Execution failed = new Execution("agent-1", "v1", Map.of());
         failed.start();
         failed.fail("node failed");
-        bridge.finish(admitted, failed);
-        verify(runtime).finish("run-3", new TenantId(9), 7L,
-                AiRunStatus.FAILED, "AGENT_EXECUTION_FAILED");
-
         Execution cancelled = new Execution("agent-1", "v1", Map.of());
         cancelled.start();
         cancelled.cancel();
+        AiRun failedRun = admitted.transition(AiRunStatus.FAILED);
+        AiRun cancelledRun = admitted.transition(AiRunStatus.CANCELLED);
+        when(runtime.finish("run-3", new TenantId(9), 7L,
+                AiRunStatus.FAILED, "AGENT_EXECUTION_FAILED")).thenReturn(failedRun);
+        when(runtime.finish("run-3", new TenantId(9), 7L,
+                AiRunStatus.CANCELLED, "CLIENT_CANCELLED")).thenReturn(cancelledRun);
+        bridge.finish(admitted, failed);
         bridge.finish(admitted, cancelled);
         verify(runtime).finish("run-3", new TenantId(9), 7L,
-                AiRunStatus.CANCELLED, null);
+                AiRunStatus.CANCELLED, "CLIENT_CANCELLED");
+    }
+
+    @Test
+    void treatsAnEquivalentConcurrentFinishAsTheWinningResult() {
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntimeEventBridge bridge = new AgentRuntimeEventBridge(runtime);
+        AiRun running = new AiRun("run-race", new TenantId(9), new UserId(7),
+                null, null, AiRunSource.AGENT, "agent-1", null, null,
+                null, null, "execution-race", null, "hash", AiRunStatus.RUNNING,
+                0, 0, true, null, Instant.now(), null, null, 1);
+        AiRun completed = new AiRun("run-race", new TenantId(9), new UserId(7),
+                null, null, AiRunSource.AGENT, "agent-1", null, null,
+                null, null, "execution-race", null, "hash", AiRunStatus.COMPLETED,
+                0, 0, true, null, Instant.now(), Instant.now(), null, 2);
+        Execution execution = new Execution("agent-1", "v1", Map.of());
+        execution.start();
+        execution.complete(Map.of());
+        when(runtime.finish("run-race", running.tenantId(), 7L,
+                AiRunStatus.COMPLETED, null))
+                .thenThrow(new IllegalStateException("run was modified"))
+                .thenReturn(completed);
+        when(runtime.requireRun("run-race", running.tenantId(), 7L)).thenReturn(completed);
+
+        assertSame(completed, bridge.finish(running, execution));
+        verify(runtime, org.mockito.Mockito.times(2)).finish(
+                "run-race", running.tenantId(), 7L, AiRunStatus.COMPLETED, null);
+    }
+
+    @Test
+    void retriesTransientFinishFailureWhileTheRuntimeRunIsStillActive() {
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntimeEventBridge bridge = new AgentRuntimeEventBridge(runtime);
+        AiRun running = new AiRun("run-retry", new TenantId(9), new UserId(7),
+                null, null, AiRunSource.AGENT, "agent-1", null, null,
+                null, null, "execution-retry", null, "hash", AiRunStatus.RUNNING,
+                0, 0, true, null, Instant.now(), null, null, 1);
+        AiRun completed = new AiRun("run-retry", new TenantId(9), new UserId(7),
+                null, null, AiRunSource.AGENT, "agent-1", null, null,
+                null, null, "execution-retry", null, "hash", AiRunStatus.COMPLETED,
+                0, 0, true, null, Instant.now(), Instant.now(), null, 2);
+        Execution execution = new Execution("agent-1", "v1", Map.of());
+        execution.start();
+        execution.complete(Map.of());
+        when(runtime.finish("run-retry", running.tenantId(), 7L,
+                AiRunStatus.COMPLETED, null))
+                .thenThrow(new RuntimeException("temporary repository failure"))
+                .thenReturn(completed);
+        when(runtime.requireRun("run-retry", running.tenantId(), 7L)).thenReturn(running);
+
+        assertSame(completed, bridge.finish(running, execution));
+        verify(runtime, org.mockito.Mockito.times(2)).finish(
+                "run-retry", running.tenantId(), 7L, AiRunStatus.COMPLETED, null);
+    }
+
+    @Test
+    void doesNotAcceptConcurrentTerminalStateWithoutMatchingTerminalEvent() {
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AgentRuntimeEventBridge bridge = new AgentRuntimeEventBridge(runtime);
+        AiRun running = new AiRun("run-race", new TenantId(9), new UserId(7),
+                null, null, AiRunSource.AGENT, "agent-1", null, null,
+                null, null, "execution-race", null, "hash", AiRunStatus.RUNNING,
+                0, 0, true, null, Instant.now(), null, null, 1);
+        AiRun cancelled = new AiRun("run-race", new TenantId(9), new UserId(7),
+                null, null, AiRunSource.AGENT, "agent-1", null, null,
+                null, null, "execution-race", null, "hash", AiRunStatus.CANCELLED,
+                0, 0, true, null, Instant.now(), Instant.now(), "CLIENT_CANCELLED", 2);
+        Execution execution = new Execution("agent-1", "v1", Map.of());
+        execution.start();
+        execution.complete(Map.of());
+        when(runtime.finish("run-race", running.tenantId(), 7L,
+                AiRunStatus.COMPLETED, null)).thenThrow(new IllegalStateException("run was modified"));
+        when(runtime.requireRun("run-race", running.tenantId(), 7L)).thenReturn(cancelled);
+        when(runtime.finish("run-race", running.tenantId(), 7L,
+                AiRunStatus.CANCELLED, "CLIENT_CANCELLED"))
+                .thenThrow(new IllegalStateException("run already has a different terminal event"));
+
+        IllegalStateException failure = assertThrows(
+                IllegalStateException.class, () -> bridge.finish(running, execution));
+
+        assertEquals("run already has a different terminal event", failure.getMessage());
+        verify(runtime).finish("run-race", running.tenantId(), 7L,
+                AiRunStatus.CANCELLED, "CLIENT_CANCELLED");
+    }
+
+    @Test
+    void doesNotTreatPostAdmissionRunReadFailureAsOptionalRuntimeTracing() {
+        AiRuntimeService runtime = mock(AiRuntimeService.class);
+        AiRun admitted = new AiRun("run-read-failure", new TenantId(9), new UserId(7),
+                null, null, AiRunSource.AGENT, "agent-1", null, null,
+                null, null, "execution-read-failure", null, "hash", AiRunStatus.RUNNING,
+                0, 0, true, null, Instant.now(), null, null, 1);
+        when(runtime.startRun(any(AiRunContext.class), eq(AiRunSource.AGENT),
+                eq("agent-1"), isNull(), anyString())).thenReturn(admitted);
+        doThrow(new IllegalStateException("run not found")).when(runtime)
+                .requireRun("run-read-failure", admitted.tenantId(), 7L);
+        AgentRuntimeEventBridge bridge = new AgentRuntimeEventBridge(runtime);
+        Execution execution = new Execution("agent-1", "v1", Map.of());
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> bridge.start(execution, Map.of("tenantId", 9L, "userId", 7L)));
+
+        assertEquals("runtime run could not be loaded after admission", failure.getMessage());
+        verify(runtime).append(admitted, AiRunEventType.MODEL_STARTED, "{}", true);
     }
 
     @Test

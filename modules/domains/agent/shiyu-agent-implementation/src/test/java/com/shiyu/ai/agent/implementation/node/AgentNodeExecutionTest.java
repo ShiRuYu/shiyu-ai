@@ -108,22 +108,21 @@ class AgentNodeExecutionTest {
                 .thenReturn(new ToolExecutionPipeline.Result(
                         ToolExecutionPipeline.Result.Status.COMPLETED, "ok", null));
         Map<String, Object> forged = Map.of(
-                NodeActorContext.KEY, TRUSTED_ACTOR,
                 "tenantId", 99L, "userId", 88L, "__aiRunId", "run-1");
 
-        assertTrue(invoke(node, NodeInput.fromMap(forged)).isSuccess());
+        assertTrue(invoke(node, trustedInput(forged)).isSuccess());
         verify(pipeline).executeByIdWithContext(
                 eq("run-1"), eq(new TenantId(1L)), eq(2L), any(), any());
 
-        assertFalse(invoke(node, NodeInput.fromMap(Map.of(
-                "tenantId", 1L, "userId", 2L, "__aiRunId", "run-2"))).isSuccess());
+        assertThrows(IllegalStateException.class, () -> invoke(node, NodeInput.fromMap(Map.of(
+                "tenantId", 1L, "userId", 2L, "__aiRunId", "run-2"))));
         verify(pipeline, never()).executeById(eq("run-2"), any(), anyLong(), any(), any());
 
         AiRun foreign = new AiRuntimeService().startRun(
                 new AiRunContext(new TenantId(99L), 88L, null, null, null, null, null, null, Map.of()),
                 AiRunSource.AGENT, "agent", "model", "prompt");
-        assertFalse(invoke(node, NodeInput.fromMap(Map.of(
-                NodeActorContext.KEY, TRUSTED_ACTOR, "_aiRun", foreign))).isSuccess());
+        assertThrows(IllegalStateException.class, () -> invoke(node, trustedInput(Map.of(
+                "_aiRun", foreign))));
         verify(pipeline, never()).execute(eq(foreign), any(), any());
     }
 
@@ -368,13 +367,12 @@ class AgentNodeExecutionTest {
         NodeOutput result =
                 invoke(
                         node,
-                        NodeInput.fromMap(
-                                Map.of(
-                                        "slots", Map.of("q", "java"),
-                                        "parameterMapping", Map.of("q", "query"),
-                                        "slotDefaults", Map.of("limit", "5"),
-                                        "slotDefinitions", Map.of("q", "string", "limit", "number"),
-                                        "_internal", "ignored")));
+                        trustedInput(Map.of(
+                                "slots", Map.of("q", "java"),
+                                "parameterMapping", Map.of("q", "query"),
+                                "slotDefaults", Map.of("limit", "5"),
+                                "slotDefinitions", Map.of("q", "string", "limit", "number"),
+                                "_internal", "ignored")));
         assertTrue(result.isSuccess());
         assertEquals("ok", result.getData("toolResult", null));
         verify(tools)
@@ -384,10 +382,12 @@ class AgentNodeExecutionTest {
 
         when(tools.execute(eq("search"), any()))
                 .thenReturn(new ToolService.ToolExecutionResult(false, null, "denied"));
-        NodeOutput failed = invoke(node, NodeInput.fromMap(Map.of("q", "x")));
-        assertFalse(failed.isSuccess());
-        assertEquals("工具调用失败，请稍后重试", failed.getMsg());
-        assertFalse(failed.getMsg().contains("denied"));
+        IllegalStateException failed = assertThrows(IllegalStateException.class,
+                () -> invoke(node, trustedInput(Map.of("q", "x"))));
+        assertEquals(
+                "tool execution failed; side effect outcome=UNCERTAIN; automatic replay disabled",
+                failed.getMessage());
+        assertFalse(failed.getMessage().contains("denied"));
 
         ToolCallNode unnamed =
                 ToolCallNode.builder()

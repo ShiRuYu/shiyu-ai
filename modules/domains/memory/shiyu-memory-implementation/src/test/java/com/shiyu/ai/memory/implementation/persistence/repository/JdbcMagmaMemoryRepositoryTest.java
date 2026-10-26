@@ -104,6 +104,7 @@ class JdbcMagmaMemoryRepositoryTest {
 
         repository.insertEvent(event);
         repository.findEvent(TENANT, "e1");
+        repository.findEventsByIds(TENANT, List.of("e1", "e2", "e1"));
         repository.findLatestEvent(TENANT, "notes", "PROFILE", "u1");
         repository.findPreviousEvent(TENANT, "notes", "PROFILE", "u1", now);
         repository.findNextEvent(TENANT, "notes", "PROFILE", "u1", now);
@@ -119,7 +120,7 @@ class JdbcMagmaMemoryRepositoryTest {
         repository.findRetrievalTrace(TENANT, "trace1");
 
         verify(jdbc, atLeast(7)).update(anyString(), any(Object[].class));
-        verify(jdbc, atLeast(8))
+        verify(jdbc, atLeast(9))
                 .query(
                         anyString(),
                         org.mockito.ArgumentMatchers.<RowMapper<Object>>any(),

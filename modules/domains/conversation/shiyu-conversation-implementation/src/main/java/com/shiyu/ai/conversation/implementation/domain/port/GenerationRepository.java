@@ -19,6 +19,10 @@ public interface GenerationRepository {
      */
     void insert(GenerationRun generation);
 
+    default int deleteCreated(String id, TenantId tenantId, long ownerUserId) {
+        return 0;
+    }
+
     /**
      * 查询 生成 相关业务数据，并返回处理结果。
      *
@@ -66,6 +70,11 @@ public interface GenerationRepository {
      * @return 返回 生成 相关操作生成的结果数据。
      */
     int update(GenerationRun generation, long expectedVersion);
+
+    /** Refreshes the stale-recovery timestamp without consuming a generation version. */
+    default int touchRunning(String generationId, TenantId tenantId) {
+        return 0;
+    }
 
     /**
      * 执行 生成 相关业务操作，并维护必要的状态和协作关系。

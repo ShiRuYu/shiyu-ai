@@ -7,6 +7,8 @@ import com.shiyu.ai.common.vector.api.VectorStore;
 import com.shiyu.ai.common.vector.api.VectorStoreProvider;
 import com.shiyu.ai.common.vector.config.VectorStoreProperties;
 import com.shiyu.ai.common.vector.factory.ConfiguredVectorStoreProvider;
+import com.shiyu.ai.common.vector.implementation.InMemoryVectorStore;
+import com.shiyu.ai.common.vector.implementation.JVectorStore;
 import com.shiyu.ai.common.vector.model.VectorRecord;
 import com.shiyu.ai.common.vector.model.VectorSearchRequest;
 import com.shiyu.ai.common.vector.model.VectorSearchType;
@@ -15,7 +17,10 @@ import com.shiyu.ai.common.vector.model.VectorStoreOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +30,44 @@ import java.util.Map;
 class VectorStoreProviderIntegrationTest {
 
     @TempDir Path tempDir;
+
+    @Test
+    void numericFiltersPreservePrecisionAcrossVectorStores() {
+        long storedId = 9_007_199_254_740_993L;
+        long adjacentId = 9_007_199_254_740_992L;
+        BigDecimal preciseDecimal = new BigDecimal("9007199254740993.1");
+        VectorRecord record =
+                new VectorRecord(
+                        "large-id",
+                        new float[] {1F, 0F, 0F},
+                        Map.of("count", storedId, "decimal", preciseDecimal));
+
+        InMemoryVectorStore inMemoryStore = new InMemoryVectorStore(3);
+        inMemoryStore.upsert(record);
+        assertThat(inMemoryStore.count(Map.of("count", adjacentId))).isZero();
+        assertThat(inMemoryStore.count(Map.of("count", storedId))).isEqualTo(1);
+        assertThat(inMemoryStore.count(Map.of("count", 9_007_199_254_740_993D))).isZero();
+        assertThat(inMemoryStore.count(Map.of("decimal", 9_007_199_254_740_992D))).isZero();
+        assertThat(inMemoryStore.count(Map.of("decimal", preciseDecimal))).isEqualTo(1);
+        assertThat(inMemoryStore.count(Map.of("count", 1))).isZero();
+        inMemoryStore.upsert(
+                new VectorRecord("small-id", new float[] {0F, 1F, 0F}, Map.of("count", 1L)));
+        assertThat(inMemoryStore.count(Map.of("count", 1))).isEqualTo(1);
+
+        VectorStoreProperties properties = properties("jvector", 3, tempDir.resolve("jvector"));
+        try (JVectorStore jVectorStore = new JVectorStore(properties)) {
+            jVectorStore.upsert(record);
+            assertThat(jVectorStore.count(Map.of("count", adjacentId))).isZero();
+            assertThat(jVectorStore.count(Map.of("count", storedId))).isEqualTo(1);
+            assertThat(jVectorStore.count(Map.of("count", 9_007_199_254_740_993D))).isZero();
+            assertThat(jVectorStore.count(Map.of("decimal", 9_007_199_254_740_992D))).isZero();
+            assertThat(jVectorStore.count(Map.of("decimal", preciseDecimal))).isEqualTo(1);
+            assertThat(jVectorStore.count(Map.of("count", 1))).isZero();
+            jVectorStore.upsert(
+                    new VectorRecord("small-id", new float[] {0F, 1F, 0F}, Map.of("count", 1L)));
+            assertThat(jVectorStore.count(Map.of("count", 1))).isEqualTo(1);
+        }
+    }
 
     @Test
     void shouldPersistFilterDeleteAndReopenThroughPublicProvider() {
@@ -53,6 +96,9 @@ class VectorStoreProviderIntegrationTest {
                                     .build());
 
             assertThat(filtered).extracting(VectorRecord::id).containsExactly("a");
+            assertThat(store.count(Map.of("tenantId", 1L))).isEqualTo(2);
+            assertThat(store.count(Map.of("tenantId", "1"))).isZero();
+            assertThat(store.count(Map.of("tenantId", 99L))).isZero();
             store.delete("b");
             store.flush();
         }
@@ -67,6 +113,31 @@ class VectorStoreProviderIntegrationTest {
 
         try (VectorStore empty = provider.open(options)) {
             assertThat(empty.size()).isZero();
+        }
+    }
+
+    @Test
+    void countIgnoresMetadataWithoutAnIndexedVector() throws Exception {
+        VectorStoreProperties properties = properties("jvector", 3, tempDir.resolve("stale"));
+        VectorStoreProvider provider = new ConfiguredVectorStoreProvider(properties);
+        Path indexDir = tempDir.resolve("stale-metadata");
+        VectorStoreOptions options = VectorStoreOptions.of("knowledge/stale", 3, indexDir.toString());
+        Path savedMetadata = tempDir.resolve("metadata-stale.dat");
+
+        try (VectorStore store = provider.open(options)) {
+            store.upsert(new VectorRecord("kept", new float[] {1F, 0F, 0F}, Map.of("kind", "kept")));
+            store.upsert(new VectorRecord("removed", new float[] {0F, 1F, 0F}, Map.of("kind", "removed")));
+            store.flush();
+            Files.copy(indexDir.resolve("metadata.dat"), savedMetadata);
+            store.delete("removed");
+            store.flush();
+        }
+
+        Files.copy(savedMetadata, indexDir.resolve("metadata.dat"), StandardCopyOption.REPLACE_EXISTING);
+        try (VectorStore reopened = provider.open(options)) {
+            assertThat(reopened.size()).isEqualTo(1);
+            assertThat(reopened.count(Map.of())).isEqualTo(1);
+            assertThat(reopened.count(Map.of("kind", "removed"))).isZero();
         }
     }
 
@@ -112,6 +183,9 @@ class VectorStoreProviderIntegrationTest {
                     List.of(
                             new VectorRecord("m1", new float[] {1F, 0F}, Map.of("tenantId", 1L)),
                             new VectorRecord("m2", new float[] {0F, 1F}, Map.of("tenantId", 2L))));
+            assertThat(store.count(Map.of("tenantId", 1L))).isEqualTo(1);
+            assertThat(store.count(Map.of("tenantId", "1"))).isZero();
+            assertThat(store.count(Map.of("tenantId", 99L))).isZero();
             assertThat(
                             store.search(
                                     VectorSearchRequest.builder()

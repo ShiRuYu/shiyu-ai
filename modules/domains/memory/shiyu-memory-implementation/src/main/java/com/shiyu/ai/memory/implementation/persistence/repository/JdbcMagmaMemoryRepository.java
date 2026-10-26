@@ -18,8 +18,11 @@ import tools.jackson.core.type.TypeReference;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -95,6 +98,32 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
                         id)
                 .stream()
                 .findFirst();
+    }
+
+    /** Loads tenant-scoped events in bounded batches for semantic-index reconciliation. */
+    public List<MemoryEvent> findEventsByIds(TenantId tenantId, List<String> ids) {
+        requireTenant(tenantId);
+        if (ids == null || ids.isEmpty()) return List.of();
+
+        List<String> uniqueIds = ids.stream().filter(Objects::nonNull).distinct().toList();
+        if (uniqueIds.isEmpty()) return List.of();
+
+        List<MemoryEvent> events = new ArrayList<>(uniqueIds.size());
+        for (int start = 0; start < uniqueIds.size(); start += 500) {
+            List<String> batch = uniqueIds.subList(start, Math.min(start + 500, uniqueIds.size()));
+            String placeholders = String.join(",", Collections.nCopies(batch.size(), "?"));
+            Object[] parameters = new Object[batch.size() + 1];
+            parameters[0] = tenantId.value();
+            for (int i = 0; i < batch.size(); i++) parameters[i + 1] = batch.get(i);
+            events.addAll(
+                    jdbc.query(
+                            "SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND ID IN ("
+                                    + placeholders
+                                    + ")",
+                            this::mapEvent,
+                            parameters));
+        }
+        return List.copyOf(events);
     }
 
     /**
@@ -227,6 +256,28 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
                 tenantId.value(),
                 ns,
                 Math.min(Math.max(limit, 1), 100000));
+    }
+
+    /**
+     * Returns every event in a namespace so semantic index rebuilds also replace vectors belonging
+     * to revoked events.
+     *
+     * @param tenantId tenant that owns the events.
+     * @param ns namespace to rebuild.
+     * @param limit maximum number of source events.
+     * @return all matching events, including revoked ones.
+     */
+    public List<MemoryEvent> findEventsForSemanticIndexRebuild(
+            TenantId tenantId, String ns, String afterId, int limit) {
+        requireTenant(tenantId);
+        return jdbc.query(
+                "SELECT * FROM MEMORY_EVENT WHERE TENANT_ID=? AND NAMESPACE=? AND ID>?"
+                        + " ORDER BY ID ASC LIMIT ?",
+                this::mapEvent,
+                tenantId.value(),
+                ns,
+                afterId == null ? "" : afterId,
+                Math.max(limit, 1));
     }
 
     /**

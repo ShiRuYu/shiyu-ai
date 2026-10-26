@@ -5,7 +5,6 @@ import com.shiyu.ai.agent.contract.runtime.AiRunEvent;
 import com.shiyu.ai.agent.contract.runtime.AiRuntimePort;
 import com.shiyu.ai.common.foundation.api.Result;
 import com.shiyu.ai.common.web.auth.ActorContextHttpAdapter;
-import com.shiyu.ai.conversation.contract.api.GenerationAdmission;
 import com.shiyu.ai.conversation.contract.model.GenerationRun;
 import com.shiyu.ai.conversation.contract.model.GenerationStatus;
 import com.shiyu.ai.conversation.implementation.application.GenerationRunner;
@@ -40,49 +39,38 @@ public class GenerationController {
      */
     private final GenerationRepository generations;
     /**
-     * admission 属性，保存当前对象中的业务数据或协作依赖。
-     */
-    private final GenerationAdmission admission;
-    /**
      * runtime 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final AiRuntimePort runtime;
     private final GenerationRunner runner;
+    private final com.shiyu.ai.conversation.implementation.domain.port.ConversationRepository conversations;
 
     /**
      * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
      *
      * @param generations 用于完成本次业务处理的 generations 参数。
-     * @param admission 用于完成本次业务处理的 admission 参数。
      */
-    public GenerationController(GenerationRepository generations, GenerationAdmission admission) {
-        this(generations, admission, null, null);
+    public GenerationController(GenerationRepository generations) {
+        this(generations, null, null, null);
     }
 
-    /**
-     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
-     *
-     * @param generations 用于完成本次业务处理的 generations 参数。
-     * @param admission 用于完成本次业务处理的 admission 参数。
-     * @param runtime 用于完成本次业务处理的 runtime 参数。
-     */
     public GenerationController(
             GenerationRepository generations,
-            GenerationAdmission admission,
-            AiRuntimePort runtime) {
-        this(generations, admission, runtime, null);
+            AiRuntimePort runtime,
+            GenerationRunner runner) {
+        this(generations, runtime, runner, null);
     }
 
     @Autowired
     public GenerationController(
             GenerationRepository generations,
-            GenerationAdmission admission,
             AiRuntimePort runtime,
-            GenerationRunner runner) {
+            GenerationRunner runner,
+            com.shiyu.ai.conversation.implementation.domain.port.ConversationRepository conversations) {
         this.generations = generations;
-        this.admission = admission;
         this.runtime = runtime;
         this.runner = runner;
+        this.conversations = conversations;
     }
 
     /**
@@ -238,30 +226,24 @@ public class GenerationController {
                         g.version() + 1,
                         g.createdAt(),
                         java.time.Instant.now());
-        if (generations.update(cancelled, g.version()) != 1)
+        cancelled =
+                new GenerationRun(
+                        cancelled.id(), cancelled.conversationId(), cancelled.inputMessageId(),
+                        cancelled.assistantMessageId(), cancelled.speakerId(), cancelled.platform(),
+                        cancelled.model(), cancelled.status(), cancelled.promptTokens(),
+                        cancelled.completionTokens(), cancelled.latencyMs(), cancelled.errorCode(),
+                        generations.nextEventSequence(id, tenant()), cancelled.cancelRequested(),
+                        cancelled.version(), cancelled.createdAt(), cancelled.updatedAt(),
+                        cancelled.runtimeRunId());
+        if (conversations == null
+                || conversations.transitionRunningGeneration(
+                                cancelled, g.version(), user(), java.util.List.of()) != 1)
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.CONFLICT, "generation was modified");
-        if (runner != null) runner.cancel(id);
-        if (runtime == null) {
-            generations.appendEvent(
-                    new GenerationEvent(
-                            g.id(),
-                            generations.nextEventSequence(g.id(), tenant()),
-                            GenerationEventType.CANCELLED,
-                            "{}",
-                            java.time.Instant.now()),
-                    tenant());
+        if (runner != null) {
+            runner.cancel(id);
+            runner.processTerminalPostProcessing(id);
         }
-        if (runtime != null) {
-            AiRun run = runtime.requireGenerationRun(id, tenant(), user());
-            runtime.finish(
-                    run.id(),
-                    tenant(),
-                    user(),
-                    com.shiyu.ai.agent.contract.runtime.AiRunStatus.CANCELLED,
-                    "CLIENT_CANCELLED");
-        }
-        admission.release(actor(), cancelled);
         return Result.success();
     }
 

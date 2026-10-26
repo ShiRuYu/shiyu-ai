@@ -34,14 +34,18 @@ public class AgentConversationController {
                 request.sourceMessageId());
         Flux<Map<String, Object>> heartbeat = Flux.interval(Duration.ofSeconds(1))
                 .map(ignored -> Map.of("status", "HEARTBEAT"));
-        return Flux.merge(execution.subscribeOn(Schedulers.boundedElastic()), heartbeat)
+        return Flux.merge(execution, heartbeat)
                 .takeUntil(event -> "COMPLETED".equals(event.get("status"))
                         || "FAILED".equals(event.get("status"))
                         || "PAUSED".equals(event.get("status"))
                         || "CANCELLED".equals(event.get("status")))
-                .map(event -> ServerSentEvent.<Map<String, Object>>builder(event)
-                        .event(String.valueOf(event.getOrDefault("status", "NODE")))
-                        .build());
+                .map(event -> {
+                    var builder = ServerSentEvent.<Map<String, Object>>builder(event)
+                            .event(String.valueOf(event.getOrDefault("status", "NODE")));
+                    Object sequence = event.get("sequence");
+                    if (sequence != null) builder.id(String.valueOf(sequence));
+                    return builder.build();
+                });
     }
 
     /** 首个事件发出前失败的流无法使用 JSON 错误转换器。 */

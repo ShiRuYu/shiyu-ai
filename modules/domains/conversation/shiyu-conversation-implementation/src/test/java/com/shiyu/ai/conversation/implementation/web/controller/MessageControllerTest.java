@@ -116,8 +116,15 @@ class MessageControllerTest {
         assertEquals(edited, controller.edit("m1", null, request).getData());
         when(idempotency.find(new TenantId(7), 8, "message.edit:m1", "key"))
                 .thenReturn(Optional.of("m2"));
+        when(idempotency.findFingerprint(new TenantId(7), 8, "message.edit:m1", "key"))
+                .thenReturn(Optional.of(IdempotencyRepository.fingerprint("updated")));
         when(conversations.findMessage("m2", new TenantId(7), 8)).thenReturn(Optional.of(edited));
         assertEquals(edited, controller.edit("m1", "key", request).getData());
+        request.setContent("different request");
+        assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> controller.edit("m1", "key", request));
+        request.setContent("updated");
     }
 
     @Test
@@ -144,14 +151,68 @@ class MessageControllerTest {
         when(conversations.findMessage("m1", new TenantId(7), 8)).thenReturn(Optional.of(input));
         when(conversations.findConversation("c1", new TenantId(7), 8))
                 .thenReturn(Optional.of(conversation));
-        when(service.createGeneration(conversation, input, null, null)).thenReturn(run);
-        when(idempotency.claim(
-                        any(TenantId.class), anyLong(), anyString(), anyString(), anyString()))
-                .thenReturn(true);
+        when(service.createGenerationIdempotent(
+                        eq(conversation),
+                        eq(input),
+                        isNull(),
+                        isNull(),
+                        eq("message.generation:m1"),
+                        eq("key"),
+                        eq(IdempotencyRepository.fingerprint(null, null)),
+                        anyString(),
+                        eq(false)))
+                .thenReturn(run);
         MessageController.RetryRequest request = new MessageController.RetryRequest();
 
         assertEquals(run, controller.retry("m1", "key", request).getData());
+        verify(service)
+                .createGenerationIdempotent(
+                        eq(conversation),
+                        eq(input),
+                        isNull(),
+                        isNull(),
+                        eq("message.generation:m1"),
+                        eq("key"),
+                        eq(IdempotencyRepository.fingerprint(null, null)),
+                        anyString(),
+                        eq(false));
         verify(runner).start(run, new TenantId(7), 8);
+    }
+
+    @Test
+    void rejectsIdempotentReplayWhileGenerationAdmissionIsPending() {
+        GenerationRun pending =
+                new GenerationRun(
+                        "g-pending",
+                        "c1",
+                        "m1",
+                        null,
+                        null,
+                        "OPENAI",
+                        "gpt",
+                        GenerationStatus.CREATED,
+                        0,
+                        0,
+                        0,
+                        null,
+                        -1,
+                        false,
+                        0,
+                        now,
+                        now);
+        when(idempotency.find(new TenantId(7), 8, "message.generation:m1", "pending"))
+                .thenReturn(Optional.of(pending.id()));
+        when(idempotency.findFingerprint(new TenantId(7), 8, "message.generation:m1", "pending"))
+                .thenReturn(Optional.of(IdempotencyRepository.fingerprint(null, null)));
+        when(generations.find(pending.id(), new TenantId(7), 8)).thenReturn(Optional.of(pending));
+
+        org.springframework.web.server.ResponseStatusException failure =
+                assertThrows(
+                        org.springframework.web.server.ResponseStatusException.class,
+                        () -> controller.retry("m1", "pending", null));
+
+        assertEquals(org.springframework.http.HttpStatus.CONFLICT, failure.getStatusCode());
+        verify(runner, never()).start(any(), any(), anyLong());
     }
 
     @Test
@@ -185,17 +246,18 @@ class MessageControllerTest {
         when(conversations.findMessage("m1", new TenantId(7), 8)).thenReturn(Optional.of(input));
         when(conversations.findConversation("c1", new TenantId(7), 8))
                 .thenReturn(Optional.of(conversation));
-        when(service.appendMessage(
+        when(service.appendMessageIdempotent(
                         any(),
-                        any(),
+                        isNull(),
                         eq(MessageRole.USER),
                         eq("updated"),
-                        isNull(),
-                        isNull(),
-                        eq("m1")))
-                .thenReturn(edited);
-        when(idempotency.claim(new TenantId(7), 8, "message.edit:m1", "key", "m2"))
-                .thenReturn(false);
+                        eq("m1"),
+                        same(idempotency),
+                        eq("message.edit:m1"),
+                        eq("key"),
+                        eq(IdempotencyRepository.fingerprint("updated")),
+                        anyString()))
+                .thenThrow(new IllegalStateException("idempotency key is already in use"));
         when(idempotency.find(new TenantId(7), 8, "message.edit:m1", "key"))
                 .thenReturn(Optional.empty());
         MessageController.EditRequest edit = new MessageController.EditRequest();

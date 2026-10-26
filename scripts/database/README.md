@@ -1,6 +1,6 @@
 # 数据库迁移与 PostgreSQL 基线
 
-应用启动器只会在 H2 空库上安装本地基线。MySQL、PostgreSQL 是外部托管数据库，启动时只校验 `COMMON_SCHEMA_BASELINE` 的版本和种子标识，不会自动建表或复制数据。切换 provider 前必须先完成一次离线迁移并核对数据量。
+应用启动器会在 H2 或 PostgreSQL 的空库上安装本地基线。PostgreSQL 初始化使用事务级 advisory lock，安装生成的 schema、seed、identity 序列和基线 marker 后执行幂等更新；匹配版本 `4` 与 seed profile `system-ai` 的已有库只运行更新，不重放 seed。非空但缺少 marker、marker 不匹配或 schema 不兼容时，启动会失败且不会重建表。MySQL 仍由部署方预置 schema，启动时只校验 marker、表和必要列。切换 provider 前应先核对目标库和数据量，应用不会跨库复制数据。
 
 应用通过 `shiyu.infrastructure.database.provider`（`h2`、`mysql`、`postgresql`）选择数据库；连接地址、账号和密码只从环境变量或密钥管理系统注入。向量、文件、Redis 和事件 provider 的切换规则见[外部基础设施切换](../../docs/外部基础设施切换.md)。
 
@@ -15,6 +15,18 @@
 旧版内置 Agent 图仍使用 SILICON_FLOW/Qwen 时，PostgreSQL 执行 `postgresql/20261014_seed_deepseek_graphs.sql`，MySQL 执行 `mysql/20261014_seed_deepseek_graphs.sql`。脚本只替换九个系统图中的旧平台与模型字段，并同步更新 11 条内置 Agent 的旧模型说明；图内其他定制内容及非系统图保持原样。H2 启动时自动执行。执行前备份数据库，执行后核对 `agent_version` 中系统图的模型配置。
 
 旧版外部数据库还需同步教育增补和 DeepSeek 模型目录。MySQL 依次执行 `mysql/20261005_exam_attempt.sql`、`mysql/20261006_question_purpose.sql`、`mysql/20261007_practice_submission.sql`、`mysql/20261007_demo_education_access.sql` 和 `mysql/20261011_deepseek_flash.sql`；PostgreSQL 依次执行 `postgresql/20261005_exam_attempt.sql`、`postgresql/20261006_question_purpose.sql`、`postgresql/20261007_practice_submission.sql`、`postgresql/20261007_demo_education_access.sql` 和 `postgresql/20261011_deepseek_flash.sql`。先备份数据库，并在执行教育 DDL 时停用相关写入。旧库完成后核对考试作答表、练习提交列、`DEMO_EDU_MATH` 访问模式，以及 DeepSeek 模型名 `deepseek-flash` 和 `deepseek-v4-pro`。新 PostgreSQL 基线已包含这些更新；H2 在启动时自动应用资源增补。
+
+## 配额治理持久化迁移
+
+`GOVERNANCE_QUOTA_TENANT` 和 `GOVERNANCE_QUOTA_RESERVATION` 保存跨实例共享的令牌、分钟请求、活动并发和 reservation 状态。新建 H2 库由治理模块基线创建这些表；现有 H2 库在应用启动时执行资源 `classpath:db/updates/governance/20261024_quota_state.sql`。启动器需将该资源注册到增补脚本列表。该升级不删除或重建现有用量记录。
+
+现有 PostgreSQL 数据库在升级应用前执行 `postgresql/20261024_quota_state.sql`；现有 MySQL 数据库执行 `mysql/20261024_quota_state.sql`。可使用 `pwsh ./scripts/database/migrate.ps1 -Action upgrade-quota -Provider postgresql` 或 `pwsh ./scripts/database/migrate.ps1 -Action upgrade-quota -Provider mysql` 执行对应脚本。先备份并确认应用账号有建表、索引和外键权限。新建 PostgreSQL 基线会由 `generate-postgresql-baseline.py` 将同一治理更新并入生成的 baseline schema。
+
+Conversation 终态用量与配额后处理升级：现有 PostgreSQL 数据库执行 `postgresql/20261024_generation_postprocessing.sql`，现有 MySQL 数据库执行 `mysql/20261024_generation_postprocessing.sql`，也可运行 `pwsh ./scripts/database/migrate.ps1 -Action upgrade-generation-postprocessing -Provider postgresql` 或 `-Provider mysql`。H2 在应用启动时自动创建该队列表。完成 generation 的事务会同时写入待处理项，后台调度器按过期 claim token 协调多实例处理配额结算或释放及用量记录；失败时按指数退避重试，直到各步骤都成功。新建 PostgreSQL 基线包含此表。
+
+Conversation 幂等请求指纹升级：现有 PostgreSQL 数据库执行 `postgresql/20261024_conversation_idempotency.sql`，现有 MySQL 数据库执行 `mysql/20261024_conversation_idempotency.sql`，也可运行 `pwsh ./scripts/database/migrate.ps1 -Action upgrade-conversation-idempotency -Provider postgresql` 或 `-Provider mysql`。H2 的现有库在应用启动时自动执行 `classpath:db/updates/conversation/20261024_idempotency_fingerprint.sql`。历史幂等记录保留 NULL 指纹；这些键不能安全地重放，会返回冲突，下一次新请求使用新的键即可。新建数据库的 PostgreSQL 基线包含该列。
+
+Reservation 默认 5 分钟过期，支持通过 `shiyu.usage.quota.reservation-ttl-ms` 调整；过期扫描间隔和首次延迟分别由 `shiyu.usage.quota.expiry-scan-interval-ms` 与 `shiyu.usage.quota.expiry-scan-initial-delay-ms` 控制。时间列按 UTC epoch milliseconds / seconds 记录，避免数据库会话时区对过期和分钟窗口的影响。并发控制依赖租户状态行上的 `SELECT ... FOR UPDATE`，要求支持该语义的 H2、MySQL InnoDB 或 PostgreSQL。
 
 ## 使用方式
 

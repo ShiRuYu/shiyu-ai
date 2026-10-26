@@ -22,6 +22,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -267,6 +268,14 @@ public class JVectorStore implements VectorStore {
      * @param id 用于定位目标业务对象的标识。
      */
     @Override
+    public synchronized int count(Map<String, Object> filter) {
+        return (int)
+                ordinalMap.keySet().stream()
+                        .filter(id -> matchesFilter(metadataCache.get(id), filter))
+                        .count();
+    }
+
+    @Override
     public synchronized void delete(String id) {
         Integer ordinal = ordinalMap.remove(id);
         if (ordinal != null) {
@@ -476,6 +485,7 @@ public class JVectorStore implements VectorStore {
                     e.getClass().getSimpleName(),
                     e.getMessage() == null ? 0 : e.getMessage().length());
         }
+        metadataCache.keySet().retainAll(ordinalMap.keySet());
     }
 
     /** 将 Object 写入 DataOutputStream（支持 String/Number/Boolean） */
@@ -576,13 +586,28 @@ public class JVectorStore implements VectorStore {
             if (metaValue == null || !metaValue.equals(entry.getValue())) {
                 // 类型兼容：如果 metaValue 是 Long 而 filter 值是 Integer，先转换再比较
                 if (metaValue instanceof Number mn && entry.getValue() instanceof Number fn) {
-                    if (mn.doubleValue() != fn.doubleValue()) return false;
+                    if (!numbersEqual(mn, fn)) return false;
                 } else {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    private boolean numbersEqual(Number first, Number second) {
+        try {
+            return new BigDecimal(first.toString()).compareTo(new BigDecimal(second.toString())) == 0;
+        } catch (NumberFormatException exception) {
+            if (isFloatingPoint(first) && isFloatingPoint(second)) {
+                return Double.compare(first.doubleValue(), second.doubleValue()) == 0;
+            }
+            return false;
+        }
+    }
+
+    private boolean isFloatingPoint(Number number) {
+        return number instanceof Double || number instanceof Float;
     }
 
     private VectorRecord toScoredRecord(String id, int ordinal, double score) {

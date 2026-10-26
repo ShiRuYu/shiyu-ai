@@ -105,7 +105,7 @@ class ToolApprovalExpirySweeperTest {
                 runs, agents, provider).sweep();
 
         verify(agents).cancel(actor, "exec-2");
-        assertEquals(ToolApprovalStatus.EXPIRED,
+        assertEquals(ToolApprovalStatus.COMPENSATED,
                 repository.find("a2", actor.tenantId(), 9).orElseThrow().status());
     }
 
@@ -127,6 +127,7 @@ class ToolApprovalExpirySweeperTest {
         when(runs.requireRun("run-1", actor.tenantId(), 9)).thenReturn(run);
         when(run.executionId()).thenReturn("exec-1");
         when(run.conversationId()).thenReturn("conversation-1");
+        when(run.status()).thenReturn(com.shiyu.ai.agent.contract.runtime.AiRunStatus.RUNNING);
         when(agents.getStatus(actor, "exec-1")).thenReturn(ExecutionStatus.PAUSED);
         when(agents.getExecution(actor, "exec-1")).thenReturn(cancelled);
         when(cancelled.getStatus()).thenReturn(ExecutionStatus.CANCELLED);
@@ -135,7 +136,7 @@ class ToolApprovalExpirySweeperTest {
                 new ToolApprovalTransitionService(new ToolApprovalService(repository), runs),
                 runs, agents, provider).sweep();
 
-        assertEquals(ToolApprovalStatus.EXPIRED,
+        assertEquals(ToolApprovalStatus.COMPENSATED,
                 repository.find("approval-1", actor.tenantId(), 9).orElseThrow().status());
         verify(agents).cancel(actor, "exec-1");
         verify(completion).completeApprovedRun(actor, run, cancelled);

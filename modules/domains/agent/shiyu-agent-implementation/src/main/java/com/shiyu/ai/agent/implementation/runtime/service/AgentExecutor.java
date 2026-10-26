@@ -107,7 +107,9 @@ public class AgentExecutor implements AutoCloseable {
                 execution.getExecutionId() != null);
 
         try {
-            if (!execution.awaitResumeOrCancellation()) {
+            if (!execution.awaitResumeOrCancellation()
+                    || execution.getStatus()
+                            != com.shiyu.ai.agent.implementation.execution.ExecutionStatus.RUNNING) {
                 return execution;
             }
             Graph graph = agentVersion.getGraph();
@@ -126,7 +128,9 @@ public class AgentExecutor implements AutoCloseable {
                     .invoke(GraphInput.args(input), config).orElseThrow(() ->
                             new IllegalStateException("Graph执行返回空结果")).data());
 
-            if (!execution.awaitResumeOrCancellation()) {
+            if (!execution.awaitResumeOrCancellation()
+                    || execution.getStatus()
+                            != com.shiyu.ai.agent.implementation.execution.ExecutionStatus.RUNNING) {
                 return execution;
             }
 
@@ -142,6 +146,7 @@ public class AgentExecutor implements AutoCloseable {
                     tenantId, execution.getExecutionId(), "graph_final", result);
             checkpointRecorded.accept(finalCheckpoint.getCheckpointId());
 
+            if (execution.isSuperseded() && execution.shouldYieldAfterCheckpoint()) return execution;
             execution.complete(result);
             log.info(
                     "Agent 执行完成: agentIdPresent={}, executionIdPresent={}, duration={}ms",
@@ -155,7 +160,9 @@ public class AgentExecutor implements AutoCloseable {
                 return execution;
             }
             if (approvalRequired(e) != null) {
-                execution.pause();
+                if (execution.getStatus() == com.shiyu.ai.agent.implementation.execution.ExecutionStatus.RUNNING) {
+                    execution.pause();
+                }
                 return execution;
             }
             execution.fail("执行异常: " + e.getMessage());
@@ -214,7 +221,6 @@ public class AgentExecutor implements AutoCloseable {
                     || !execution.getExecutionId().equals(checkpoint.getExecutionId())) {
                 throw new IllegalStateException("检查点与当前执行不匹配");
             }
-            execution.resume();
             Map<String, Object> result;
             if ("graph_final".equals(checkpoint.getNodeId())) {
                 result = NodeActorContext.publicData(checkpoint.getState());
@@ -238,9 +244,12 @@ public class AgentExecutor implements AutoCloseable {
                         .data());
             }
 
-            if (!execution.awaitResumeOrCancellation()) {
+            if (!execution.awaitResumeOrCancellation()
+                    || execution.getStatus()
+                            != com.shiyu.ai.agent.implementation.execution.ExecutionStatus.RUNNING) {
                 return execution;
             }
+            if (execution.isSuperseded()) return execution;
             execution.complete(result);
         } catch (Exception e) {
             if (execution.getStatus()

@@ -158,15 +158,57 @@ public class JdbcToolApprovalRepository implements ToolApprovalRepository {
     }
 
     @Override
-    public List<ToolApproval> findOverdueRunning(Instant now, int limit) {
+    public List<ToolApproval> findExpiryCompensationWork(Instant now, int limit) {
         return jdbc.query(
-                "SELECT a.* FROM AI_TOOL_APPROVAL a JOIN AI_RUN r"
-                        + " ON r.ID=a.RUN_ID AND r.TENANT_ID=a.TENANT_ID"
-                        + " AND r.OWNER_USER_ID=a.OWNER_USER_ID"
-                        + " WHERE a.STATUS IN ('PENDING','EXPIRED')"
-                        + " AND a.EXPIRES_AT<? AND r.STATUS='RUNNING'"
+                "SELECT a.* FROM AI_TOOL_APPROVAL a WHERE"
+                        + " ((a.STATUS='PENDING' AND a.EXPIRES_AT<?)"
+                        + " OR a.STATUS='EXPIRED'"
+                        + " OR (a.STATUS='COMPENSATING' AND a.DECIDED_AT<=?))"
+                        + " AND EXISTS (SELECT 1 FROM AI_RUN r WHERE r.ID=a.RUN_ID"
+                        + " AND r.TENANT_ID=a.TENANT_ID AND r.OWNER_USER_ID=a.OWNER_USER_ID)"
                         + " ORDER BY a.EXPIRES_AT,a.ID LIMIT ?",
-                (rs, row) -> map(rs), Timestamp.from(now), Math.max(1, Math.min(limit, 100)));
+                (rs, row) -> map(rs), Timestamp.from(now), Timestamp.from(now),
+                Math.max(1, Math.min(limit, 100)));
+    }
+
+    @Override
+    public int claimExpiryCompensation(
+            ToolApproval candidate, Instant now, Instant leaseUntil) {
+        TenantScope.requireMatches(new TenantId(candidate.tenantId()));
+        String decisionTimestampCas = candidate.decidedAt() == null
+                ? " AND DECIDED_AT IS NULL"
+                : " AND DECIDED_AT=?";
+        String sql = "UPDATE AI_TOOL_APPROVAL SET STATUS='COMPENSATING',DECIDED_AT=?"
+                + " WHERE ID=? AND TENANT_ID=? AND OWNER_USER_ID=?"
+                + " AND STATUS=? AND ((STATUS='EXPIRED')"
+                + " OR (STATUS='PENDING' AND EXPIRES_AT<?)"
+                + " OR (STATUS='COMPENSATING' AND DECIDED_AT<=?))"
+                + decisionTimestampCas;
+        if (candidate.decidedAt() == null) {
+            return jdbc.update(
+                    sql,
+                    Timestamp.from(leaseUntil), candidate.id(), candidate.tenantId(),
+                    candidate.ownerUserId(), candidate.status().name(), Timestamp.from(now),
+                    Timestamp.from(now));
+        }
+        return jdbc.update(
+                sql,
+                Timestamp.from(leaseUntil), candidate.id(), candidate.tenantId(),
+                candidate.ownerUserId(), candidate.status().name(), Timestamp.from(now),
+                Timestamp.from(now), Timestamp.from(candidate.decidedAt()));
+    }
+
+    @Override
+    public int completeExpiryCompensation(
+            String id, TenantId tenantId, long ownerUserId,
+            Instant leaseUntil, Instant completedAt) {
+        TenantScope.requireMatches(tenantId);
+        return jdbc.update(
+                "UPDATE AI_TOOL_APPROVAL SET STATUS='COMPENSATED',DECIDED_AT=?"
+                        + " WHERE ID=? AND TENANT_ID=? AND OWNER_USER_ID=?"
+                        + " AND STATUS='COMPENSATING' AND DECIDED_AT=?",
+                Timestamp.from(completedAt), id, tenantId.value(), ownerUserId,
+                Timestamp.from(leaseUntil));
     }
 
     private ToolApproval map(java.sql.ResultSet rs) throws java.sql.SQLException {

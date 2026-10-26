@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,6 +65,8 @@ public class GenerationRunner {
      * runtime 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final AiRuntimePort runtime;
+    private final GenerationPostProcessingService postProcessing;
+    private final ScheduledExecutorService scheduler;
     /**
      * 提示词服务，表示当前对象中的对应属性。
      */
@@ -87,6 +92,8 @@ public class GenerationRunner {
                 new GenerationUsageSink() {},
                 new GenerationAdmission() {},
                 null,
+                null,
+                null,
                 null);
     }
 
@@ -105,7 +112,7 @@ public class GenerationRunner {
             ConversationRepository conversations,
             GenerationUsageSink usageSink,
             GenerationAdmission admission) {
-        this(chatEngine, generations, conversations, usageSink, admission, null, null);
+        this(chatEngine, generations, conversations, usageSink, admission, null, null, null, null);
     }
 
     /**
@@ -125,7 +132,7 @@ public class GenerationRunner {
             GenerationUsageSink usageSink,
             GenerationAdmission admission,
             AiRuntimePort runtime) {
-        this(chatEngine, generations, conversations, usageSink, admission, runtime, null);
+        this(chatEngine, generations, conversations, usageSink, admission, runtime, null, null, null);
     }
 
     /**
@@ -139,7 +146,6 @@ public class GenerationRunner {
      * @param runtime 用于完成本次业务处理的 runtime 参数。
      * @param promptService 用于完成本次业务处理的 promptService 参数。
      */
-    @Autowired
     public GenerationRunner(
             ChatEngine chatEngine,
             GenerationRepository generations,
@@ -148,12 +154,59 @@ public class GenerationRunner {
             GenerationAdmission admission,
             AiRuntimePort runtime,
             ConversationPromptService promptService) {
+        this(
+                chatEngine,
+                generations,
+                conversations,
+                usageSink,
+                admission,
+                runtime,
+                promptService,
+                null,
+                null);
+    }
+
+    public GenerationRunner(
+            ChatEngine chatEngine,
+            GenerationRepository generations,
+            ConversationRepository conversations,
+            GenerationUsageSink usageSink,
+            GenerationAdmission admission,
+            AiRuntimePort runtime,
+            ConversationPromptService promptService,
+            GenerationPostProcessingService postProcessing) {
+        this(
+                chatEngine,
+                generations,
+                conversations,
+                usageSink,
+                admission,
+                runtime,
+                promptService,
+                postProcessing,
+                null);
+    }
+
+    @Autowired
+    public GenerationRunner(
+            ChatEngine chatEngine,
+            GenerationRepository generations,
+            ConversationRepository conversations,
+            GenerationUsageSink usageSink,
+            GenerationAdmission admission,
+            AiRuntimePort runtime,
+            ConversationPromptService promptService,
+            GenerationPostProcessingService postProcessing,
+            @org.springframework.beans.factory.annotation.Qualifier("scheduledExecutorService")
+                    ScheduledExecutorService scheduler) {
         this.chatEngine = chatEngine;
         this.generations = generations;
         this.conversations = conversations;
         this.usageSink = usageSink == null ? new GenerationUsageSink() {} : usageSink;
         this.admission = admission == null ? new GenerationAdmission() {} : admission;
         this.runtime = runtime;
+        this.postProcessing = postProcessing;
+        this.scheduler = scheduler;
         this.promptService =
                 promptService == null ? new ConversationPromptService(null) : promptService;
     }
@@ -173,7 +226,16 @@ public class GenerationRunner {
             GenerationRepository generations,
             ConversationRepository conversations,
             GenerationUsageSink usageSink) {
-        this(chatEngine, generations, conversations, usageSink, new GenerationAdmission() {}, null);
+        this(
+                chatEngine,
+                generations,
+                conversations,
+                usageSink,
+                new GenerationAdmission() {},
+                null,
+                null,
+                null,
+                null);
     }
 
     /**
@@ -187,72 +249,141 @@ public class GenerationRunner {
         Objects.requireNonNull(tenantId, "tenantId");
         long tenantValue = tenantId.value();
         ActorContext actor = new ActorContext(tenantId, new UserId(ownerUserId), false);
-        ConversationMessage input =
-                conversations
-                        .findMessage(created.inputMessageId(), tenantId, ownerUserId)
-                        .orElseThrow(() -> new IllegalArgumentException("input message not found"));
-        Conversation conversation =
-                conversations
-                        .findConversation(input.conversationId(), tenantId, ownerUserId)
-                        .orElseThrow(() -> new IllegalArgumentException("conversation not found"));
-        if (conversation.activeLeafMessageId() != null
-                && !conversation.activeLeafMessageId().equals(input.id())) {
-            throw new IllegalStateException("generation input is not the active conversation leaf");
+        final ConversationMessage input;
+        final Conversation conversation;
+        final List<ChatMessage> messages;
+        final int estimatedPromptTokens;
+        try {
+            input =
+                    conversations
+                            .findMessage(created.inputMessageId(), tenantId, ownerUserId)
+                            .orElseThrow(() -> new IllegalArgumentException("input message not found"));
+            conversation =
+                    conversations
+                            .findConversation(input.conversationId(), tenantId, ownerUserId)
+                            .orElseThrow(() -> new IllegalArgumentException("conversation not found"));
+            if (conversation.activeLeafMessageId() != null
+                    && !conversation.activeLeafMessageId().equals(input.id())) {
+                throw new IllegalStateException("generation input is not the active conversation leaf");
+            }
+            ConversationPromptService.PromptAssembly assembly =
+                    promptService.assemble(
+                            conversation,
+                            conversations
+                                    .listMessages(conversation.id(), tenantId, ownerUserId, 1000)
+                                    .reversed(),
+                            tenantId,
+                            ownerUserId);
+            messages = assembly.modelMessages();
+            estimatedPromptTokens =
+                    messages.stream()
+                            .mapToInt(
+                                    message ->
+                                            message.content().stream()
+                                                                    .mapToLong(
+                                                                            part ->
+                                                                                    PromptSafety
+                                                                                            .estimateTokens(
+                                                                                                    part
+                                                                                                            .text()))
+                                                                    .sum()
+                                                            > Integer.MAX_VALUE
+                                                    ? Integer.MAX_VALUE
+                                                    : (int)
+                                                            message.content().stream()
+                                                                    .mapToLong(
+                                                                            part ->
+                                                                                    PromptSafety
+                                                                                            .estimateTokens(
+                                                                                                    part
+                                                                                                            .text()))
+                                                                    .sum())
+                            .sum();
+        } catch (GenerationAdmissionException denied) {
+            throw denied;
         }
-        ConversationPromptService.PromptAssembly assembly =
-                promptService.assemble(
-                        conversation,
-                        conversations
-                                .listMessages(conversation.id(), tenantId, ownerUserId, 1000)
-                                .reversed(),
-                        tenantId,
-                        ownerUserId);
-        List<ChatMessage> messages = assembly.modelMessages();
-        int estimatedPromptTokens =
-                messages.stream()
-                        .mapToInt(
-                                message ->
-                                        message.content().stream()
-                                                                .mapToLong(
-                                                                        part ->
-                                                                                PromptSafety
-                                                                                        .estimateTokens(
-                                                                                                part
-                                                                                                        .text()))
-                                                                .sum()
-                                                        > Integer.MAX_VALUE
-                                                ? Integer.MAX_VALUE
-                                                : (int)
-                                                        message.content().stream()
-                                                                .mapToLong(
-                                                                        part ->
-                                                                                PromptSafety
-                                                                                        .estimateTokens(
-                                                                                                part
-                                                                                                        .text()))
-                                                                .sum())
-                        .sum();
-        admission.reserve(actor, created, estimatedPromptTokens);
         GenerationExecution execution = new GenerationExecution();
         if (activeExecutions.putIfAbsent(created.id(), execution) != null) {
-            admission.release(actor, created);
             throw new IllegalStateException("generation is already running");
         }
         GenerationRun running = created.transition(GenerationStatus.RUNNING);
-        if (generations.update(running, created.version()) != 1) {
+        AtomicInteger nextSequence = new AtomicInteger(0);
+        AtomicReference<GenerationRun> state = new AtomicReference<>(running);
+        AtomicReference<AiRun> runtimeState = new AtomicReference<>();
+        AtomicBoolean startPersisted = new AtomicBoolean();
+        AtomicBoolean reservationLostBeforeStart = new AtomicBoolean();
+        long renewalInterval = Math.max(1L, admission.renewalIntervalMillis());
+        try {
+            admission.reserve(actor, created, estimatedPromptTokens);
+            execution.attachReservationHeartbeat(
+                    scheduler == null
+                            ? null
+                            : scheduler.scheduleWithFixedDelay(
+                                    () -> {
+                                        try {
+                                            if (execution.isCancelled()
+                                                    || state.get().status()
+                                                            != GenerationStatus.RUNNING) {
+                                                execution.stopReservationHeartbeat();
+                                                return;
+                                            }
+                                            if (!startPersisted.get()) {
+                                                if (!admission.renew(actor, state.get())) {
+                                                    reservationLostBeforeStart.set(true);
+                                                }
+                                                return;
+                                            }
+                                            if (!admission.renew(actor, state.get())) {
+                                                execution.cancel();
+                                                finishProviderTerminal(
+                                                        state,
+                                                        runtimeState,
+                                                        tenantValue,
+                                                        ownerUserId,
+                                                        nextSequence,
+                                                        GenerationStatus.FAILED,
+                                                        "QUOTA_RESERVATION_EXPIRED");
+                                                execution.stopReservationHeartbeat();
+                                            }
+                                        } catch (RuntimeException renewalFailure) {
+                                            // A transient quota-store error is retried on the next heartbeat.
+                                        }
+                                    },
+                                    0,
+                                    renewalInterval,
+                                    TimeUnit.MILLISECONDS));
+        } catch (RuntimeException reserveFailure) {
             activeExecutions.remove(created.id(), execution);
-            admission.release(actor, created);
+            execution.stopReservationHeartbeat();
+            throw reserveFailure;
+        }
+        if (generations.update(running, created.version()) != 1) {
+            execution.stopReservationHeartbeat();
+            activeExecutions.remove(created.id(), execution);
+            // Reference-based reservations can be shared with the start that won the CAS.
             throw new IllegalStateException("generation is already running");
         }
-        AtomicInteger nextSequence = new AtomicInteger(0);
         appendProjection(
                 running,
                 tenantValue,
                 nextSequence.getAndIncrement(),
                 GenerationEventType.STARTED,
                 "{}");
-        AtomicReference<GenerationRun> state = new AtomicReference<>(running);
-        AtomicReference<AiRun> runtimeState = new AtomicReference<>();
+        startPersisted.set(true);
+        if (reservationLostBeforeStart.get()) {
+            execution.cancel();
+            finishProviderTerminal(
+                    state,
+                    runtimeState,
+                    tenantValue,
+                    ownerUserId,
+                    nextSequence,
+                    GenerationStatus.FAILED,
+                    "QUOTA_RESERVATION_EXPIRED");
+            execution.stopReservationHeartbeat();
+            activeExecutions.remove(created.id(), execution);
+            return;
+        }
         if (runtime != null) {
             try {
                 runtimeState.set(
@@ -275,6 +406,64 @@ public class GenerationRunner {
                 if (generations.update(traced, running.version()) == 1) {
                     running = traced;
                     state.set(traced);
+                } else {
+                    GenerationRun latest =
+                            generations
+                                    .find(created.id(), tenantId, ownerUserId)
+                                    .orElseThrow(
+                                            () ->
+                                                    new IllegalStateException(
+                                                            "generation disappeared during runtime startup"));
+                    if (latest.status() != GenerationStatus.RUNNING) {
+                        AiRunStatus runtimeStatus =
+                                latest.status() == GenerationStatus.CANCELLED
+                                        ? AiRunStatus.CANCELLED
+                                        : latest.status() == GenerationStatus.FAILED
+                                                ? AiRunStatus.FAILED
+                                                : AiRunStatus.COMPLETED;
+                        runtime.finish(
+                                runtimeState.get().id(),
+                                tenantId,
+                                ownerUserId,
+                                runtimeStatus,
+                                runtimeStatus == AiRunStatus.FAILED
+                                        ? Objects.toString(latest.errorCode(), "GENERATION_TERMINAL")
+                                        : runtimeStatus == AiRunStatus.CANCELLED
+                                                ? "CLIENT_CANCELLED"
+                                                : null);
+                        state.set(latest);
+                        activeExecutions.remove(created.id(), execution);
+                        return;
+                    }
+                    GenerationRun latestTraced = latest.withRuntimeRunId(runtimeState.get().id());
+                    if (generations.update(latestTraced, latest.version()) != 1) {
+                        GenerationRun changed =
+                                generations
+                                        .find(created.id(), tenantId, ownerUserId)
+                                        .orElseThrow(
+                                                () ->
+                                                        new IllegalStateException(
+                                                                "generation disappeared during runtime startup"));
+                        if (changed.status() != GenerationStatus.RUNNING) {
+                            runtime.finish(
+                                    runtimeState.get().id(),
+                                    tenantId,
+                                    ownerUserId,
+                                    changed.status() == GenerationStatus.CANCELLED
+                                            ? AiRunStatus.CANCELLED
+                                            : AiRunStatus.FAILED,
+                                    changed.status() == GenerationStatus.CANCELLED
+                                            ? "CLIENT_CANCELLED"
+                                            : Objects.toString(changed.errorCode(), "GENERATION_TERMINAL"));
+                            state.set(changed);
+                            activeExecutions.remove(created.id(), execution);
+                            return;
+                        }
+                        throw new IllegalStateException(
+                                "generation was modified while linking runtime run");
+                    }
+                    running = latestTraced;
+                    state.set(latestTraced);
                 }
                 String turnId = "turn-" + created.id();
                 String stepId = "model-" + created.id();
@@ -317,17 +506,22 @@ public class GenerationRunner {
                         null);
             } catch (RuntimeException runtimeFailure) {
                 activeExecutions.remove(created.id(), execution);
-                finishFailure(
-                        state,
-                        runtimeState,
-                        tenantValue,
-                        ownerUserId,
-                        nextSequence,
-                        runtimeFailure);
+                try {
+                    finishFailure(
+                            state,
+                            runtimeState,
+                            tenantValue,
+                            ownerUserId,
+                            nextSequence,
+                            runtimeFailure);
+                } finally {
+                    execution.stopReservationHeartbeat();
+                }
                 return;
             }
         }
         if (execution.isCancelled()) {
+            execution.stopReservationHeartbeat();
             activeExecutions.remove(created.id(), execution);
             return;
         }
@@ -356,27 +550,46 @@ public class GenerationRunner {
                                     tenantValue,
                                     ownerUserId,
                                     nextSequence),
-                    error ->
+                    error -> {
+                        try {
                             finishFailure(
                                     state,
                                     runtimeState,
                                     tenantValue,
                                     ownerUserId,
                                     nextSequence,
-                                    error),
-                    () ->
+                                    error);
+                        } finally {
+                            execution.stopReservationHeartbeat();
+                        }
+                    },
+                    () -> {
+                        try {
                             finishSuccess(
                                     state,
                                     runtimeState,
                                     tenantValue,
                                     ownerUserId,
                                     nextSequence,
-                                    answer.toString()));
+                                    answer.toString());
+                        } finally {
+                            execution.stopReservationHeartbeat();
+                        }
+                    });
             execution.attach(subscription);
         } catch (Throwable error) {
             activeExecutions.remove(created.id(), execution);
-            finishFailure(state, runtimeState, tenantValue, ownerUserId, nextSequence, error);
+            try {
+                finishFailure(state, runtimeState, tenantValue, ownerUserId, nextSequence, error);
+            } finally {
+                execution.stopReservationHeartbeat();
+            }
         }
+    }
+
+    /** Process queued quota and usage cleanup after a terminal controller transition. */
+    public void processTerminalPostProcessing(String generationId) {
+        if (postProcessing != null) postProcessing.processGeneration(generationId);
     }
 
     /** 取消正在运行的 Provider 流。持久化终态由调用方负责。 */
@@ -500,6 +713,7 @@ public class GenerationRunner {
             }
         } else {
             state.updateAndGet(s -> withUsageAndSequence(s, value, sequence, s.version()));
+            generations.touchRunning(state.get().id(), new TenantId(tenantId));
         }
     }
 
@@ -561,31 +775,40 @@ public class GenerationRunner {
                         next.version(),
                         next.createdAt(),
                         Instant.now());
-        if (generations.update(next, current.version()) != 1) return;
+        int terminalSequence = nextSequence.getAndIncrement();
+        GenerationRun persistedTerminal =
+                new GenerationRun(
+                        next.id(), next.conversationId(), next.inputMessageId(), next.assistantMessageId(),
+                        next.speakerId(), next.platform(), next.model(), next.status(), next.promptTokens(),
+                        next.completionTokens(), next.latencyMs(), next.errorCode(), terminalSequence,
+                        next.cancelRequested(), next.version(), next.createdAt(), next.updatedAt(),
+                        runtimeState.get() == null ? next.runtimeRunId() : runtimeState.get().id());
+        if (conversations.transitionRunningGeneration(
+                        persistedTerminal, current.version(), ownerUserId, List.of()) != 1) return;
         appendProjection(
-                next,
+                persistedTerminal,
                 tenantId,
-                nextSequence.getAndIncrement(),
+                terminalSequence,
                 terminal == GenerationStatus.CANCELLED
                         ? GenerationEventType.CANCELLED
                         : GenerationEventType.FAILED,
                 terminal == GenerationStatus.CANCELLED
                         ? "{}"
                         : Objects.toString(errorCode, "provider_failed"));
-        admission.release(actor(tenantId, ownerUserId), next);
-        if (terminal == GenerationStatus.FAILED) usageSink.failed(next);
-        state.set(next);
-        if (runtime != null && runtimeState.get() != null) {
-            runtime.finish(
-                    runtimeState.get().id(),
-                    new TenantId(tenantId),
-                    ownerUserId,
-                    terminal == GenerationStatus.CANCELLED
-                            ? AiRunStatus.CANCELLED
-                            : AiRunStatus.FAILED,
-                    terminal == GenerationStatus.CANCELLED
-                            ? null
-                            : Objects.toString(errorCode, "provider_failed"));
+        state.set(persistedTerminal);
+        if (postProcessing != null) {
+            postProcessing.processGeneration(persistedTerminal.id());
+        } else {
+            try {
+                admission.release(actor(tenantId, ownerUserId), persistedTerminal);
+            } catch (RuntimeException ignored) {
+            }
+            if (terminal == GenerationStatus.FAILED) {
+                try {
+                    usageSink.failed(persistedTerminal);
+                } catch (RuntimeException ignored) {
+                }
+            }
         }
     }
 
@@ -645,7 +868,6 @@ public class GenerationRunner {
                         current.id(),
                         Instant.now(),
                         Instant.now());
-        conversations.insertMessage(assistant);
         Conversation updated =
                 new Conversation(
                         conversation.id(),
@@ -663,17 +885,6 @@ public class GenerationRunner {
                         conversation.version() + 1,
                         conversation.createdAt(),
                         Instant.now());
-        if (conversations.updateConversation(updated, conversation.version()) != 1) {
-            conversations.deleteMessage(assistant.id(), new TenantId(tenantId), ownerUserId);
-            finishFailure(
-                    state,
-                    runtimeState,
-                    tenantId,
-                    ownerUserId,
-                    nextSequence,
-                    new IllegalStateException("conversation was modified"));
-            return;
-        }
         int sequence = nextSequence.getAndIncrement();
         GenerationRun completed = current.transition(GenerationStatus.COMPLETED);
         completed =
@@ -695,62 +906,54 @@ public class GenerationRunner {
                         completed.version(),
                         completed.createdAt(),
                         Instant.now());
-        if (generations.update(completed, current.version()) == 1) {
-            appendProjection(completed, tenantId, sequence, GenerationEventType.COMPLETED, "{}");
-            admission.settle(actor(tenantId, ownerUserId), completed);
-            usageSink.completed(completed, new TenantId(tenantId), new UserId(ownerUserId));
-            if (runtime != null && runtimeState.get() != null) {
-                runtime.append(
-                        runtimeState.get(),
-                        AiRunEventType.MODEL_COMPLETED,
-                        "{}",
-                        true,
-                        "turn-" + completed.id(),
-                        "model-" + completed.id(),
-                        null);
-                runtime.append(
-                        runtimeState.get(),
-                        AiRunEventType.STEP_COMPLETED,
-                        "{}",
-                        true,
-                        "turn-" + completed.id(),
-                        "model-" + completed.id(),
-                        null);
-                runtime.append(
-                        runtimeState.get(),
-                        AiRunEventType.TURN_COMPLETED,
-                        "{}",
-                        true,
-                        "turn-" + completed.id(),
-                        null,
-                        null);
-                runtime.finish(
-                        runtimeState.get().id(),
-                        new TenantId(tenantId),
-                        ownerUserId,
-                        AiRunStatus.COMPLETED,
-                        null);
-            }
+        List<AiRunEventType> runtimeTerminalEvents =
+                runtimeState.get() == null
+                        ? List.of()
+                        : List.of(
+                                AiRunEventType.MODEL_COMPLETED,
+                                AiRunEventType.STEP_COMPLETED,
+                                AiRunEventType.TURN_COMPLETED);
+        if (runtimeState.get() != null) completed = completed.withRuntimeRunId(runtimeState.get().id());
+        final int completedRows;
+        try {
+            completedRows =
+                    conversations.completeGeneration(
+                            completed,
+                            current.version(),
+                            assistant,
+                            updated,
+                            conversation.version(),
+                            runtimeTerminalEvents);
+        } catch (RuntimeException completionFailure) {
+            finishFailureInTenantScope(
+                    state,
+                    runtimeState,
+                    tenantId,
+                    ownerUserId,
+                    nextSequence,
+                    completionFailure);
+            return;
+        }
+        if (completedRows != 1) {
+            finishFailureInTenantScope(
+                    state,
+                    runtimeState,
+                    tenantId,
+                    ownerUserId,
+                    nextSequence,
+                    new IllegalStateException("generation completion conflicted"));
+            return;
+        }
+        appendProjection(completed, tenantId, sequence, GenerationEventType.COMPLETED, "{}");
+        state.set(completed);
+        if (postProcessing != null) {
+            postProcessing.processGeneration(completed.id());
         } else {
-            Conversation restored =
-                    new Conversation(
-                            conversation.id(),
-                            conversation.tenantId(),
-                            conversation.ownerUserId(),
-                            conversation.sceneType(),
-                            conversation.title(),
-                            conversation.status(),
-                            conversation.parentConversationId(),
-                            conversation.branchFromMessageId(),
-                            conversation.activeLeafMessageId(),
-                            conversation.rollingSummary(),
-                            conversation.platform(),
-                            conversation.model(),
-                            updated.version() + 1,
-                            conversation.createdAt(),
-                            Instant.now());
-            conversations.updateConversation(restored, updated.version());
-            conversations.deleteMessage(assistant.id(), new TenantId(tenantId), ownerUserId);
+            try {
+                admission.settle(actor(tenantId, ownerUserId), completed);
+                usageSink.completed(completed, new TenantId(tenantId), new UserId(ownerUserId));
+            } catch (RuntimeException ignored) {
+            }
         }
     }
 
@@ -806,25 +1009,33 @@ public class GenerationRunner {
                         failed.version(),
                         failed.createdAt(),
                         Instant.now());
-        if (generations.update(failed, persisted.version()) != 1) {
+        int terminalSequence = nextSequence.getAndIncrement();
+        GenerationRun persistedFailure =
+                new GenerationRun(
+                        failed.id(), failed.conversationId(), failed.inputMessageId(), failed.assistantMessageId(),
+                        failed.speakerId(), failed.platform(), failed.model(), failed.status(),
+                        failed.promptTokens(), failed.completionTokens(), failed.latencyMs(), failed.errorCode(),
+                        terminalSequence, failed.cancelRequested(), failed.version(), failed.createdAt(),
+                        failed.updatedAt(), runtimeState.get() == null ? failed.runtimeRunId() : runtimeState.get().id());
+        if (conversations.transitionRunningGeneration(
+                        persistedFailure, persisted.version(), ownerUserId, List.of()) != 1) {
             return;
         }
         appendProjection(
-                failed,
-                tenantId,
-                nextSequence.getAndIncrement(),
-                GenerationEventType.FAILED,
+                persistedFailure, tenantId, terminalSequence, GenerationEventType.FAILED,
                 error.getClass().getSimpleName());
-        admission.release(actor(tenantId, ownerUserId), failed);
-        usageSink.failed(failed);
-        state.set(failed);
-        if (runtime != null && runtimeState.get() != null) {
-            runtime.finish(
-                    runtimeState.get().id(),
-                    new TenantId(tenantId),
-                    ownerUserId,
-                    AiRunStatus.FAILED,
-                    error.getClass().getSimpleName());
+        state.set(persistedFailure);
+        if (postProcessing != null) {
+            postProcessing.processGeneration(persistedFailure.id());
+        } else {
+            try {
+                admission.release(actor(tenantId, ownerUserId), persistedFailure);
+            } catch (RuntimeException ignored) {
+            }
+            try {
+                usageSink.failed(persistedFailure);
+            } catch (RuntimeException ignored) {
+            }
         }
     }
 
@@ -835,11 +1046,24 @@ public class GenerationRunner {
     private static final class GenerationExecution {
         private final AtomicBoolean cancelled = new AtomicBoolean();
         private final AtomicReference<Disposable> subscription = new AtomicReference<>();
+        private final AtomicReference<ScheduledFuture<?>> reservationHeartbeat = new AtomicReference<>();
 
         private void cancel() {
             cancelled.set(true);
+            stopReservationHeartbeat();
             Disposable current = subscription.get();
             if (current != null) current.dispose();
+        }
+
+        private void attachReservationHeartbeat(ScheduledFuture<?> heartbeat) {
+            if (heartbeat == null) return;
+            reservationHeartbeat.set(heartbeat);
+            if (cancelled.get()) heartbeat.cancel(false);
+        }
+
+        private void stopReservationHeartbeat() {
+            ScheduledFuture<?> heartbeat = reservationHeartbeat.getAndSet(null);
+            if (heartbeat != null) heartbeat.cancel(false);
         }
 
         private void attach(Disposable value) {

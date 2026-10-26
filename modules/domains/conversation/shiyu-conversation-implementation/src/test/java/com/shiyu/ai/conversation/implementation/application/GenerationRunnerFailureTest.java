@@ -92,6 +92,9 @@ class GenerationRunnerFailureTest {
         when(conversations.listMessages("c1", new TenantId(1), 2, 1000)).thenReturn(List.of(input));
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
         when(generations.find("g1", new TenantId(1), 2)).thenReturn(Optional.of(running));
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         doThrow(new IllegalStateException("provider unavailable")).when(engine).stream(any());
 
         GenerationRunner runner =

@@ -67,6 +67,22 @@ public interface ToolApprovalRepository {
      */
     int expirePending(TenantId tenantId, long ownerUserId);
 
-    /** 查询已逾期且所属执行仍需写入终态结果的审批。 */
-    List<ToolApproval> findOverdueRunning(Instant now, int limit);
+    /** 查询已逾期待决定或仍需完成过期补偿的审批。 */
+    List<ToolApproval> findExpiryCompensationWork(Instant now, int limit);
+
+    /** 兼容旧调用方的过期审批扫描方法。 */
+    default List<ToolApproval> findOverdueRunning(Instant now, int limit) {
+        return findExpiryCompensationWork(now, limit);
+    }
+
+    /** 使用审批当前状态及决定时间执行 CAS，租用过期补偿工作。 */
+    int claimExpiryCompensation(ToolApproval candidate, Instant now, Instant leaseUntil);
+
+    /** 仅允许当前租约持有者完成补偿。 */
+    int completeExpiryCompensation(
+            String id,
+            TenantId tenantId,
+            long ownerUserId,
+            Instant leaseUntil,
+            Instant completedAt);
 }

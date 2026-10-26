@@ -1,10 +1,10 @@
 package com.shiyu.ai.composition.integration.agent;
 
-import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.agent.implementation.runtime.port.AgentConversationCompletionPort;
 import com.shiyu.ai.agent.contract.runtime.AiRun;
 import com.shiyu.ai.agent.implementation.execution.Execution;
 import com.shiyu.ai.agent.implementation.execution.ExecutionStatus;
+import com.shiyu.ai.agent.implementation.runtime.port.AgentRuntime;
 import com.shiyu.ai.agent.implementation.runtime.service.AiRuntimeService;
 import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.conversation.implementation.application.ConversationService;
@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.Disposable;
+import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 
 /** 将已发布 Agent 应用的执行关联到已登录用户的会话。 */
@@ -167,6 +169,7 @@ public class AgentConversationService implements AgentConversationCompletionPort
         AtomicReference<String> executionId = new AtomicReference<>();
         AtomicReference<String> runId = new AtomicReference<>();
         AtomicBoolean terminalSaved = new AtomicBoolean();
+        AtomicBoolean cancellationRequested = new AtomicBoolean();
         String agentVersion = config.get("agentVersion") == null
                 ? null : String.valueOf(config.get("agentVersion"));
         Flux<Map<String, Object>> stream;
@@ -177,45 +180,57 @@ public class AgentConversationService implements AgentConversationCompletionPort
                     "FAILED", "Agent 执行失败", terminalSaved);
             throw setupFailure;
         }
-        return stream.onErrorResume(error -> Flux.just(Map.of("status", "FAILED")))
-                .concatWith(Flux.defer(() -> terminalSaved.get()
-                        ? Flux.empty() : Flux.just(Map.of("status", "FAILED"))))
-                .map(event -> {
-            Map<String, Object> projected = new LinkedHashMap<>(event);
-            if (event.get("state") instanceof Map<?, ?> state) {
-                projected.put("state", publicValue(state));
-            }
-            if (event.get("output") instanceof Map<?, ?> output) {
-                projected.put("output", publicValue(output));
-            }
-            if (event.get("executionId") instanceof String id) executionId.set(id);
-            if (event.get("runtimeRunId") instanceof String id) runId.set(id);
-            if ("STARTED".equals(event.get("status"))) {
-                projected.put("inputMessageId", input.id());
-            } else if ("COMPLETED".equals(event.get("status"))) {
-                Object output = projected.get("output");
-                String content = output instanceof String value ? value
-                        : output instanceof Map<?, ?> state && state.get("content") instanceof String text
-                                ? text : JSONUtils.toJsonString(output);
-                projected.put("assistantMessageId", saveTerminal(actor, conversationId,
-                        input.id(), appId, executionId.get(), runId.get(),
-                        "COMPLETED", content, terminalSaved));
-            } else if ("CANCELLED".equals(event.get("status"))) {
-                projected.put("assistantMessageId", saveTerminal(actor, conversationId,
-                        input.id(), appId, executionId.get(), runId.get(),
-                        "CANCELLED", "已停止", terminalSaved));
-            } else if ("PAUSED".equals(event.get("status"))) {
-                projected.put("assistantMessageId", saveTerminal(actor, conversationId,
-                        input.id(), appId, executionId.get(), runId.get(),
-                        "PAUSED", "工具调用等待审批，请前往工具审批页面处理。", terminalSaved));
-            } else if ("FAILED".equals(event.get("status"))) {
-                projected.put("assistantMessageId", saveTerminal(actor, conversationId,
-                        input.id(), appId, executionId.get(), runId.get(),
-                        "FAILED", "Agent 执行失败", terminalSaved));
-            }
-            return projected;
-        }).doOnCancel(() -> saveTerminal(actor, conversationId, input.id(), appId,
-                executionId.get(), runId.get(), "CANCELLED", "已停止", terminalSaved));
+        return Flux.<Map<String, Object>>create(sink -> {
+            Disposable.Swap upstream = Disposables.swap();
+            sink.onCancel(() -> {
+                upstream.dispose();
+                saveCancellationOutcome(actor, conversationId, input.id(), appId,
+                        executionId.get(), runId.get(), terminalSaved);
+            });
+            upstream.update(stream
+                    .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                    .onErrorResume(error -> Flux.just(Map.of("status", "FAILED")))
+                    .concatWith(Flux.defer(() -> terminalSaved.get()
+                            ? Flux.empty() : Flux.just(Map.of("status", "FAILED"))))
+                    .map(event -> {
+                        Map<String, Object> projected = new LinkedHashMap<>(event);
+                        if (event.get("state") instanceof Map<?, ?> state) {
+                            projected.put("state", publicValue(state));
+                        }
+                        if (event.get("output") instanceof Map<?, ?> output) {
+                            projected.put("output", publicValue(output));
+                        }
+                        if (event.get("executionId") instanceof String id) executionId.set(id);
+                        if (event.get("runtimeRunId") instanceof String id) runId.set(id);
+                        if ("STARTED".equals(event.get("status"))) {
+                            projected.put("inputMessageId", input.id());
+                        } else if ("COMPLETED".equals(event.get("status"))) {
+                            Object output = projected.get("output");
+                            String content = output instanceof String value ? value
+                                    : output instanceof Map<?, ?> state
+                                            && state.get("content") instanceof String text
+                                                    ? text : JSONUtils.toJsonString(output);
+                            projected.put("assistantMessageId", saveTerminal(actor,
+                                    conversationId, input.id(), appId, executionId.get(),
+                                    runId.get(), "COMPLETED", content, terminalSaved));
+                        } else if ("CANCELLED".equals(event.get("status"))) {
+                            projected.put("assistantMessageId", saveTerminal(actor,
+                                    conversationId, input.id(), appId, executionId.get(),
+                                    runId.get(), "CANCELLED", "已停止", terminalSaved));
+                        } else if ("PAUSED".equals(event.get("status"))) {
+                            projected.put("assistantMessageId", saveTerminal(actor,
+                                    conversationId, input.id(), appId, executionId.get(),
+                                    runId.get(), "PAUSED", "工具调用等待审批，请前往工具审批页面处理。",
+                                    terminalSaved));
+                        } else if ("FAILED".equals(event.get("status"))) {
+                            projected.put("assistantMessageId", saveTerminal(actor,
+                                    conversationId, input.id(), appId, executionId.get(),
+                                    runId.get(), "FAILED", "Agent 执行失败", terminalSaved));
+                        }
+                        return projected;
+                    })
+                    .subscribe(sink::next, sink::error, sink::complete));
+        });
     }
 
     private static Object publicValue(Object value) {
@@ -232,6 +247,34 @@ public class AgentConversationService implements AgentConversationCompletionPort
             return list.stream().map(AgentConversationService::publicValue).toList();
         }
         return value;
+    }
+
+    private String saveCancellationOutcome(ActorContext actor, String conversationId,
+            String inputId, String appId, String executionId, String runtimeRunId,
+            AtomicBoolean saved) {
+        if (executionId != null) {
+            try {
+                Execution execution = agents.getExecution(actor, executionId);
+                if (execution != null) {
+                    String status = execution.getStatus().name();
+                    String content = switch (execution.getStatus()) {
+                        case COMPLETED -> outputContent(execution.getOutput());
+                        case FAILED -> "Agent 执行失败";
+                        case CANCELLED -> "已停止";
+                        case PAUSED -> "工具调用等待审批，请前往工具审批页面处理。";
+                        default -> null;
+                    };
+                    if (content != null) {
+                        return saveTerminal(actor, conversationId, inputId, appId,
+                                executionId, runtimeRunId, status, content, saved);
+                    }
+                }
+            } catch (RuntimeException ignored) {
+                // Fall back to the client disconnect outcome when execution state is unavailable.
+            }
+        }
+        return saveTerminal(actor, conversationId, inputId, appId, executionId,
+                runtimeRunId, "CANCELLED", "已停止", saved);
     }
 
     private String saveTerminal(ActorContext actor, String conversationId, String inputId,

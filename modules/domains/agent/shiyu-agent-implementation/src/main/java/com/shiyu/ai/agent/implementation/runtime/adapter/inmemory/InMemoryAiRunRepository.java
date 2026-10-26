@@ -164,15 +164,47 @@ public class InMemoryAiRunRepository implements AiRunRepository {
      */
     @Override
     public int update(AiRun run, long expectedVersion) {
-        boolean[] replaced = {false};
-        runs.computeIfPresent(
-                run.id(),
-                (id, current) -> {
-                    if (current.version() != expectedVersion) return current;
-                    replaced[0] = true;
-                    return run;
-                });
-        return replaced[0] ? 1 : 0;
+        List<AiRunEvent> stream = events.computeIfAbsent(run.id(), ignored -> new ArrayList<>());
+        synchronized (stream) {
+            boolean[] replaced = {false};
+            runs.computeIfPresent(
+                    run.id(),
+                    (id, current) -> {
+                        if (current.version() != expectedVersion) return current;
+                        replaced[0] = true;
+                        return run;
+                    });
+            return replaced[0] ? 1 : 0;
+        }
+    }
+
+    @Override
+    public AiRun finishGenerationRun(
+            String id,
+            TenantId tenantId,
+            long ownerUserId,
+            AiRunStatus terminal,
+            String errorCode,
+            List<AiRunEventType> precedingEvents,
+            String turnId,
+            String stepId) {
+        List<AiRunEvent> stream = events.computeIfAbsent(id, ignored -> new ArrayList<>());
+        synchronized (stream) {
+            AiRun previous = find(id, tenantId, ownerUserId)
+                    .orElseThrow(() -> new IllegalArgumentException("run not found"));
+            List<AiRunEvent> previousEvents = new ArrayList<>(stream);
+            try {
+                return AiRunRepository.super.finishGenerationRun(
+                        id, tenantId, ownerUserId, terminal, errorCode,
+                        precedingEvents, turnId, stepId);
+            } catch (RuntimeException failure) {
+                runs.put(id, previous);
+                stream.clear();
+                stream.addAll(previousEvents);
+                if (previousEvents.isEmpty()) events.remove(id, stream);
+                throw failure;
+            }
+        }
     }
 
     /**
@@ -186,7 +218,7 @@ public class InMemoryAiRunRepository implements AiRunRepository {
      * @return 返回 In 记忆 AI 运行 相关操作生成的结果数据。
      */
     @Override
-    public synchronized AiRun updateTerminalAndAppend(
+    public AiRun updateTerminalAndAppend(
             AiRun run,
             long expectedVersion,
             AiRunEventType eventType,
@@ -294,6 +326,9 @@ public class InMemoryAiRunRepository implements AiRunRepository {
                         throw new IllegalStateException(
                                 "run already has a different terminal event");
                     }
+                    runs.computeIfPresent(
+                            runId,
+                            (id, current) -> current.withLastEventSeq(terminal.seq()));
                     return terminal.seq();
                 }
                 throw new IllegalStateException("run is already terminal");

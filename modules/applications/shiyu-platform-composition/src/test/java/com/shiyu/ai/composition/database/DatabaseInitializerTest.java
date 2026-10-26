@@ -218,19 +218,24 @@ class DatabaseInitializerTest {
         initializer.initialize();
         try (Connection connection = dataSource.getConnection(); Statement sql = connection.createStatement()) {
             sql.executeUpdate("DELETE FROM AUTH_ROLE_SCOPE_AUTH_CODE WHERE AUTH_CODE_ID IN "
-                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market'))");
+                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN "
+                    + "('model:admin','agent:intent:edit','plugin:market'))");
             sql.executeUpdate("DELETE FROM AUTH_TENANT_AUTH_CODE WHERE AUTH_CODE_ID IN "
-                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market'))");
-            sql.executeUpdate("DELETE FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market')");
+                    + "(SELECT ID FROM AUTH_AUTH_CODE WHERE CODE IN "
+                    + "('model:admin','agent:intent:edit','plugin:market'))");
+            sql.executeUpdate("DELETE FROM AUTH_AUTH_CODE WHERE CODE IN "
+                    + "('model:admin','agent:intent:edit','plugin:market')");
         }
 
         initializer.initialize();
 
         assertEquals(3, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market')"));
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN "
+                        + "('model:admin','agent:intent:edit','plugin:market')"));
         assertEquals(6, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
-                        + "JOIN AUTH_ROLE R ON R.ID=G.ROLE_ID WHERE C.CODE IN ('model:admin','agent:intent:edit','plugin:market') "
+                        + "JOIN AUTH_ROLE R ON R.ID=G.ROLE_ID WHERE C.CODE IN "
+                        + "('model:admin','agent:intent:edit','plugin:market') "
                         + "AND G.TENANT_ID=1 AND R.TENANT_ID=1 AND R.CODE IN ('super','admin')"));
         assertEquals(3, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
@@ -238,7 +243,8 @@ class DatabaseInitializerTest {
 
         initializer.initialize();
         assertEquals(3, scalar(dataSource,
-                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN ('model:admin','agent:intent:edit','plugin:market')"));
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN "
+                        + "('model:admin','agent:intent:edit','plugin:market')"));
     }
 
     @Test
@@ -332,7 +338,7 @@ class DatabaseInitializerTest {
         initializer.initialize();
 
         assertEquals(
-                93,
+                96,
                 scalar(
                         dataSource,
                         "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
@@ -358,11 +364,14 @@ class DatabaseInitializerTest {
         assertEquals(116, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE"));
         assertTrue(scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_MENU") >= 99);
         assertEquals(232, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE"));
-        assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE='plugin:market'"));
-        assertEquals(2, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
-                + "WHERE C.CODE='plugin:market' AND G.TENANT_ID=1 AND G.STATUS=1 AND G.DEL_FLAG=0"));
-        assertEquals(1, scalar(dataSource, "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
-                + "WHERE C.CODE='plugin:market' AND G.TENANT_ID=1 AND G.STATUS=1"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE='plugin:market'"));
+        assertEquals(2, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                        + "WHERE C.CODE='plugin:market' AND G.TENANT_ID=1 AND G.STATUS=1 AND G.DEL_FLAG=0"));
+        assertEquals(1, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_TENANT_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
+                        + "WHERE C.CODE='plugin:market' AND G.TENANT_ID=1 AND G.STATUS=1"));
         assertEquals(
                 1,
                 scalar(
@@ -722,6 +731,60 @@ class DatabaseInitializerTest {
     }
 
     @Test
+    void refusesBaselineWithMismatchedSeedProfileBeforeRunningUpdates() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        execute(dataSource, "DROP TABLE GOVERNANCE_QUOTA_RESERVATION");
+        execute(
+                dataSource,
+                "INSERT INTO COMMON_DICT"
+                        + " (ID,DICT_TYPE,DICT_LABEL,DICT_VALUE,TENANT_ID,REMARK,CREATE_BY,UPDATE_BY)"
+                        + " VALUES (9998,'profile-check','保留种子数据','kept',1,'must survive rejected"
+                        + " profile','test','test')");
+        execute(dataSource, "UPDATE COMMON_SCHEMA_BASELINE SET SEED_PROFILE='other-profile'");
+
+        IllegalStateException error =
+                assertThrows(IllegalStateException.class, initializer::initialize);
+
+        assertTrue(error.getMessage().contains("Unsupported database baseline"));
+        assertEquals(
+                0,
+                scalar(
+                        dataSource,
+                        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                                + "WHERE TABLE_SCHEMA='PUBLIC' "
+                                + "AND TABLE_NAME='GOVERNANCE_QUOTA_RESERVATION'"));
+        assertEquals(
+                1,
+                scalar(
+                        dataSource,
+                        "SELECT COUNT(*) FROM COMMON_DICT "
+                                + "WHERE ID=9998 AND DICT_VALUE='kept'"));
+    }
+
+    @Test
+    void refusesBaselineWithIncompleteQuotaAndPostprocessingColumns() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        execute(dataSource, "ALTER TABLE GOVERNANCE_QUOTA_TENANT DROP COLUMN TOKENS_RESERVED");
+        execute(
+                dataSource,
+                "ALTER TABLE GOVERNANCE_QUOTA_RESERVATION DROP COLUMN RESERVED_ON_DATE");
+        execute(
+                dataSource,
+                "ALTER TABLE CHAT_GENERATION_POSTPROCESSING DROP COLUMN CLAIM_TOKEN");
+
+        IllegalStateException error =
+                assertThrows(IllegalStateException.class, initializer::initialize);
+
+        assertTrue(error.getMessage().contains("GOVERNANCE_QUOTA_TENANT.TOKENS_RESERVED"));
+        assertTrue(error.getMessage().contains("GOVERNANCE_QUOTA_RESERVATION.RESERVED_ON_DATE"));
+        assertTrue(error.getMessage().contains("CHAT_GENERATION_POSTPROCESSING.CLAIM_TOKEN"));
+    }
+
+    @Test
     void refusesV4DatabaseWithOutdatedModelPlatformSchema() throws Exception {
         DataSource dataSource = newDataSource();
         DatabaseInitializer initializer = newInitializer(dataSource);
@@ -787,6 +850,21 @@ class DatabaseInitializerTest {
                 assertThrows(IllegalStateException.class, initializer::initialize);
 
         assertTrue(error.getMessage().contains("Unsupported database baseline"));
+    }
+
+    @Test
+    void ignoresRequiredColumnsFromNonApplicationSchemas() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer initializer = newInitializer(dataSource);
+        initializer.initialize();
+        execute(dataSource, "ALTER TABLE PUBLIC.MODEL_AI_PLATFORM DROP COLUMN ADAPTER_TYPE");
+        execute(dataSource, "CREATE SCHEMA OTHER");
+        execute(dataSource, "CREATE TABLE OTHER.MODEL_AI_PLATFORM (ADAPTER_TYPE VARCHAR(32))");
+
+        IllegalStateException error =
+                assertThrows(IllegalStateException.class, initializer::initialize);
+
+        assertTrue(error.getMessage().contains("MODEL_AI_PLATFORM.ADAPTER_TYPE"));
     }
 
     @Test

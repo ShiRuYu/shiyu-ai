@@ -8,6 +8,7 @@ import com.shiyu.ai.common.vector.model.VectorRecord;
 import com.shiyu.ai.common.vector.model.VectorSearchRequest;
 
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
@@ -19,10 +20,26 @@ class PgVectorStoreLocalValidationTest {
     @Test
     void validatesPgVectorStoreInAnIsolatedTemporarySchema() {
         String password = System.getenv("PGPASSWORD");
-        assertThat(password).as("PGPASSWORD must be supplied to the test process").isNotBlank();
+        String database = System.getenv("SHIYU_PG_TEST_DATABASE");
+        assumeTrue(
+                password != null && !password.isBlank(),
+                "PGPASSWORD must be supplied to the test process");
+        assumeTrue(
+                database != null && !database.isBlank(),
+                "SHIYU_PG_TEST_DATABASE must name an isolated test database");
 
         String schema = "shiyu_pgvec_validation_" + UUID.randomUUID().toString().replace("-", "");
         JdbcTemplate adminJdbc = new JdbcTemplate(dataSource(password, null));
+        Integer existingTables =
+                adminJdbc.queryForObject(
+                        "SELECT COUNT(*) FROM information_schema.tables "
+                                + "WHERE table_schema NOT IN ('pg_catalog', 'information_schema') "
+                                + "AND table_type = 'BASE TABLE'",
+                        Integer.class);
+        assertThat(existingTables)
+                .as("the isolated test database must not contain application or seed tables")
+                .isZero();
+
         boolean schemaCreated = false;
         try {
             Boolean vectorExtensionPresent =
@@ -48,6 +65,8 @@ class PgVectorStoreLocalValidationTest {
 
             assertThat(tenantOne.size()).isEqualTo(1);
             assertThat(tenantTwo.size()).isEqualTo(1);
+            assertThat(tenantOne.count(Map.of("tenant", "1"))).isEqualTo(1);
+            assertThat(tenantOne.count(Map.of("tenant", "2"))).isZero();
             assertThat(
                             tenantOne.search(
                                     VectorSearchRequest.builder()
@@ -95,7 +114,7 @@ class PgVectorStoreLocalValidationTest {
     }
 
     private DriverManagerDataSource dataSource(String password, String currentSchema) {
-        String database = System.getenv().getOrDefault("SHIYU_PG_TEST_DATABASE", "postgres");
+        String database = System.getenv("SHIYU_PG_TEST_DATABASE");
         String url = "jdbc:postgresql://127.0.0.1:5433/" + database;
         if (currentSchema != null) {
             url += "?currentSchema=" + currentSchema + ",public";

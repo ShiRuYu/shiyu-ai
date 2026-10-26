@@ -23,6 +23,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -48,7 +51,10 @@ class GenerationRunnerStreamTest {
         when(conversations.listMessages("c1", new TenantId(1), 2, 1000)).thenReturn(List.of(input));
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
         when(generations.find("g1", new TenantId(1), 2)).thenReturn(Optional.of(running));
-        when(conversations.updateConversation(any(Conversation.class), anyLong())).thenReturn(1);
+        when(conversations.completeGeneration(
+                        any(GenerationRun.class), anyLong(), any(ConversationMessage.class),
+                        any(Conversation.class), anyLong(), anyList()))
+                .thenReturn(1);
         when(engine.stream(any()))
                 .thenReturn(
                         Flux.just(
@@ -83,11 +89,15 @@ class GenerationRunnerStreamTest {
         runner.start(created, new TenantId(1), 2);
 
         verify(conversations)
-                .insertMessage(
-                        argThat(
-                                message ->
-                                        message.role() == MessageRole.ASSISTANT
-                                                && message.textContent().equals("hi ")));
+                .completeGeneration(
+                        argThat(run -> run.status() == GenerationStatus.COMPLETED),
+                        anyLong(),
+                        argThat(message ->
+                                message.role() == MessageRole.ASSISTANT
+                                        && message.textContent().equals("hi ")),
+                        any(Conversation.class),
+                        anyLong(),
+                        eq(List.of()));
         verify(admission).reserve(any(), eq(created), anyInt());
         verify(admission).settle(any(), argThat(run -> run.status() == GenerationStatus.COMPLETED));
         verify(usage).completed(any(GenerationRun.class), eq(new TenantId(1L)), eq(new UserId(2L)));
@@ -114,6 +124,9 @@ class GenerationRunnerStreamTest {
         when(conversations.listMessages("c1", new TenantId(1), 2, 1000)).thenReturn(List.of(input));
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
         when(generations.find("g1", new TenantId(1), 2)).thenReturn(Optional.of(running));
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         when(engine.stream(any()))
                 .thenReturn(Flux.error(new IllegalStateException("provider down")));
         doAnswer(
@@ -164,7 +177,11 @@ class GenerationRunnerStreamTest {
                 .thenReturn(
                         Optional.of(running),
                         Optional.of(running),
+                        Optional.of(running),
                         Optional.of(running.transition(GenerationStatus.CANCELLED)));
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         when(engine.stream(any()))
                 .thenReturn(Flux.just(ChatResponse.builder().eventType("CANCELLED").build()));
 
@@ -224,6 +241,114 @@ class GenerationRunnerStreamTest {
     }
 
     @Test
+    void cancellationStopsQuotaReservationHeartbeat() {
+        ChatEngine engine = mock(ChatEngine.class);
+        GenerationRepository generations = mock(GenerationRepository.class);
+        ConversationRepository conversations = mock(ConversationRepository.class);
+        GenerationAdmission admission = mock(GenerationAdmission.class);
+        ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
+        ScheduledFuture<?> heartbeat = mock(ScheduledFuture.class);
+        ConversationMessage input = message("m1", "c1", 0);
+        Conversation conversation = conversation("c1", "m1", 0);
+        GenerationRun created = generation("g1");
+        when(conversations.findMessage("m1", new TenantId(1), 2)).thenReturn(Optional.of(input));
+        when(conversations.findConversation("c1", new TenantId(1), 2))
+                .thenReturn(Optional.of(conversation));
+        when(conversations.listMessages("c1", new TenantId(1), 2, 1000)).thenReturn(List.of(input));
+        when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
+        when(engine.stream(any()))
+                .thenReturn(Flux.<ChatResponse>create(sink -> sink.onCancel(() -> {})));
+        when(admission.renewalIntervalMillis()).thenReturn(333L);
+        doReturn(heartbeat)
+                .when(scheduler)
+                .scheduleWithFixedDelay(
+                        any(Runnable.class), eq(0L), eq(333L), eq(TimeUnit.MILLISECONDS));
+
+        GenerationRunner runner = new GenerationRunner(
+                engine, generations, conversations, new GenerationUsageSink() {}, admission,
+                null, new ConversationPromptService(null), null, scheduler);
+        runner.start(created, new TenantId(1), 2);
+
+        runner.cancel("g1");
+
+        verify(heartbeat).cancel(false);
+    }
+
+    @Test
+    void persistsRunningHeartbeatForNonUsageStreamEvents() throws Exception {
+        GenerationRepository generations = mock(GenerationRepository.class);
+        ConversationRepository conversations = mock(ConversationRepository.class);
+        GenerationRun running = generation("g-heartbeat").transition(GenerationStatus.RUNNING);
+        when(generations.find("g-heartbeat", new TenantId(1), 2))
+                .thenReturn(Optional.of(running));
+        when(generations.touchRunning("g-heartbeat", new TenantId(1))).thenReturn(1);
+        GenerationRunner runner =
+                new GenerationRunner(
+                        mock(ChatEngine.class),
+                        generations,
+                        conversations,
+                        new GenerationUsageSink() {},
+                        mock(GenerationAdmission.class));
+        java.lang.reflect.Method onEvent =
+                GenerationRunner.class.getDeclaredMethod(
+                        "onEvent",
+                        ChatResponse.class,
+                        java.util.concurrent.atomic.AtomicReference.class,
+                        java.util.concurrent.atomic.AtomicReference.class,
+                        StringBuilder.class,
+                        long.class,
+                        long.class,
+                        java.util.concurrent.atomic.AtomicInteger.class);
+        onEvent.setAccessible(true);
+
+        onEvent.invoke(
+                runner,
+                ChatResponse.builder().eventType("REASONING_DELTA").reasoningContent("thinking").build(),
+                new java.util.concurrent.atomic.AtomicReference<>(running),
+                new java.util.concurrent.atomic.AtomicReference<>(),
+                new StringBuilder(),
+                1L,
+                2L,
+                new java.util.concurrent.atomic.AtomicInteger());
+
+        verify(generations).touchRunning("g-heartbeat", new TenantId(1));
+        verify(generations, never()).update(any(), anyLong());
+    }
+
+    @Test
+    void schedulesQuotaRenewalImmediatelyAtAnIntervalBelowShortReservationTtl() {
+        ChatEngine engine = mock(ChatEngine.class);
+        GenerationRepository generations = mock(GenerationRepository.class);
+        ConversationRepository conversations = mock(ConversationRepository.class);
+        GenerationAdmission admission = mock(GenerationAdmission.class);
+        ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
+        ScheduledFuture<?> heartbeat = mock(ScheduledFuture.class);
+        ConversationMessage input = message("m1", "c1", 0);
+        Conversation conversation = conversation("c1", "m1", 0);
+        GenerationRun created = generation("g-short-ttl");
+        when(conversations.findMessage("m1", new TenantId(1), 2)).thenReturn(Optional.of(input));
+        when(conversations.findConversation("c1", new TenantId(1), 2))
+                .thenReturn(Optional.of(conversation));
+        when(conversations.listMessages("c1", new TenantId(1), 2, 1000)).thenReturn(List.of(input));
+        when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
+        when(admission.renewalIntervalMillis()).thenReturn(333L);
+        doReturn(heartbeat)
+                .when(scheduler)
+                .scheduleWithFixedDelay(
+                        any(Runnable.class), eq(0L), eq(333L), eq(TimeUnit.MILLISECONDS));
+        when(engine.stream(any())).thenReturn(Flux.never());
+
+        GenerationRunner runner = new GenerationRunner(
+                engine, generations, conversations, new GenerationUsageSink() {}, admission,
+                null, new ConversationPromptService(null), null, scheduler);
+        runner.start(created, new TenantId(1), 2);
+
+        verify(scheduler)
+                .scheduleWithFixedDelay(
+                        any(Runnable.class), eq(0L), eq(333L), eq(TimeUnit.MILLISECONDS));
+    }
+
+    @Test
     void recordsRuntimeProjectionForSuccessfulGeneration() {
         ChatEngine engine = mock(ChatEngine.class);
         GenerationRepository generations = mock(GenerationRepository.class);
@@ -266,7 +391,10 @@ class GenerationRunnerStreamTest {
         when(conversations.listMessages("c1", new TenantId(1), 2, 1000)).thenReturn(List.of(input));
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
         when(generations.find("g-runtime", new TenantId(1), 2)).thenReturn(Optional.of(running));
-        when(conversations.updateConversation(any(), anyLong())).thenReturn(1);
+        when(conversations.completeGeneration(
+                        any(GenerationRun.class), anyLong(), any(ConversationMessage.class),
+                        any(Conversation.class), anyLong(), anyList()))
+                .thenReturn(1);
         when(runtime.startRun(
                         any(), eq(AiRunSource.GENERATION), eq("g-runtime"), eq("gpt"), anyString()))
                 .thenReturn(runtimeRun);
@@ -288,13 +416,18 @@ class GenerationRunnerStreamTest {
 
         verify(runtime, atLeastOnce())
                 .append(eq(runtimeRun), any(), anyString(), eq(true), anyString(), any(), any());
-        verify(runtime)
-                .finish(
-                        eq("runtime-1"),
-                        eq(new TenantId(1L)),
-                        eq(2L),
-                        eq(AiRunStatus.COMPLETED),
-                        isNull());
+        verify(conversations)
+                .completeGeneration(
+                        argThat(run -> "runtime-1".equals(run.runtimeRunId())),
+                        anyLong(),
+                        any(ConversationMessage.class),
+                        any(Conversation.class),
+                        anyLong(),
+                        eq(List.of(
+                                AiRunEventType.MODEL_COMPLETED,
+                                AiRunEventType.STEP_COMPLETED,
+                                AiRunEventType.TURN_COMPLETED)));
+        verify(runtime, never()).finish(anyString(), any(TenantId.class), anyLong(), any(), any());
         verify(generations, never()).appendEvent(any(), any(TenantId.class));
     }
 
@@ -316,6 +449,9 @@ class GenerationRunnerStreamTest {
         when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(1);
         when(generations.find("g-runtime-fail", new TenantId(1), 2))
                 .thenReturn(Optional.of(running));
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
         when(runtime.startRun(
                         any(),
                         eq(AiRunSource.GENERATION),

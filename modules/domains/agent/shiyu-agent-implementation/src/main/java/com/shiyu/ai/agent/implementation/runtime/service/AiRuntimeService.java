@@ -363,58 +363,20 @@ public class AiRuntimeService implements AiRuntimePort {
             long ownerUserId,
             AiRunStatus terminal,
             String errorCode) {
-        AiRun current =
-                runs.find(id, tenant(tenantId), ownerUserId)
-                        .orElseThrow(() -> new IllegalArgumentException("run not found"));
         if (terminal != AiRunStatus.COMPLETED
                 && terminal != AiRunStatus.FAILED
                 && terminal != AiRunStatus.CANCELLED) {
             throw new IllegalArgumentException("run finish status must be terminal");
         }
-        if (current.status() == AiRunStatus.COMPLETED
-                || current.status() == AiRunStatus.FAILED
-                || current.status() == AiRunStatus.CANCELLED) {
-            return current;
-        }
-        AiRun next = current.transition(terminal);
-        next =
-                new AiRun(
-                        next.id(),
-                        next.tenantId(),
-                        next.ownerUserId(),
-                        next.appId(),
-                        next.appVersionId(),
-                        next.sourceType(),
-                        next.sourceId(),
-                        next.parentRunId(),
-                        next.traceId(),
-                        next.conversationId(),
-                        next.generationId(),
-                        next.executionId(),
-                        next.model(),
-                        next.promptHash(),
-                        next.status(),
-                        next.promptTokens(),
-                        next.completionTokens(),
-                        next.estimatedUsage(),
-                        next.costSnapshot(),
-                        next.createdAt(),
-                        Instant.now(),
-                        errorCode,
-                        next.version(),
-                        next.lastEventSeq());
-        AiRunEventType terminalEvent =
-                terminal == AiRunStatus.COMPLETED
-                        ? AiRunEventType.RUN_COMPLETED
-                        : terminal == AiRunStatus.CANCELLED
-                                ? AiRunEventType.RUN_CANCELLED
-                                : AiRunEventType.RUN_FAILED;
-        return runs.updateTerminalAndAppend(
-                next,
-                current.version(),
-                terminalEvent,
-                errorCode == null ? "{}" : JSONUtils.toJsonString(Map.of("errorCode", errorCode)),
-                true);
+        return runs.finishGenerationRun(
+                id,
+                tenant(tenantId),
+                ownerUserId,
+                terminal,
+                errorCode,
+                List.of(),
+                null,
+                null);
     }
 
     /**

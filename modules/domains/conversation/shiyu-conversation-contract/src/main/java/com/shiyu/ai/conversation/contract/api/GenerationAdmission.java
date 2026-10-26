@@ -22,6 +22,16 @@ public interface GenerationAdmission {
      * @param actor 调用方上下文。
      * @param run 运行记录。
      */
+    /** Extends a live generation's quota reservation, returning whether it remains active. */
+    default boolean renew(ActorContext actor, GenerationRun run) {
+        return true;
+    }
+
+    /** Interval for renewal callbacks, in milliseconds. */
+    default long renewalIntervalMillis() {
+        return 60_000L;
+    }
+
     default void settle(ActorContext actor, GenerationRun run) {}
 
     /**

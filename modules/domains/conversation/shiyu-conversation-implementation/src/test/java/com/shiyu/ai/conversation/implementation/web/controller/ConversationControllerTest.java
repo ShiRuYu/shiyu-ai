@@ -240,19 +240,36 @@ class ConversationControllerTest {
         ConversationController.CreateConversationRequest create =
                 new ConversationController.CreateConversationRequest();
         create.setTitle("Chat");
+        String createFingerprint =
+                IdempotencyRepository.fingerprint("general", "Chat", null, null, null);
         when(idempotency.find(new TenantId(7), 8, "conversation.create", "key"))
                 .thenReturn(Optional.of("c1"));
+        when(idempotency.findFingerprint(new TenantId(7), 8, "conversation.create", "key"))
+                .thenReturn(Optional.of(createFingerprint), Optional.of(createFingerprint));
         when(conversations.findConversation("c1", new TenantId(7), 8))
                 .thenReturn(Optional.of(conversation));
         assertEquals(conversation, controller.create("key", create).getData());
+        assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> {
+                    create.setTitle("Other");
+                    controller.create("key", create);
+                });
+        create.setTitle("Chat");
 
         when(idempotency.find(new TenantId(7), 8, "conversation.create", "new"))
                 .thenReturn(Optional.empty());
-        when(service.create(new TenantId(7), 8, "general", "Chat", null, null, null))
+        when(service.createIdempotent(
+                        eq(new TenantId(7)), eq(8L), eq("general"), eq("Chat"), isNull(),
+                        isNull(), isNull(), eq("conversation.create"), eq("new"),
+                        eq(createFingerprint), anyString()))
                 .thenReturn(conversation);
-        when(idempotency.claim(new TenantId(7), 8, "conversation.create", "new", "c1"))
-                .thenReturn(false);
         assertEquals(conversation, controller.create("new", create).getData());
+        verify(service)
+                .createIdempotent(
+                        eq(new TenantId(7)), eq(8L), eq("general"), eq("Chat"), isNull(),
+                        isNull(), isNull(), eq("conversation.create"), eq("new"),
+                        eq(createFingerprint), anyString());
 
         ConversationController.MessageRequest request = new ConversationController.MessageRequest();
         request.setContent("next");
@@ -275,41 +292,118 @@ class ConversationControllerTest {
                         0,
                         now,
                         now);
-        ConversationMessage appended =
-                new ConversationMessage(
-                        "m2",
-                        "c1",
-                        "m1",
-                        null,
-                        MessageRole.USER,
-                        List.of(ContentPart.text("next")),
-                        Map.of(),
-                        MessageStatus.COMPLETED,
-                        1,
-                        null,
-                        now,
-                        now);
         when(conversations.findConversation("c1", new TenantId(7), 8))
                 .thenReturn(Optional.of(conversation));
-        when(service.appendUserMessage(any(), eq("next"))).thenReturn(appended);
-        when(service.createGeneration(any(), eq(appended), isNull(), isNull())).thenReturn(run);
-        when(idempotency.claim(new TenantId(7), 8, "conversation.message:c1", "message-key", "g1"))
-                .thenReturn(true);
+        when(service.createMessageGeneration(
+                        eq(conversation),
+                        eq("next"),
+                        isNull(),
+                        isNull(),
+                        same(idempotency),
+                        eq("conversation.message:c1"),
+                        eq("message-key"),
+                        eq(IdempotencyRepository.fingerprint("next", null, null)),
+                        anyString(),
+                        anyString(),
+                        isNull()))
+                .thenReturn(run);
         assertEquals(run, controller.message("c1", "message-key", request).getData());
+        verify(service)
+                .createMessageGeneration(
+                        eq(conversation),
+                        eq("next"),
+                        isNull(),
+                        isNull(),
+                        same(idempotency),
+                        eq("conversation.message:c1"),
+                        eq("message-key"),
+                        eq(IdempotencyRepository.fingerprint("next", null, null)),
+                        anyString(),
+                        anyString(),
+                        isNull());
         verify(runner).start(run, new TenantId(7), 8);
 
         when(idempotency.find(new TenantId(7), 8, "conversation.message:c1", "existing"))
                 .thenReturn(Optional.of("g1"));
-        when(generations.find("g1", new TenantId(7), 8)).thenReturn(Optional.of(run));
-        assertEquals(run, controller.message("c1", "existing", request).getData());
+        when(idempotency.findFingerprint(
+                        new TenantId(7), 8, "conversation.message:c1", "existing"))
+                .thenReturn(Optional.of(IdempotencyRepository.fingerprint("next", null, null)));
+        GenerationRun running =
+                new GenerationRun(
+                        run.id(), run.conversationId(), run.inputMessageId(),
+                        run.assistantMessageId(), run.speakerId(), run.platform(), run.model(),
+                        GenerationStatus.RUNNING, run.promptTokens(), run.completionTokens(),
+                        run.latencyMs(), run.errorCode(), run.lastEventSequence(),
+                        run.cancelRequested(), run.version(), run.createdAt(), run.updatedAt());
+        when(generations.find("g1", new TenantId(7), 8)).thenReturn(Optional.of(running));
+        assertEquals(running, controller.message("c1", "existing", request).getData());
+        request.setContent("changed");
+        assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> controller.message("c1", "existing", request));
+        request.setContent("next");
 
         when(idempotency.find(new TenantId(7), 8, "conversation.message:c1", "denied"))
                 .thenReturn(Optional.empty());
-        when(service.createGeneration(any(), eq(appended), isNull(), isNull()))
-                .thenThrow(new IllegalStateException("busy"));
+        when(service.createMessageGeneration(
+                        eq(conversation),
+                        eq("next"),
+                        isNull(),
+                        isNull(),
+                        same(idempotency),
+                        eq("conversation.message:c1"),
+                        eq("denied"),
+                        eq(IdempotencyRepository.fingerprint("next", null, null)),
+                        anyString(),
+                        anyString(),
+                        isNull()))
+                .thenReturn(run);
+        doThrow(new GenerationAdmissionException("QUOTA_EXCEEDED"))
+                .when(runner)
+                .start(run, new TenantId(7), 8);
         assertThrows(
                 org.springframework.web.server.ResponseStatusException.class,
                 () -> controller.message("c1", "denied", request));
+    }
+
+    @Test
+    void rejectsReplayOfGenerationWhileAdmissionIsPending() {
+        ConversationController.MessageRequest request = new ConversationController.MessageRequest();
+        request.setContent("next");
+        GenerationRun pending =
+                new GenerationRun(
+                        "g-pending",
+                        "c1",
+                        "m2",
+                        null,
+                        null,
+                        "OPENAI",
+                        "gpt",
+                        GenerationStatus.CREATED,
+                        0,
+                        0,
+                        0,
+                        null,
+                        -1,
+                        false,
+                        0,
+                        now,
+                        now);
+        when(idempotency.find(
+                        new TenantId(7), 8, "conversation.message:c1", "pending"))
+                .thenReturn(Optional.of(pending.id()));
+        when(idempotency.findFingerprint(
+                        new TenantId(7), 8, "conversation.message:c1", "pending"))
+                .thenReturn(Optional.of(IdempotencyRepository.fingerprint("next", null, null)));
+        when(generations.find(pending.id(), new TenantId(7), 8)).thenReturn(Optional.of(pending));
+
+        org.springframework.web.server.ResponseStatusException failure =
+                assertThrows(
+                        org.springframework.web.server.ResponseStatusException.class,
+                        () -> controller.message("c1", "pending", request));
+
+        assertEquals(org.springframework.http.HttpStatus.CONFLICT, failure.getStatusCode());
+        verify(runner, never()).start(any(), any(), anyLong());
     }
 
     @Test
@@ -317,12 +411,29 @@ class ConversationControllerTest {
         ConversationController.CreateConversationRequest create =
                 new ConversationController.CreateConversationRequest();
         create.setTitle("Chat");
-        when(service.create(new TenantId(7), 8, "general", "Chat", null, null, null))
-                .thenReturn(conversation);
         when(idempotency.find(new TenantId(7), 8, "conversation.create", "claim-race"))
-                .thenReturn(Optional.empty());
-        when(idempotency.claim(new TenantId(7), 8, "conversation.create", "claim-race", "c1"))
-                .thenReturn(false);
+                .thenReturn(Optional.empty(), Optional.of("c1"));
+        when(service.createIdempotent(
+                        eq(new TenantId(7)),
+                        eq(8L),
+                        eq("general"),
+                        eq("Chat"),
+                        isNull(),
+                        isNull(),
+                        isNull(),
+                        eq("conversation.create"),
+                        eq("claim-race"),
+                        eq(IdempotencyRepository.fingerprint("general", "Chat", null, null, null)),
+                        anyString()))
+                .thenThrow(new IllegalStateException("idempotency key is already in use"));
+        when(idempotency.findFingerprint(
+                        new TenantId(7), 8, "conversation.create", "claim-race"))
+                .thenReturn(
+                        Optional.of(
+                                IdempotencyRepository.fingerprint(
+                                        "general", "Chat", null, null, null)));
+        when(conversations.findConversation("c1", new TenantId(7), 8))
+                .thenReturn(Optional.of(conversation));
         assertEquals(conversation, controller.create("claim-race", create).getData());
 
         ConversationController.UpdateConversationRequest update =
@@ -355,18 +466,38 @@ class ConversationControllerTest {
                         0,
                         now,
                         now);
-        when(service.appendUserMessage(any(), eq("admit"))).thenReturn(message);
-        when(service.createGeneration(any(), eq(message), isNull(), isNull())).thenReturn(run);
-        when(idempotency.claim(new TenantId(7), 8, "conversation.message:c1", "race", "g-race"))
-                .thenReturn(false);
+        when(service.createMessageGeneration(
+                        eq(conversation),
+                        eq("admit"),
+                        isNull(),
+                        isNull(),
+                        same(idempotency),
+                        eq("conversation.message:c1"),
+                        eq("race"),
+                        eq(IdempotencyRepository.fingerprint("admit", null, null)),
+                        anyString(),
+                        anyString(),
+                        isNull()))
+                .thenThrow(new IllegalStateException("idempotency key is already in use"));
         when(idempotency.find(new TenantId(7), 8, "conversation.message:c1", "race"))
                 .thenReturn(Optional.empty());
         assertThrows(
                 org.springframework.web.server.ResponseStatusException.class,
                 () -> controller.message("c1", "race", request));
 
-        when(idempotency.claim(new TenantId(7), 8, "conversation.message:c1", "quota", "g-race"))
-                .thenReturn(true);
+        when(service.createMessageGeneration(
+                        eq(conversation),
+                        eq("admit"),
+                        isNull(),
+                        isNull(),
+                        same(idempotency),
+                        eq("conversation.message:c1"),
+                        eq("quota"),
+                        eq(IdempotencyRepository.fingerprint("admit", null, null)),
+                        anyString(),
+                        anyString(),
+                        isNull()))
+                .thenReturn(run);
         doThrow(new GenerationAdmissionException("QUOTA_EXCEEDED"))
                 .when(runner)
                 .start(run, new TenantId(7), 8);

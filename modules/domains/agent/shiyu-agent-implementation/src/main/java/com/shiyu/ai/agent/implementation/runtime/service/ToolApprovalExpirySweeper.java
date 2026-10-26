@@ -41,15 +41,18 @@ public final class ToolApprovalExpirySweeper {
         this.completions = completions;
     }
 
+    private static final java.time.Duration COMPENSATION_LEASE = java.time.Duration.ofMinutes(2);
+
     @Scheduled(
             initialDelayString = "${shiyu.agent.approval-expiry-sweep-ms:30000}",
             fixedDelayString = "${shiyu.agent.approval-expiry-sweep-ms:30000}")
     public void sweep() {
-        for (ToolApproval candidate : repository.findOverdueRunning(Instant.now(), 100)) {
+        Instant now = Instant.now();
+        for (ToolApproval candidate : repository.findExpiryCompensationWork(now, 100)) {
             try {
                 TenantId tenant = new TenantId(candidate.tenantId());
                 TenantScope.withTenant(tenant, () -> {
-                    expireAndCancel(candidate, tenant);
+                    expireAndCancel(candidate, tenant, now);
                     return null;
                 });
             } catch (RuntimeException failure) {
@@ -58,24 +61,47 @@ public final class ToolApprovalExpirySweeper {
         }
     }
 
-    private void expireAndCancel(ToolApproval candidate, TenantId tenant) {
-        ToolApproval approval = transitions.decide(
-                candidate.id(), tenant, candidate.ownerUserId(), ToolApprovalStatus.REJECTED);
-        if (approval.status() != ToolApprovalStatus.EXPIRED) return;
-
-        AiRun run = runs.requireRun(approval.runId(), tenant, approval.ownerUserId());
-        if (run.executionId() == null) return;
-        ActorContext actor = new ActorContext(tenant, new UserId(approval.ownerUserId()), false);
-        ExecutionStatus status = agents.getStatus(actor, run.executionId());
-        if (status == ExecutionStatus.PAUSED) {
-            agents.cancel(actor, run.executionId());
-            status = ExecutionStatus.CANCELLED;
+    private void expireAndCancel(ToolApproval candidate, TenantId tenant, Instant now) {
+        ToolApproval approval = candidate;
+        if (approval.status() == ToolApprovalStatus.PENDING) {
+            approval = transitions.expireOverdue(
+                    candidate.id(), tenant, candidate.ownerUserId());
         }
-        AgentConversationCompletionPort completion = completions.getIfAvailable();
-        if (status != null && status.isTerminal() && completion != null
-                && run.conversationId() != null) {
-            Execution result = agents.getExecution(actor, run.executionId());
-            completion.completeApprovedRun(actor, run, result);
+        if (approval == null || approval.status() != ToolApprovalStatus.EXPIRED
+                && approval.status() != ToolApprovalStatus.COMPENSATING) return;
+
+        Instant leaseUntil = now.plus(COMPENSATION_LEASE);
+        if (repository.claimExpiryCompensation(approval, now, leaseUntil) != 1) return;
+        try {
+            AiRun run = runs.requireRun(approval.runId(), tenant, approval.ownerUserId());
+            if (run.executionId() != null && !run.executionId().isBlank()) {
+                ActorContext actor = new ActorContext(
+                        tenant, new UserId(approval.ownerUserId()), false);
+                ExecutionStatus status = agents.getStatus(actor, run.executionId());
+                if (status == ExecutionStatus.PAUSED) {
+                    agents.cancel(actor, run.executionId());
+                    status = ExecutionStatus.CANCELLED;
+                }
+                if (status == null || !status.isTerminal()) {
+                    throw new IllegalStateException("expired approval execution is not terminal yet");
+                }
+                if (run.conversationId() != null) {
+                    AgentConversationCompletionPort completion = completions.getIfAvailable();
+                    if (completion == null) {
+                        throw new IllegalStateException("conversation completion service is unavailable");
+                    }
+                    Execution result = agents.getExecution(actor, run.executionId());
+                    completion.completeApprovedRun(actor, run, result);
+                }
+            }
+            if (repository.completeExpiryCompensation(
+                    approval.id(), tenant, approval.ownerUserId(), leaseUntil,
+                    Instant.now()) != 1) {
+                throw new IllegalStateException("expired approval compensation lease was lost");
+            }
+        } catch (RuntimeException failure) {
+            // Keep COMPENSATING with its lease. The row becomes claimable when the lease expires.
+            throw failure;
         }
     }
 }

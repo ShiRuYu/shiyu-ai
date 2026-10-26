@@ -39,7 +39,7 @@ shiyu:
       password: ${SHIYU_REDIS_PASSWORD:}
       key-prefix: ${SHIYU_REDIS_KEY_PREFIX:shiyu}
     event:
-      provider: ${SHIYU_INFRA_EVENT_PROVIDER:in-process}
+      provider: ${SHIYU_INFRA_EVENT_PROVIDER:}
       topic: ${SHIYU_KAFKA_TOPIC:shiyu.domain-events.v1}
       bootstrap-servers: ${SHIYU_KAFKA_BOOTSTRAP_SERVERS:127.0.0.1:9092}
       dead-letter-topic: ${SHIYU_KAFKA_DEAD_LETTER_TOPIC:shiyu.domain-events.v1.dlq}
@@ -106,9 +106,11 @@ shiyu:
       namespace: ${SHIYU_STORAGE_MIGRATION_NAMESPACE:}
   # VectorStore 配置（Embedding 向量检索）；新 provider 支持 inmemory、jvector、pgvector
   vector-store:
-    type: jvector           # 兼容别名：inmemory | jvector | pgvector
+    type: ${SHIYU_VECTOR_STORE_TYPE:jvector} # 兼容别名：inmemory | jvector | pgvector
     dimension: 512
     data-dir: ${app.home}/data/vector
+  memory:
+    embedding-profile: ${SHIYU_MEMORY_EMBEDDING_PROFILE:BGE-small-zh-v1.5}
   knowledge:
     data-dir: ${app.home}/data
     default-space-code: default

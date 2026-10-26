@@ -11,9 +11,6 @@ import com.shiyu.ai.kernel.context.ActorContext;
 
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * 校验并控制 Quota 生成 相关请求是否允许进入处理流程。
  */
@@ -23,7 +20,6 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
      * 配额，表示当前对象中的对应属性。
      */
     private final QuotaGovernance quota;
-    private final Map<String, Reservation> reservations = new ConcurrentHashMap<>();
 
     /**
      * 执行 Quota 生成 相关业务操作，并维护必要的状态和协作关系。
@@ -44,11 +40,11 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
     @Override
     public void reserve(ActorContext actor, GenerationRun run, int estimatedPromptTokens) {
         QuotaDecision decision =
-                quota.reserve(actor, new QuotaRequest(Math.max(0, estimatedPromptTokens), 0));
+                quota.reserve(
+                        actor,
+                        new QuotaRequest(Math.max(0, estimatedPromptTokens), 0),
+                        run.id());
         if (!decision.allowed()) throw new GenerationAdmissionException(decision.errorCode());
-        reservations.put(
-                run.id(),
-                new Reservation(decision.reservationId(), Math.max(0, estimatedPromptTokens)));
     }
 
     /**
@@ -58,20 +54,21 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
      * @param run 用于完成本次业务处理的 run 参数。
      */
     @Override
+    public boolean renew(ActorContext actor, GenerationRun run) {
+        return quota.renew(actor, run.id());
+    }
+
+    @Override
+    public long renewalIntervalMillis() {
+        return quota.reservationRenewalIntervalMillis();
+    }
+
+    @Override
     public void settle(ActorContext actor, GenerationRun run) {
-        reservations.computeIfPresent(
+        quota.settle(
+                actor,
                 run.id(),
-                (runId, reservation) -> {
-                    quota.settle(
-                            actor,
-                            reservation.id(),
-                            new QuotaUsage(
-                                    safe(run.promptTokens()) > 0
-                                            ? safe(run.promptTokens())
-                                            : reservation.estimatedPromptTokens(),
-                                    safe(run.completionTokens())));
-                    return null;
-                });
+                new QuotaUsage(safe(run.promptTokens()), safe(run.completionTokens())));
     }
 
     /**
@@ -82,20 +79,11 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
      */
     @Override
     public void release(ActorContext actor, GenerationRun run) {
-        reservations.computeIfPresent(
-                run.id(),
-                (runId, reservation) -> {
-                    quota.release(actor, reservation.id());
-                    return null;
-                });
+        quota.release(actor, run.id());
     }
 
     private static int safe(long value) {
         return (int) Math.min(Integer.MAX_VALUE, Math.max(0, value));
     }
 
-    /**
-     * 封装 Reservation 相关的不可变数据及其字段约束。
-     */
-    private record Reservation(long id, int estimatedPromptTokens) {}
 }

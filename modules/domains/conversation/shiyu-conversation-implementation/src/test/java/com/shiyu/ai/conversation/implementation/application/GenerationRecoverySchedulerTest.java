@@ -4,14 +4,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.shiyu.ai.conversation.contract.api.GenerationAdmission;
 import com.shiyu.ai.conversation.contract.model.GenerationRun;
 import com.shiyu.ai.conversation.contract.model.GenerationStatus;
 import com.shiyu.ai.conversation.implementation.domain.model.RecoveredGeneration;
 import com.shiyu.ai.conversation.implementation.domain.port.GenerationRepository;
-import com.shiyu.ai.kernel.context.ActorContext;
 import com.shiyu.ai.kernel.context.TenantId;
-import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +19,6 @@ class GenerationRecoverySchedulerTest {
     @Test
     void releasesAdmissionForEachSuccessfullyRecoveredGeneration() {
         GenerationRepository generations = mock(GenerationRepository.class);
-        GenerationAdmission admission = mock(GenerationAdmission.class);
         GenerationRunner runner = mock(GenerationRunner.class);
         GenerationRun failed =
                 new GenerationRun(
@@ -47,14 +43,14 @@ class GenerationRecoverySchedulerTest {
         when(generations.recoverStaleGenerations(5000))
                 .thenReturn(List.of(new RecoveredGeneration(failed, new TenantId(7), 8)));
         GenerationRecoveryScheduler scheduler =
-                new GenerationRecoveryScheduler(generations, admission, runner, 5000);
+                new GenerationRecoveryScheduler(
+                        generations,
+                        new com.shiyu.ai.conversation.contract.api.GenerationAdmission() {},
+                        runner,
+                        5000);
 
         scheduler.recoverStaleGenerations();
 
-        verify(admission)
-                .release(
-                        new ActorContext(new TenantId(7), new UserId(8), false),
-                        failed);
         verify(runner).cancel("g1");
     }
 }

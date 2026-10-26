@@ -121,6 +121,61 @@ class AgentExecutionRepositoryCoverageTest {
     }
 
     @Test
+    void conditionallyUpdatesExecutionAndCheckpointWithoutChangingStatus() throws Exception {
+        AgentExecutionMapper mapper = mock(AgentExecutionMapper.class);
+        AgentExecutionRepositoryImpl repository = new AgentExecutionRepositoryImpl();
+        inject(repository, "agentExecutionMapper", mapper);
+        when(mapper.updateByQuery(any(AgentExecutionDO.class), any(QueryWrapper.class)))
+                .thenReturn(1, 0, 1);
+        AgentExecutionBO execution = new AgentExecutionBO();
+        execution.setExecutionId("execution-1");
+        execution.setStatus(4);
+
+        try (var conversion = mockStatic(MapstructUtils.class)) {
+            conversion.when(() -> MapstructUtils.convert(
+                            any(AgentExecutionBO.class), eq(AgentExecutionDO.class)))
+                    .thenAnswer(invocation -> {
+                        AgentExecutionBO source = invocation.getArgument(0);
+                        AgentExecutionDO update = new AgentExecutionDO();
+                        update.setExecutionId(source.getExecutionId());
+                        update.setStatus(4);
+                        return update;
+                    });
+
+            assertEquals(1, repository.updateIfStatus(TENANT, execution, 0));
+            assertEquals(0, repository.updateCheckpointIfStatus(
+                    TENANT, "execution-1", "checkpoint-2", 0));
+            assertEquals(1, repository.updateCheckpointIfStatus(
+                    TENANT, "execution-1", "checkpoint-2", 3));
+
+            org.mockito.ArgumentCaptor<AgentExecutionDO> updates =
+                    org.mockito.ArgumentCaptor.forClass(AgentExecutionDO.class);
+            org.mockito.ArgumentCaptor<QueryWrapper> queries =
+                    org.mockito.ArgumentCaptor.forClass(QueryWrapper.class);
+            verify(mapper, times(3)).updateByQuery(updates.capture(), queries.capture());
+            assertEquals(4, updates.getAllValues().get(0).getStatus());
+            assertNull(updates.getAllValues().get(1).getStatus());
+            assertNull(updates.getAllValues().get(2).getStatus());
+            assertEquals("checkpoint-2", updates.getAllValues().get(2).getLastCheckpointId());
+            String conditionalUpdateSql = queries.getAllValues().get(0).toSQL().toLowerCase();
+            String runningCheckpointSql = queries.getAllValues().get(1).toSQL().toLowerCase();
+            String pausedCheckpointSql = queries.getAllValues().get(2).toSQL().toLowerCase();
+            assertTrue(conditionalUpdateSql.contains("status"));
+            assertTrue(conditionalUpdateSql.contains("in"));
+            assertTrue(conditionalUpdateSql.contains("0"));
+            assertTrue(conditionalUpdateSql.contains("3"));
+            assertTrue(runningCheckpointSql.contains("status"));
+            assertTrue(pausedCheckpointSql.contains("status"));
+            assertTrue(runningCheckpointSql.contains("0"));
+            assertTrue(pausedCheckpointSql.contains("3"));
+            assertThrows(IllegalArgumentException.class,
+                    () -> repository.updateIfStatus(TENANT, new AgentExecutionBO(), 0));
+            assertThrows(IllegalArgumentException.class,
+                    () -> repository.updateCheckpointIfStatus(TENANT, " ", "checkpoint-2", 3));
+        }
+    }
+
+    @Test
     void atomicallyClaimsOnlyPausedExecutionsWithTheExpectedCheckpoint() throws Exception {
         AgentExecutionMapper mapper = mock(AgentExecutionMapper.class);
         AgentExecutionRepositoryImpl repository = new AgentExecutionRepositoryImpl();

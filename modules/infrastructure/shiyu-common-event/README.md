@@ -21,7 +21,7 @@
 3. `JdbcOutboxEventPublisher` 先把待投递事件写入数据库；`KafkaOutboxEventPublisher` 在 Kafka 路径中接续投递，消费者可使用 `EventConsumptionDeduplicator` 处理重复消息。
 4. 业务处理方仍必须定义自己的事件语义、事务边界与幂等行为；选择 Kafka 也不能把“至少一次投递”误写成“恰好一次业务执行”。
 
-默认 Bootstrap 不依赖该模块。启用时需要应用显式引入依赖、配置事件 provider，并准备对应数据库/Kafka 基础设施。
+默认 Bootstrap 不依赖该模块，因此应用默认不装配事件 provider。引入本模块后，若未设置 `shiyu.infrastructure.event.provider`，模块默认使用 `in-process`；该 provider 仅在当前进程内分发，不保证崩溃后重放。显式设置为 `postgres-outbox` 或 `kafka` 时，分别启用 PostgreSQL outbox 或 Kafka relay，并需准备对应数据库、表结构和 Kafka broker。应用若配置 provider 却未引入本模块，平台组合启动校验会失败并提示补充依赖或移除配置。
 
 包职责按实现边界划分：
 
@@ -35,7 +35,7 @@
 
 - **前提**：默认 Bootstrap 不依赖本模块，先显式加入 Maven 依赖及自动配置入口；使用 JDBC outbox 要准备表和数据源，Kafka relay 还要准备 broker 与消费者幂等策略。
 - **使用**：设置 `shiyu.infrastructure.event.provider` 选择 provider；业务方注入 `DomainEventPublisher` 发布 `DomainEventEnvelope`。单进程通知可选进程内 provider；需要可恢复投递时选 outbox 路径并配置 relay。
-- **限制**：进程内事件没有崩溃重放保证；outbox/Kafka 也不消除重复投递，消费者必须按事件标识去重。仅在 `application.yml` 写 provider、但不引入该模块，不会启用事件实现。
+- **限制**：进程内事件没有崩溃重放保证；outbox/Kafka 也不消除重复投递，消费者必须按事件标识去重。仅在 `application.yml` 写 provider、但不引入该模块，平台组合启动校验会报错；未配置 provider 时默认应用保持事件能力未启用。
 
 ## 边界
 

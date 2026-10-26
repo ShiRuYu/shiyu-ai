@@ -5,6 +5,7 @@ import com.shiyu.ai.memory.implementation.domain.magma.port.MagmaMemoryRepositor
 import com.shiyu.ai.memory.implementation.domain.magma.port.MemoryAccessPolicy;
 import com.shiyu.ai.memory.implementation.domain.magma.port.MemoryGovernancePort;
 import com.shiyu.ai.memory.implementation.domain.magma.port.MemorySemanticIndex;
+import com.shiyu.ai.memory.implementation.domain.magma.port.MemorySemanticIndexUnavailableException;
 
 import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.memory.contract.api.MemoryIngestionPort;
@@ -163,8 +164,21 @@ public class MagmaMemoryService
     }
 
     public void confirm(TenantId tenantId, String eventId) {
-        requireEvent(tenantId, eventId);
+        MemoryEvent event = requireEvent(tenantId, eventId);
         repository.updateEventStatus(tenantId, eventId, MemoryEventStatus.ACTIVE);
+        if (event.status() != MemoryEventStatus.ACTIVE) {
+            try {
+                semanticIndex.upsert(
+                        new MemoryEvent(
+                                event.id(), event.tenantId(), event.namespace(), event.subjectType(),
+                                event.subjectId(), event.eventType(), event.content(), event.occurredAt(),
+                                event.sourceType(), event.sourceId(), event.attributes(), event.confidence(),
+                                event.importance(), MemoryEventStatus.ACTIVE, event.confirmationPolicy(),
+                                event.createdAt(), Instant.now()));
+            } catch (RuntimeException ex) {
+                log.warn("memory semantic confirmation index update failed: {}", ex.getMessage());
+            }
+        }
     }
 
     public void revoke(TenantId tenantId, String eventId) {
@@ -258,6 +272,8 @@ public class MagmaMemoryService
         List<MemoryPath> semantic = new ArrayList<>();
         try {
             semantic.addAll(semanticIndex.search(query, query.maxNodes()));
+        } catch (MemorySemanticIndexUnavailableException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             log.warn("semantic recall failed; using durable anchors: {}", ex.getMessage());
         }

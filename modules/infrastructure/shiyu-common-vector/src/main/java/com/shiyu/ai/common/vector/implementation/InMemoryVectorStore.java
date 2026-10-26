@@ -4,6 +4,7 @@ import com.shiyu.ai.common.vector.api.VectorStore;
 import com.shiyu.ai.common.vector.model.VectorRecord;
 import com.shiyu.ai.common.vector.model.VectorSearchRequest;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -136,6 +137,11 @@ public class InMemoryVectorStore implements VectorStore {
      * @param id 用于定位目标业务对象的标识。
      */
     @Override
+    public int count(Map<String, Object> filter) {
+        return (int) store.values().stream().filter(record -> applyFilter(record, filter)).count();
+    }
+
+    @Override
     public void delete(String id) {
         store.remove(id);
     }
@@ -175,12 +181,26 @@ public class InMemoryVectorStore implements VectorStore {
             Object expected = entry.getValue();
             if (Objects.equals(expected, value)) continue;
             if (expected instanceof Number expectedNumber && value instanceof Number actualNumber) {
-                if (Double.compare(expectedNumber.doubleValue(), actualNumber.doubleValue()) == 0)
-                    continue;
+                if (numbersEqual(expectedNumber, actualNumber)) continue;
             }
             return false;
         }
         return true;
+    }
+
+    private boolean numbersEqual(Number first, Number second) {
+        try {
+            return new BigDecimal(first.toString()).compareTo(new BigDecimal(second.toString())) == 0;
+        } catch (NumberFormatException exception) {
+            if (isFloatingPoint(first) && isFloatingPoint(second)) {
+                return Double.compare(first.doubleValue(), second.doubleValue()) == 0;
+            }
+            return false;
+        }
+    }
+
+    private boolean isFloatingPoint(Number number) {
+        return number instanceof Double || number instanceof Float;
     }
 
     private float cosineSimilarity(float[] a, float[] b) {

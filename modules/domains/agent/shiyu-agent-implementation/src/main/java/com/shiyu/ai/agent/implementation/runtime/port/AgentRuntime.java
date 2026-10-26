@@ -36,8 +36,8 @@ public interface AgentRuntime {
     /** 恢复执行 */
     Execution resume(ActorContext actor, String executionId);
 
-    /** 取消执行 */
-    void cancel(ActorContext actor, String executionId);
+    /** 取消执行并返回持久化后生效的状态 */
+    Execution cancel(ActorContext actor, String executionId);
 
     /** 查询执行状态 */
     ExecutionStatus getStatus(ActorContext actor, String executionId);

@@ -47,7 +47,93 @@ public final class AgentRuntimeStateStore {
         activeExecutions.put(execution.getExecutionId(), execution);
     }
 
-    public void save(ActorContext actor, Execution execution) {
+    public Execution effective(ActorContext actor, Execution execution) {
+        AgentExecutionBO persisted =
+                executionRepository.selectByExecutionId(
+                        actor.tenantId(), execution.getExecutionId());
+        if (persisted == null) return execution;
+        Execution authoritative = rebuild(persisted);
+        execution.reconcile(authoritative);
+        return execution;
+    }
+
+    public Execution save(ActorContext actor, Execution execution) {
+        if (execution.isSuperseded()) return execution;
+        AgentExecutionBO existing =
+                executionRepository.selectByExecutionId(
+                        actor.tenantId(), execution.getExecutionId());
+        if (existing == null) {
+            AgentExecutionBO inserted = toRecord(actor, execution, null);
+            executionRepository.insert(actor.tenantId(), inserted);
+            return execution;
+        }
+
+        ExecutionStatus persistedStatus = resolveStatus(existing);
+        ExecutionStatus requestedStatus = execution.getStatus();
+        if (persistedStatus == null || persistedStatus.isTerminal()) {
+            execution.reconcile(rebuild(existing));
+            return execution;
+        }
+        if (!canTransition(persistedStatus, requestedStatus)) {
+            execution.reconcile(rebuild(existing));
+            return execution;
+        }
+
+        AgentExecutionBO update = toRecord(actor, execution, existing);
+        if (executionRepository.updateIfStatus(
+                        actor.tenantId(), update, existing.getStatus())
+                == 1) {
+            return execution;
+        }
+
+        AgentExecutionBO winner =
+                executionRepository.selectByExecutionId(
+                        actor.tenantId(), execution.getExecutionId());
+        if (winner == null) throw new IllegalStateException("执行记录在状态更新期间消失");
+        execution.reconcile(rebuild(winner));
+        return execution;
+    }
+
+    /** 仅更新检查点指针，不写入可能过期的执行状态快照。 */
+    public Execution recordCheckpoint(
+            ActorContext actor, Execution execution, String checkpointId) {
+        ExecutionStatus requestedStatus = execution.getStatus();
+        if (requestedStatus != ExecutionStatus.RUNNING
+                && requestedStatus != ExecutionStatus.PAUSED) {
+            throw new IllegalStateException("只有活动执行可以记录检查点");
+        }
+        Integer expectedStatus = toStoredStatus(requestedStatus);
+        if (executionRepository.updateCheckpointIfStatus(
+                        actor.tenantId(), execution.getExecutionId(), checkpointId, expectedStatus)
+                == 1) {
+            execution.setLastCheckpointId(checkpointId);
+            return execution;
+        }
+        AgentExecutionBO persisted =
+                executionRepository.selectByExecutionId(
+                        actor.tenantId(), execution.getExecutionId());
+        if (persisted == null) throw new IllegalStateException("执行记录在检查点更新期间消失");
+        if (requestedStatus == ExecutionStatus.RUNNING
+                && resolveStatus(persisted) == ExecutionStatus.PAUSED) {
+            if (executionRepository.updateCheckpointIfStatus(
+                            actor.tenantId(), execution.getExecutionId(), checkpointId,
+                            toStoredStatus(ExecutionStatus.PAUSED))
+                    == 1) {
+                persisted.setLastCheckpointId(checkpointId);
+            } else {
+                persisted = executionRepository.selectByExecutionId(
+                        actor.tenantId(), execution.getExecutionId());
+                if (persisted == null) {
+                    throw new IllegalStateException("执行记录在检查点更新期间消失");
+                }
+            }
+        }
+        execution.reconcile(rebuild(persisted));
+        return execution;
+    }
+
+    private static AgentExecutionBO toRecord(
+            ActorContext actor, Execution execution, AgentExecutionBO existing) {
         AgentExecutionBO bo = new AgentExecutionBO();
         bo.setExecutionId(execution.getExecutionId());
         bo.setAgentId(execution.getAgentId());
@@ -62,18 +148,24 @@ public final class AgentRuntimeStateStore {
         bo.setStartTime(execution.getStartTime());
         bo.setEndTime(execution.getEndTime());
         bo.setDurationMs(execution.getDurationMs());
-
-        AgentExecutionBO existing =
-                executionRepository.selectByExecutionId(
-                        actor.tenantId(), execution.getExecutionId());
         if (existing != null) {
             bo.setUserId(existing.getUserId());
             bo.setId(existing.getId());
-            executionRepository.update(actor.tenantId(), bo);
         } else {
             bo.setUserId(actor.userId().value());
-            executionRepository.insert(actor.tenantId(), bo);
         }
+        return bo;
+    }
+
+    private static boolean canTransition(
+            ExecutionStatus persisted, ExecutionStatus requested) {
+        if (persisted == requested) return true;
+        return switch (requested) {
+            case PAUSED, COMPLETED, FAILED -> persisted == ExecutionStatus.RUNNING;
+            case CANCELLED -> persisted == ExecutionStatus.RUNNING
+                    || persisted == ExecutionStatus.PAUSED;
+            case PENDING, RUNNING -> false;
+        };
     }
 
     /** 原子地将持久化的暂停执行认领为运行中。 */
@@ -124,9 +216,13 @@ public final class AgentRuntimeStateStore {
     }
 
     public void cleanup(ActorContext actor, Execution execution) {
-        if (execution.getStatus().isTerminal()) {
+        if (execution.isSuperseded()) {
+            activeExecutions.remove(execution.getExecutionId());
+        } else if (execution.getStatus().isTerminal()) {
             activeExecutions.remove(execution.getExecutionId());
             checkpointManager.cleanCheckpoints(actor.tenantId(), execution.getExecutionId());
+        } else if (execution.getStatus() == ExecutionStatus.PAUSED) {
+            activeExecutions.remove(execution.getExecutionId());
         } else {
             activeExecutions.put(execution.getExecutionId(), execution);
         }

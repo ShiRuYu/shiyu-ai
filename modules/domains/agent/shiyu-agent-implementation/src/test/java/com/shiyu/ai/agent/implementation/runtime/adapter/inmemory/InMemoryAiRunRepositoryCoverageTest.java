@@ -11,11 +11,15 @@ import com.shiyu.ai.kernel.context.TenantId;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 验证 In 记忆 AI 运行 Repository Coverage 相关功能、边界条件、异常路径和协作行为。
@@ -250,6 +254,27 @@ class InMemoryAiRunRepositoryCoverageTest {
     }
 
     @Test
+    void escapesControlCharactersInTerminalErrorCodesAsValidJson() {
+        InMemoryAiRunRepository repository = new InMemoryAiRunRepository();
+        AiRuntimeService runtime = new AiRuntimeService(repository, new InMemoryAiAppRepository());
+        AiRun run = runtime.startRun(
+                new AiRunContext(new TenantId(1), 2, null, null, null, null, null, null, Map.of()),
+                AiRunSource.API, "api", "model", "prompt");
+        String errorCode = "line\nquote\"\\slash\ttab\u0001";
+
+        runtime.finish(run.id(), new TenantId(1), 2, AiRunStatus.FAILED, errorCode);
+        List<AiRunEvent> terminal = repository.events(run.id(), new TenantId(1), 2, 0, 100)
+                .stream().filter(event -> event.type() == AiRunEventType.RUN_FAILED).toList();
+
+        assertEquals(1, terminal.size());
+        assertEquals("{\"errorCode\":\"line\\nquote\\\"\\\\slash\\ttab\\u0001\"}",
+                terminal.getFirst().payload());
+        runtime.finish(run.id(), new TenantId(1), 2, AiRunStatus.FAILED, errorCode);
+        assertEquals(1, repository.events(run.id(), new TenantId(1), 2, 0, 100)
+                .stream().filter(event -> event.type() == AiRunEventType.RUN_FAILED).count());
+    }
+
+    @Test
     void readsEventStreamSafelyWhileEventsAreAppended() throws Exception {
         InMemoryAiRunRepository repository = new InMemoryAiRunRepository();
         AiRuntimeService runtime = new AiRuntimeService(repository, new InMemoryAiAppRepository());
@@ -367,6 +392,196 @@ class InMemoryAiRunRepositoryCoverageTest {
                                 "{}",
                                 false,
                                 Instant.now()));
+    }
+
+    @Test
+    void losingTerminalTransitionRollsBackItsPrerequisiteEvents() {
+        InMemoryAiRunRepository repository = new InMemoryAiRunRepository() {
+            @Override
+            public int update(AiRun run, long expectedVersion) {
+                if (run.status() == AiRunStatus.FAILED) return 0;
+                return super.update(run, expectedVersion);
+            }
+        };
+        AiRuntimeService runtime = new AiRuntimeService(repository, new InMemoryAiAppRepository());
+        AiRun run = runtime.startRun(
+                new AiRunContext(
+                        new TenantId(3), 4, null, null, null, null, "execution", null, Map.of()),
+                AiRunSource.AGENT,
+                "agent",
+                null,
+                "prompt");
+        List<AiRunEvent> previousEvents =
+                repository.events(run.id(), new TenantId(3), 4, 0, 100);
+        AiRun previousRun = repository.find(run.id(), new TenantId(3), 4).orElseThrow();
+
+        assertThrows(IllegalStateException.class, () -> repository.finishGenerationRun(
+                run.id(), new TenantId(3), 4, AiRunStatus.FAILED, "failed",
+                List.of(AiRunEventType.TURN_STARTED), "turn-1", "step-1"));
+
+        assertEquals(previousRun, repository.find(run.id(), new TenantId(3), 4).orElseThrow());
+        assertEquals(previousEvents, repository.events(run.id(), new TenantId(3), 4, 0, 100));
+    }
+
+    @Test
+    void repeatedFailureWithChangedErrorPayloadIsRejectedAfterOneLatestEventRead() {
+        AtomicInteger eventReads = new AtomicInteger();
+        InMemoryAiRunRepository repository = new InMemoryAiRunRepository() {
+            @Override
+            public List<AiRunEvent> events(
+                    String runId, TenantId tenantId, long ownerUserId, long afterSeq, int limit) {
+                eventReads.incrementAndGet();
+                return super.events(runId, tenantId, ownerUserId, afterSeq, limit);
+            }
+        };
+        AiRuntimeService runtime = new AiRuntimeService(repository, new InMemoryAiAppRepository());
+        AiRun run = runtime.startRun(
+                new AiRunContext(
+                        new TenantId(3), 4, null, null, null, null, "execution", null, Map.of()),
+                AiRunSource.AGENT,
+                "agent",
+                null,
+                "prompt");
+        runtime.finish(run.id(), new TenantId(3), 4, AiRunStatus.FAILED, "first-error");
+        eventReads.set(0);
+
+        assertThrows(IllegalStateException.class, () ->
+                runtime.finish(run.id(), new TenantId(3), 4, AiRunStatus.FAILED, "other-error"));
+
+        assertEquals(1, eventReads.get());
+    }
+
+    @Test
+    void repeatedTerminalReconciliationRepairsAnAheadEventSequencePointer() {
+        AtomicInteger eventReads = new AtomicInteger();
+        AtomicLong requestedAfterSequence = new AtomicLong(-1);
+        AtomicBoolean exposeAheadPointer = new AtomicBoolean();
+        InMemoryAiRunRepository repository = new InMemoryAiRunRepository() {
+            @Override
+            public java.util.Optional<AiRun> find(
+                    String id, TenantId tenantId, long ownerUserId) {
+                return super.find(id, tenantId, ownerUserId)
+                        .map(run -> exposeAheadPointer.get()
+                                ? run.withLastEventSeq(run.lastEventSeq() + 5)
+                                : run);
+            }
+
+            @Override
+            public List<AiRunEvent> events(
+                    String runId, TenantId tenantId, long ownerUserId, long afterSeq, int limit) {
+                eventReads.incrementAndGet();
+                requestedAfterSequence.set(afterSeq);
+                return super.events(runId, tenantId, ownerUserId, afterSeq, limit);
+            }
+        };
+        AiRuntimeService runtime = new AiRuntimeService(repository, new InMemoryAiAppRepository());
+        AiRun run = runtime.startRun(
+                new AiRunContext(
+                        new TenantId(3), 4, null, null, null, null, "execution", null, Map.of()),
+                AiRunSource.AGENT,
+                "agent",
+                null,
+                "prompt");
+        AiRun completed = runtime.finish(
+                run.id(), new TenantId(3), 4, AiRunStatus.COMPLETED, null);
+        long terminalSequence = completed.lastEventSeq();
+        exposeAheadPointer.set(true);
+        eventReads.set(0);
+
+        AiRun replayed = runtime.finish(
+                run.id(), new TenantId(3), 4, AiRunStatus.COMPLETED, null);
+        exposeAheadPointer.set(false);
+
+        assertEquals(terminalSequence, replayed.lastEventSeq());
+        assertEquals(terminalSequence, repository.find(
+                run.id(), new TenantId(3), 4).orElseThrow().lastEventSeq());
+        assertEquals(1, eventReads.get());
+        assertEquals(terminalSequence + 4, requestedAfterSequence.get());
+    }
+
+    @Test
+    void repeatedTerminalReconciliationRepairsAPointerBehindTheTerminalEvent() {
+        AtomicInteger eventReads = new AtomicInteger();
+        AtomicBoolean exposeBehindPointer = new AtomicBoolean();
+        InMemoryAiRunRepository repository = new InMemoryAiRunRepository() {
+            @Override
+            public java.util.Optional<AiRun> find(
+                    String id, TenantId tenantId, long ownerUserId) {
+                return super.find(id, tenantId, ownerUserId)
+                        .map(run -> exposeBehindPointer.get()
+                                ? run.withLastEventSeq(run.lastEventSeq() - 1)
+                                : run);
+            }
+
+            @Override
+            public List<AiRunEvent> events(
+                    String runId, TenantId tenantId, long ownerUserId, long afterSeq, int limit) {
+                eventReads.incrementAndGet();
+                return super.events(
+                        runId,
+                        tenantId,
+                        ownerUserId,
+                        exposeBehindPointer.get() ? afterSeq + 1 : afterSeq,
+                        limit);
+            }
+        };
+        AiRuntimeService runtime = new AiRuntimeService(repository, new InMemoryAiAppRepository());
+        AiRun run = runtime.startRun(
+                new AiRunContext(
+                        new TenantId(3), 4, null, null, null, null, "execution", null, Map.of()),
+                AiRunSource.AGENT,
+                "agent",
+                null,
+                "prompt");
+        AiRun completed = runtime.finish(
+                run.id(), new TenantId(3), 4, AiRunStatus.COMPLETED, null);
+        long terminalSequence = completed.lastEventSeq();
+        exposeBehindPointer.set(true);
+        eventReads.set(0);
+
+        AiRun replayed = runtime.finish(
+                run.id(), new TenantId(3), 4, AiRunStatus.COMPLETED, null);
+        exposeBehindPointer.set(false);
+
+        assertEquals(terminalSequence, replayed.lastEventSeq());
+        assertEquals(terminalSequence, repository.find(
+                run.id(), new TenantId(3), 4).orElseThrow().lastEventSeq());
+        assertEquals(1, eventReads.get());
+    }
+
+    @Test
+    void repeatedTerminalReconciliationReadsOnlyTheLatestEvent() {
+        AtomicInteger eventReads = new AtomicInteger();
+        AtomicLong requestedAfterSequence = new AtomicLong(-1);
+        AtomicInteger requestedLimit = new AtomicInteger(-1);
+        InMemoryAiRunRepository repository = new InMemoryAiRunRepository() {
+            @Override
+            public List<AiRunEvent> events(
+                    String runId, TenantId tenantId, long ownerUserId, long afterSeq, int limit) {
+                eventReads.incrementAndGet();
+                requestedAfterSequence.set(afterSeq);
+                requestedLimit.set(limit);
+                return super.events(runId, tenantId, ownerUserId, afterSeq, limit);
+            }
+        };
+        AiRuntimeService runtime = new AiRuntimeService(repository, new InMemoryAiAppRepository());
+        AiRun run = runtime.startRun(
+                new AiRunContext(
+                        new TenantId(3), 4, null, null, null, null, "execution", null, Map.of()),
+                AiRunSource.AGENT,
+                "agent",
+                null,
+                "prompt");
+        runtime.finish(run.id(), new TenantId(3), 4, AiRunStatus.COMPLETED, null);
+        long terminalSequence = repository.find(run.id(), new TenantId(3), 4)
+                .orElseThrow().lastEventSeq();
+        eventReads.set(0);
+
+        runtime.finish(run.id(), new TenantId(3), 4, AiRunStatus.COMPLETED, null);
+
+        assertEquals(1, eventReads.get());
+        assertEquals(terminalSequence - 1, requestedAfterSequence.get());
+        assertEquals(1, requestedLimit.get());
     }
 
     @Test

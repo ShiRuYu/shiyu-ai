@@ -159,7 +159,10 @@ public record GenerationRun(
     public GenerationRun transition(GenerationStatus next) {
         if (next == null) throw new IllegalArgumentException("next status is required");
         boolean valid =
-                (status == GenerationStatus.CREATED && next == GenerationStatus.RUNNING)
+                (status == GenerationStatus.CREATED
+                                && (next == GenerationStatus.RUNNING
+                                        || next == GenerationStatus.FAILED
+                                        || next == GenerationStatus.CANCELLED))
                         || (status == GenerationStatus.RUNNING
                                 && (next == GenerationStatus.COMPLETED
                                         || next == GenerationStatus.CANCELLED

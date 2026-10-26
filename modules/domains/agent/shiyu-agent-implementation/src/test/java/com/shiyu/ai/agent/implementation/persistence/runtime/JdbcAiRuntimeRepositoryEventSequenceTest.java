@@ -74,6 +74,71 @@ class JdbcAiRuntimeRepositoryEventSequenceTest {
     }
 
     @Test
+    void terminalReplayRepairsAnAheadEventSequencePointer() {
+        EmbeddedDatabase database = database();
+        TenantScope.set(TENANT);
+        try {
+            JdbcTemplate jdbc = new JdbcTemplate(database);
+            JdbcAiRuntimeRepository repository = new JdbcAiRuntimeRepository(jdbc);
+            repository.insert(run());
+            AiRun failed = repository.finishGenerationRun(
+                    "run", TENANT, 9, AiRunStatus.FAILED, "agent-error",
+                    java.util.List.of(), null, null);
+            assertEquals(1L, failed.lastEventSeq());
+            jdbc.update("UPDATE AI_RUN SET LAST_EVENT_SEQ=? WHERE ID=?", 0L, "run");
+            AiRun repairedMissingPointer = repository.finishGenerationRun(
+                    "run", TENANT, 9, AiRunStatus.FAILED, "agent-error",
+                    java.util.List.of(), null, null);
+            assertEquals(1L, repairedMissingPointer.lastEventSeq());
+            assertEquals(1L, repository.find("run", TENANT, 9).orElseThrow().lastEventSeq());
+
+            jdbc.update("UPDATE AI_RUN SET LAST_EVENT_SEQ=? WHERE ID=?", 5L, "run");
+            AiRun repairedAheadPointer = repository.finishGenerationRun(
+                    "run", TENANT, 9, AiRunStatus.FAILED, "agent-error",
+                    java.util.List.of(), null, null);
+
+            assertEquals(1L, repairedAheadPointer.lastEventSeq());
+            assertEquals(1L, repository.find("run", TENANT, 9).orElseThrow().lastEventSeq());
+            assertEquals(1L, jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM AI_RUN_EVENT WHERE RUN_ID='run'", Long.class));
+        } finally {
+            TenantScope.clear();
+            database.shutdown();
+        }
+    }
+
+    @Test
+    void terminalReplayRepairsAnEventSequencePointerBehindTheTerminalEvent() {
+        EmbeddedDatabase database = database();
+        TenantScope.set(TENANT);
+        try {
+            JdbcTemplate jdbc = new JdbcTemplate(database);
+            JdbcAiRuntimeRepository repository = new JdbcAiRuntimeRepository(jdbc);
+            repository.insert(run());
+            assertEquals(1L, repository.appendNextEvent(
+                    "run", TENANT, 9, AiRunEventType.MODEL_STARTED, "start", true, NOW));
+            AiRun failed = repository.finishGenerationRun(
+                    "run", TENANT, 9, AiRunStatus.FAILED, "agent-error",
+                    java.util.List.of(), null, null);
+            assertEquals(2L, failed.lastEventSeq());
+            jdbc.update("DELETE FROM AI_RUN_EVENT WHERE RUN_ID=? AND SEQ=?", "run", 1L);
+            jdbc.update("UPDATE AI_RUN SET LAST_EVENT_SEQ=? WHERE ID=?", 1L, "run");
+
+            AiRun repaired = repository.finishGenerationRun(
+                    "run", TENANT, 9, AiRunStatus.FAILED, "agent-error",
+                    java.util.List.of(), null, null);
+
+            assertEquals(2L, repaired.lastEventSeq());
+            assertEquals(2L, repository.find("run", TENANT, 9).orElseThrow().lastEventSeq());
+            assertEquals(1L, jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM AI_RUN_EVENT WHERE RUN_ID='run'", Long.class));
+        } finally {
+            TenantScope.clear();
+            database.shutdown();
+        }
+    }
+
+    @Test
     void explicitEventIsIdempotentOnlyForSamePayloadAndMustBeContiguous() {
         EmbeddedDatabase database = database();
         TenantScope.set(TENANT);

@@ -12,11 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -82,6 +84,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -103,7 +106,7 @@ class AgentRuntimeImplControlTest {
                         .toolName("filesystem.write").toolType("HIGH")
                         .timeout(0L).build())
                 .build();
-        AgentRuntimeImpl runtime = newRuntime(mock(AgentExecutionRepository.class), tool,
+        AgentRuntimeImpl runtime = newRuntime(newRecordingExecutionRepository(), tool,
                 mock(EventPublisher.class), runs);
 
         Execution execution = runtime.execute(ACTOR, "agent-1", Map.of("path", "a"));
@@ -114,6 +117,18 @@ class AgentRuntimeImplControlTest {
         assertEquals(AiRunStatus.RUNNING, run.status());
         assertEquals(1, approvals.list(run.id(), ACTOR.tenantId(), ACTOR.userId().value()).size());
         verify(tools, never()).execute(anyString(), any());
+    }
+
+    @Test
+    void streamingExecutionIsCreatedOnlyWhenSubscribed() {
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
+        AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode());
+
+        var stream = runtime.executeStream(ACTOR, "agent-1", Map.of("message", "hello"));
+        verify(repository, never()).insert(any(TenantId.class), any(AgentExecutionBO.class));
+
+        stream.take(1).blockLast(java.time.Duration.ofSeconds(5));
+        verify(repository, timeout(1000)).insert(any(TenantId.class), any(AgentExecutionBO.class));
     }
 
     @Test
@@ -129,12 +144,11 @@ class AgentRuntimeImplControlTest {
                 .config(ToolCallConfig.builder().nodeId("block").nodeName("block")
                         .toolName("filesystem.write").toolType("HIGH").build())
                 .build();
-        AgentRuntimeImpl runtime = newRuntime(mock(AgentExecutionRepository.class), tool,
+        AgentRuntimeImpl runtime = newRuntime(newRecordingExecutionRepository(), tool,
                 mock(EventPublisher.class), runs);
 
         List<Map<String, Object>> events = runtime.executeStream(ACTOR, "agent-1",
                 Map.of("path", "a"))
-                .takeUntil(event -> "PAUSED".equals(event.get("status")))
                 .collectList().block(java.time.Duration.ofSeconds(5));
 
         assertEquals("STARTED", events.getFirst().get("status"));
@@ -163,7 +177,7 @@ class AgentRuntimeImplControlTest {
                         .toolName("filesystem.write").toolType("HIGH")
                         .timeout(0L).build())
                 .build();
-        AgentExecutionRepository executions = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository executions = newRecordingExecutionRepository();
         AtomicReference<AgentExecutionBO> savedExecution = new AtomicReference<>();
         doAnswer(invocation -> {
             savedExecution.set(invocation.getArgument(1));
@@ -171,8 +185,16 @@ class AgentRuntimeImplControlTest {
         }).when(executions).insert(any(TenantId.class), any(AgentExecutionBO.class));
         doAnswer(invocation -> {
             savedExecution.set(invocation.getArgument(1));
-            return null;
-        }).when(executions).update(any(TenantId.class), any(AgentExecutionBO.class));
+            return 1;
+        }).when(executions).updateIfStatus(
+                any(TenantId.class), any(AgentExecutionBO.class), anyInt());
+        doAnswer(invocation -> {
+            AgentExecutionBO current = savedExecution.get();
+            if (current == null || !Integer.valueOf(0).equals(current.getStatus())) return 0;
+            current.setLastCheckpointId(invocation.getArgument(2));
+            return 1;
+        }).when(executions).updateCheckpointIfStatus(
+                any(TenantId.class), anyString(), anyString(), anyInt());
         when(executions.selectByExecutionId(any(TenantId.class), anyString()))
                 .thenAnswer(invocation -> savedExecution.get());
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
@@ -244,7 +266,7 @@ class AgentRuntimeImplControlTest {
         when(engine.stream(any())).thenReturn(model.asFlux());
         LlmCallNode node = LlmCallNode.builder().chatEngine(engine)
                 .config(LlmCallConfig.builder().nodeId("block").stream(true).build()).build();
-        AgentRuntimeImpl runtime = newRuntime(mock(AgentExecutionRepository.class), node);
+        AgentRuntimeImpl runtime = newRuntime(newRecordingExecutionRepository(), node);
         List<Map<String, Object>> events = new CopyOnWriteArrayList<>();
         CountDownLatch firstChunk = new CountDownLatch(1);
         CountDownLatch terminal = new CountDownLatch(1);
@@ -284,7 +306,7 @@ class AgentRuntimeImplControlTest {
         var history = mock(com.shiyu.ai.agent.contract.ExecutionHistoryService.class);
         ReleasingNode node = new ReleasingNode();
         node.setExecutionHistoryService(history);
-        AgentRuntimeImpl runtime = newRuntime(mock(AgentExecutionRepository.class), node);
+        AgentRuntimeImpl runtime = newRuntime(newRecordingExecutionRepository(), node);
         runtime.executeStream(ACTOR, "agent-1", Map.of("agentId", "spoofed", "version", "spoofed"))
                 .collectList().block(java.time.Duration.ofSeconds(5));
         verify(history).startExecution(eq(ACTOR), eq("agent-1"), eq("v1"),
@@ -303,7 +325,7 @@ class AgentRuntimeImplControlTest {
             assertEquals(ACTOR.tenantId(), TenantScope.require());
             return null;
         }).when(checkpoints).insert(eq(ACTOR.tenantId()), any(AgentCheckpointBO.class));
-        AgentRuntimeImpl runtime = newRuntime(mock(AgentExecutionRepository.class),
+        AgentRuntimeImpl runtime = newRuntime(newRecordingExecutionRepository(),
                 new ReleasingNode(), mock(EventPublisher.class), null, checkpoints);
         List<Map<String, Object>> events = runtime.executeStream(ACTOR, "agent-1", Map.of())
                 .collectList().block(java.time.Duration.ofSeconds(5));
@@ -312,9 +334,78 @@ class AgentRuntimeImplControlTest {
     }
 
     @Test
+    void streamingFinishRetryStillEmitsCompletedAndPublishesDomainEvent() {
+        AiRun runtimeRun =
+                new AiRun(
+                        "runtime-run",
+                        new TenantId(9L),
+                        new UserId(7L),
+                        null,
+                        null,
+                        AiRunSource.AGENT,
+                        "agent-1",
+                        null,
+                        "trace",
+                        null,
+                        null,
+                        "execution",
+                        null,
+                        null,
+                        AiRunStatus.RUNNING,
+                        0,
+                        0,
+                        true,
+                        null,
+                        Instant.now(),
+                        null,
+                        null,
+                        0L);
+        AiRuntimeService aiRuntime = mock(AiRuntimeService.class);
+        when(aiRuntime.startRun(
+                        any(AiRunContext.class),
+                        eq(AiRunSource.AGENT),
+                        eq("agent-1"),
+                        isNull(),
+                        anyString()))
+                .thenReturn(runtimeRun);
+        when(aiRuntime.requireRun("runtime-run", ACTOR.tenantId(), ACTOR.userId().value()))
+                .thenReturn(runtimeRun);
+        when(aiRuntime.finish(
+                        eq("runtime-run"),
+                        eq(ACTOR.tenantId()),
+                        eq(ACTOR.userId().value()),
+                        eq(AiRunStatus.COMPLETED),
+                        isNull()))
+                .thenThrow(new IllegalStateException("temporary runtime finish failure"))
+                .thenReturn(runtimeRun.transition(AiRunStatus.COMPLETED));
+        EventPublisher publisher = mock(EventPublisher.class);
+        AgentRuntimeImpl runtime =
+                newRuntime(
+                        newRecordingExecutionRepository(),
+                        new ReleasingNode(),
+                        publisher,
+                        aiRuntime);
+
+        List<Map<String, Object>> events =
+                runtime.executeStream(ACTOR, "agent-1", Map.of())
+                        .collectList()
+                        .block(java.time.Duration.ofSeconds(5));
+
+        assertTrue(events.stream().anyMatch(event -> "COMPLETED".equals(event.get("status"))));
+        verify(aiRuntime, org.mockito.Mockito.times(2))
+                .finish(
+                        eq("runtime-run"),
+                        eq(ACTOR.tenantId()),
+                        eq(ACTOR.userId().value()),
+                        eq(AiRunStatus.COMPLETED),
+                        isNull());
+        verify(publisher).publish(any(AgentExecutionCompletedEvent.class));
+    }
+
+    @Test
     void pauseThenResumeLetsStreamCompleteAndPersistsSuccess() throws Exception {
         BlockingNode node = new BlockingNode();
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         ExecutionRecorder recorder = new ExecutionRecorder(repository);
         AgentRuntimeImpl runtime = newRuntime(repository, node);
         CountDownLatch terminal = new CountDownLatch(1);
@@ -341,18 +432,359 @@ class AgentRuntimeImplControlTest {
                 events.stream().anyMatch(event -> "COMPLETED".equals(event.get("status"))),
                 "stream should emit a COMPLETED terminal event");
         verify(repository, timeout(5000).atLeastOnce())
-                .update(
+                .updateIfStatus(
                         any(TenantId.class),
                         argThat(
                                 bo ->
                                         executionId.equals(bo.getExecutionId())
-                                                && Integer.valueOf(1).equals(bo.getStatus())));
+                                                && Integer.valueOf(1).equals(bo.getStatus())),
+                        anyInt());
+    }
+
+    @Test
+    void cancellationRetryRepairsAnUnfinishedRuntimeRun() {
+        String executionId = "cancel-retry";
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
+        AgentExecutionBO persisted = persisted(
+                executionId, 4, LocalDateTime.now(), null);
+        when(repository.selectByExecutionId(ACTOR.tenantId(), executionId)).thenReturn(persisted);
+        InMemoryAiRunRepository runRepository = new InMemoryAiRunRepository();
+        AiRuntimeService runs = new AiRuntimeService(
+                runRepository, new InMemoryAiAppRepository());
+        AiRun run = runs.startRun(
+                new AiRunContext(ACTOR.tenantId(), ACTOR.userId().value(), null, null,
+                        null, null, executionId, null, Map.of()),
+                AiRunSource.AGENT, "agent-1", null, "{}");
+        AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode(),
+                mock(EventPublisher.class), runs);
+
+        assertEquals(ExecutionStatus.CANCELLED, runtime.cancel(ACTOR, executionId).getStatus());
+        assertEquals(AiRunStatus.CANCELLED,
+                runs.requireRun(run.id(), ACTOR.tenantId(), ACTOR.userId().value()).status());
+        assertEquals(1, runs.events(run.id(), ACTOR.tenantId(), ACTOR.userId().value(), 0, 100)
+                .stream().filter(event -> event.type() == AiRunEventType.RUN_CANCELLED).count());
+    }
+
+    @Test
+    void apiCancellationDuringStartupPreventsGraphSideEffects() throws Exception {
+        CountDownLatch startedEventEntered = new CountDownLatch(1);
+        CountDownLatch releaseStartedEvent = new CountDownLatch(1);
+        AtomicReference<String> executionId = new AtomicReference<>();
+        AtomicInteger sideEffects = new AtomicInteger();
+        EventPublisher publisher = mock(EventPublisher.class);
+        doAnswer(invocation -> {
+            AgentExecutionStartedEvent event = invocation.getArgument(0);
+            executionId.set(event.getExecutionId());
+            startedEventEntered.countDown();
+            try {
+                releaseStartedEvent.await();
+            } catch (InterruptedException cancelled) {
+                Thread.currentThread().interrupt();
+            }
+            return null;
+        }).when(publisher).publish(any(AgentExecutionStartedEvent.class));
+        BaseNode node = new BaseNode(NodeConfig.builder().nodeId("block").nodeName("block")
+                .nodeType(NodeType.DEFAULT).timeout(0L).build()) {
+            @Override
+            public NodeOutput doExecute(NodeInput input) {
+                sideEffects.incrementAndGet();
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(true);
+                return output;
+            }
+
+            @Override
+            public List<NodeInputParam> getRequiredInputs() {
+                return List.of();
+            }
+        };
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
+        ExecutionRecorder recorder = new ExecutionRecorder(repository);
+        AgentRuntimeImpl runtime = newRuntime(repository, node, publisher);
+        CountDownLatch terminal = new CountDownLatch(1);
+        List<Map<String, Object>> events = new CopyOnWriteArrayList<>();
+        try {
+            disposable = runtime.executeStream(ACTOR, "agent-1", Map.of())
+                    .subscribe(events::add, error -> terminal.countDown(), terminal::countDown);
+            assertTrue(startedEventEntered.await(5, TimeUnit.SECONDS),
+                    "startup event publication should block before graph execution");
+            assertEquals(executionId.get(), recorder.awaitExecutionId());
+
+            runtime.cancel(ACTOR, executionId.get());
+            assertEquals(ExecutionStatus.CANCELLED, runtime.getStatus(ACTOR, executionId.get()));
+        } finally {
+            releaseStartedEvent.countDown();
+        }
+
+        assertTrue(terminal.await(5, TimeUnit.SECONDS), "cancelled stream should terminate");
+        assertEquals(0, sideEffects.get(), "cancelled startup must not enter the graph");
+        assertTrue(events.stream().anyMatch(event -> "CANCELLED".equals(event.get("status"))));
+    }
+
+    @Test
+    void clientDisconnectWhileExecutionIsPendingDoesNotLeaveRuntimeRunActive() throws Exception {
+        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AtomicReference<AgentExecutionBO> persisted = new AtomicReference<>();
+        CountDownLatch cancellationPersisted = new CountDownLatch(1);
+        CountDownLatch cancellationCallbackRefreshedState = new CountDownLatch(1);
+        doAnswer(invocation -> {
+            AgentExecutionBO inserted = invocation.getArgument(1);
+            persisted.set(inserted);
+            if (Integer.valueOf(4).equals(inserted.getStatus())) cancellationPersisted.countDown();
+            return null;
+        }).when(repository).insert(any(TenantId.class), any(AgentExecutionBO.class));
+        when(repository.selectByExecutionId(any(TenantId.class), anyString()))
+                .thenAnswer(invocation -> {
+                    cancellationCallbackRefreshedState.countDown();
+                    return persisted.get();
+                });
+        doAnswer(invocation -> {
+            AgentExecutionBO update = invocation.getArgument(1);
+            AgentExecutionBO current = persisted.get();
+            Integer expectedStatus = invocation.getArgument(2);
+            if (current == null || !java.util.Objects.equals(current.getStatus(), expectedStatus)) {
+                return 0;
+            }
+            copyExecutionState(update, current);
+            if (Integer.valueOf(4).equals(update.getStatus())) cancellationPersisted.countDown();
+            return 1;
+        }).when(repository).updateIfStatus(
+                any(TenantId.class), any(AgentExecutionBO.class), anyInt());
+        doAnswer(invocation -> {
+            AgentExecutionBO current = persisted.get();
+            if (current == null || !java.util.Objects.equals(
+                    current.getStatus(), invocation.getArgument(3))) return 0;
+            current.setLastCheckpointId(invocation.getArgument(2));
+            return 1;
+        }).when(repository).updateCheckpointIfStatus(
+                any(TenantId.class), anyString(), anyString(), anyInt());
+
+        CountDownLatch pendingStartupEntered = new CountDownLatch(1);
+        CountDownLatch releaseStartup = new CountDownLatch(1);
+        AtomicInteger definitionLookups = new AtomicInteger();
+        AgentAdminRepository adminRepository = mock(AgentAdminRepository.class);
+        AgentLoader loader = mock(AgentLoader.class);
+        AgentCacheManager cacheManager = new AgentCacheManager(adminRepository, loader) {
+            @Override
+            public AgentDefinition getOrLoad(ActorContext actor, String agentId, AgentLoader ignored) {
+                AgentDefinition definition = super.getOrLoad(actor, agentId, ignored);
+                if (definitionLookups.incrementAndGet() == 2) {
+                    pendingStartupEntered.countDown();
+                    try {
+                        releaseStartup.await(5, TimeUnit.SECONDS);
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                return definition;
+            }
+        };
+        Graph graph = Graph.builder().name("pending-startup")
+                .startNode("block").endNode("block")
+                .nodes(Map.of("block", new ReleasingNode())).edges(Map.of())
+                .conditionalEdges(Map.of()).build();
+        AgentVersion version = AgentVersion.builder().versionNumber("v1").graph(graph).build();
+        AgentDefinition definition = AgentDefinition.builder()
+                .agentId("agent-1").currentVersion("v1").build();
+        definition.addVersion(version);
+        cacheManager.putSystem(definition);
+        AiRuntimeService runs = new AiRuntimeService(
+                new InMemoryAiRunRepository(), new InMemoryAiAppRepository());
+        AgentRuntimeImpl runtime = new AgentRuntimeImpl(
+                cacheManager, loader, repository, mock(AgentCheckpointRepository.class),
+                mock(EventPublisher.class), runs);
+
+        disposable = runtime.executeStream(ACTOR, "agent-1", Map.of()).subscribe();
+        try {
+            assertTrue(pendingStartupEntered.await(5, TimeUnit.SECONDS),
+                    "the execution should be exposed before startup changes it from pending");
+            assertNull(persisted.get(), "pending startup must not have inserted the execution");
+            disposable.dispose();
+            assertTrue(cancellationCallbackRefreshedState.await(5, TimeUnit.SECONDS),
+                    "disconnect cancellation should refresh the pending execution first");
+            releaseStartup.countDown();
+            assertTrue(cancellationPersisted.await(5, TimeUnit.SECONDS),
+                    "startup must persist cancellation after observing the disconnect");
+            assertEquals(4, persisted.get().getStatus());
+            assertTrue(runs.listRuns(ACTOR.tenantId(), ACTOR.userId().value(), 10).isEmpty(),
+                    "cancelled startup must not create an orphan runtime run");
+        } finally {
+            releaseStartup.countDown();
+        }
+    }
+
+    @Test
+    void cancellationPersistenceFailureStillInterruptsTheLocalWorker() throws Exception {
+        CountDownLatch entered = new CountDownLatch(1);
+        CountDownLatch interrupted = new CountDownLatch(1);
+        BaseNode node = new BaseNode(NodeConfig.builder().nodeId("block").nodeName("block")
+                .nodeType(NodeType.DEFAULT).timeout(0L).build()) {
+            @Override
+            public NodeOutput doExecute(NodeInput input) {
+                entered.countDown();
+                try {
+                    new CountDownLatch(1).await();
+                } catch (InterruptedException cancellation) {
+                    interrupted.countDown();
+                    Thread.currentThread().interrupt();
+                }
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(true);
+                return output;
+            }
+
+            @Override
+            public List<NodeInputParam> getRequiredInputs() {
+                return List.of();
+            }
+        };
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
+        ExecutionRecorder recorder = new ExecutionRecorder(repository);
+        AgentRuntimeImpl runtime = newRuntime(repository, node);
+        CountDownLatch terminal = new CountDownLatch(1);
+        disposable = runtime.executeStream(ACTOR, "agent-1", Map.of())
+                .subscribe(ignored -> {}, error -> terminal.countDown(), terminal::countDown);
+        assertTrue(entered.await(5, TimeUnit.SECONDS));
+        String executionId = recorder.awaitExecutionId();
+        doThrow(new IllegalStateException("database unavailable"))
+                .when(repository).updateIfStatus(eq(ACTOR.tenantId()),
+                        argThat(record -> executionId.equals(record.getExecutionId())
+                                && Integer.valueOf(4).equals(record.getStatus())), anyInt());
+
+        assertThrows(IllegalStateException.class, () -> runtime.cancel(ACTOR, executionId));
+
+        assertTrue(interrupted.await(5, TimeUnit.SECONDS),
+                "local worker must be interrupted even if cancellation persistence fails");
+        assertTrue(terminal.await(5, TimeUnit.SECONDS));
+    }
+
+    @Test
+    void clientDisconnectStillInterruptsWorkerWhenCancellationPersistenceFails() throws Exception {
+        CountDownLatch entered = new CountDownLatch(1);
+        CountDownLatch interrupted = new CountDownLatch(1);
+        BaseNode node = new BaseNode(NodeConfig.builder().nodeId("block").nodeName("block")
+                .nodeType(NodeType.DEFAULT).timeout(0L).build()) {
+            @Override
+            public NodeOutput doExecute(NodeInput input) {
+                entered.countDown();
+                try {
+                    new CountDownLatch(1).await();
+                } catch (InterruptedException cancellation) {
+                    interrupted.countDown();
+                    Thread.currentThread().interrupt();
+                }
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(true);
+                return output;
+            }
+
+            @Override
+            public List<NodeInputParam> getRequiredInputs() {
+                return List.of();
+            }
+        };
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
+        ExecutionRecorder recorder = new ExecutionRecorder(repository);
+        AgentRuntimeImpl runtime = newRuntime(repository, node);
+        disposable = runtime.executeStream(ACTOR, "agent-1", Map.of())
+                .subscribe(ignored -> {}, ignored -> {});
+        assertTrue(entered.await(5, TimeUnit.SECONDS));
+        String executionId = recorder.awaitExecutionId();
+        doThrow(new IllegalStateException("database unavailable"))
+                .when(repository).updateIfStatus(eq(ACTOR.tenantId()),
+                        argThat(record -> executionId.equals(record.getExecutionId())
+                                && Integer.valueOf(4).equals(record.getStatus())), anyInt());
+
+        disposable.dispose();
+
+        assertTrue(interrupted.await(5, TimeUnit.SECONDS),
+                "client disconnect must interrupt the worker even if cancellation persistence fails");
+    }
+
+    @Test
+    void cancellationAfterPauseIsObservedAtTheWorkersNextCheckpoint() throws Exception {
+        BlockingNode node = new BlockingNode();
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
+        ExecutionRecorder recorder = new ExecutionRecorder(repository);
+        AiRuntimeService runs = new AiRuntimeService(
+                new InMemoryAiRunRepository(), new InMemoryAiAppRepository());
+        AgentRuntimeImpl workerRuntime = newRuntime(repository, node,
+                mock(EventPublisher.class), runs);
+        AgentRuntimeImpl cancellationRuntime = newRuntime(repository, new ReleasingNode(),
+                mock(EventPublisher.class), runs);
+        CountDownLatch terminal = new CountDownLatch(1);
+        List<Map<String, Object>> events = new CopyOnWriteArrayList<>();
+        disposable = workerRuntime.executeStream(ACTOR, "agent-1", Map.of())
+                .subscribe(events::add, ignored -> terminal.countDown(), terminal::countDown);
+        assertTrue(node.entered.await(5, TimeUnit.SECONDS));
+        String executionId = recorder.awaitExecutionId();
+        AiRun run = runs.requireExecutionRun(executionId, ACTOR.tenantId(), ACTOR.userId().value());
+        workerRuntime.pause(ACTOR, executionId);
+        assertEquals(ExecutionStatus.PAUSED, workerRuntime.getStatus(ACTOR, executionId));
+
+        cancellationRuntime.cancel(ACTOR, executionId);
+        node.release.countDown();
+
+        assertTrue(terminal.await(5, TimeUnit.SECONDS),
+                "the paused worker must observe cross-runtime cancellation at its next checkpoint");
+        assertTrue(events.stream().anyMatch(event -> "CANCELLED".equals(event.get("status"))));
+        assertEquals(AiRunStatus.CANCELLED,
+                runs.requireRun(run.id(), ACTOR.tenantId(), ACTOR.userId().value()).status());
+    }
+
+    @Test
+    void clientDisconnectFinishesAiRunEvenWhenWorkerIgnoresInterrupt() throws Exception {
+        CountDownLatch entered = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        BaseNode node = new BaseNode(NodeConfig.builder().nodeId("block").nodeName("block")
+                .nodeType(NodeType.DEFAULT).timeout(0L).build()) {
+            @Override
+            public NodeOutput doExecute(NodeInput input) {
+                entered.countDown();
+                boolean interrupted = false;
+                while (release.getCount() > 0) {
+                    try {
+                        release.await();
+                    } catch (InterruptedException ignored) {
+                        interrupted = true;
+                    }
+                }
+                if (interrupted) Thread.currentThread().interrupt();
+                NodeOutput output = new NodeOutput();
+                output.setSuccess(true);
+                return output;
+            }
+
+            @Override
+            public List<NodeInputParam> getRequiredInputs() {
+                return List.of();
+            }
+        };
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
+        ExecutionRecorder recorder = new ExecutionRecorder(repository);
+        AiRuntimeService runs = new AiRuntimeService(
+                new InMemoryAiRunRepository(), new InMemoryAiAppRepository());
+        AgentRuntimeImpl runtime = newRuntime(repository, node, mock(EventPublisher.class), runs);
+        disposable = runtime.executeStream(ACTOR, "agent-1", Map.of()).subscribe();
+        assertTrue(entered.await(5, TimeUnit.SECONDS));
+        String executionId = recorder.awaitExecutionId();
+        AiRun run = runs.requireExecutionRun(executionId, ACTOR.tenantId(), ACTOR.userId().value());
+
+        disposable.dispose();
+
+        assertEquals(AiRunStatus.CANCELLED,
+                runs.requireRun(run.id(), ACTOR.tenantId(), ACTOR.userId().value()).status());
+        AgentExecutionBO persisted = recorder.stored.stream()
+                .filter(record -> executionId.equals(record.getExecutionId()))
+                .findFirst().orElseThrow();
+        assertEquals(4, persisted.getStatus());
+        release.countDown();
     }
 
     @Test
     void cancelDuringExecutionEmitsCancelledTerminalAndPersistsCancelled() throws Exception {
         BlockingNode node = new BlockingNode();
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         ExecutionRecorder recorder = new ExecutionRecorder(repository);
         AgentRuntimeImpl runtime = newRuntime(repository, node);
         CountDownLatch terminal = new CountDownLatch(1);
@@ -374,18 +806,96 @@ class AgentRuntimeImplControlTest {
                 events.stream().anyMatch(event -> "CANCELLED".equals(event.get("status"))),
                 "stream should emit a CANCELLED terminal event");
         verify(repository, timeout(5000).atLeastOnce())
-                .update(
+                .updateIfStatus(
                         any(TenantId.class),
                         argThat(
                                 bo ->
                                         executionId.equals(bo.getExecutionId())
-                                                && Integer.valueOf(4).equals(bo.getStatus())));
+                                                && Integer.valueOf(4).equals(bo.getStatus())),
+                        anyInt());
+    }
+
+    @Test
+    void cancellationFromAnotherRuntimeSurvivesTheStaleWorkersCheckpointAndTerminalPath()
+            throws Exception {
+        BlockingNode node = new BlockingNode();
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
+        ExecutionRecorder recorder = new ExecutionRecorder(repository);
+        AiRuntimeService runs = new AiRuntimeService(
+                new InMemoryAiRunRepository(), new InMemoryAiAppRepository());
+        EventPublisher workerPublisher = mock(EventPublisher.class);
+        AgentRuntimeImpl workerRuntime = newRuntime(repository, node, workerPublisher, runs);
+        AgentRuntimeImpl cancellationRuntime = newRuntime(
+                repository, new ReleasingNode(), mock(EventPublisher.class), runs);
+        CountDownLatch terminal = new CountDownLatch(1);
+        List<Map<String, Object>> events = new CopyOnWriteArrayList<>();
+
+        disposable = workerRuntime.executeStream(
+                        ACTOR, "agent-1", Map.of("message", "hello"))
+                .subscribe(events::add, error -> terminal.countDown(), terminal::countDown);
+
+        assertTrue(node.entered.await(5, TimeUnit.SECONDS), "graph node should start");
+        String executionId = recorder.awaitExecutionId();
+        AiRun run = runs.requireExecutionRun(
+                executionId, ACTOR.tenantId(), ACTOR.userId().value());
+
+        assertEquals(ExecutionStatus.CANCELLED,
+                cancellationRuntime.cancel(ACTOR, executionId).getStatus());
+        assertEquals(
+                ExecutionStatus.CANCELLED,
+                workerRuntime.getStatus(ACTOR, executionId),
+                "an active worker runtime must refresh cross-instance terminal state on reads");
+        assertEquals(
+                ExecutionStatus.CANCELLED,
+                workerRuntime.getExecution(ACTOR, executionId).getStatus());
+        node.release.countDown();
+
+        assertTrue(terminal.await(5, TimeUnit.SECONDS), "stale stream should terminate");
+        AgentExecutionBO persisted = recorder.stored.stream()
+                .filter(record -> executionId.equals(record.getExecutionId()))
+                .findFirst().orElseThrow();
+        assertEquals(4, persisted.getStatus());
+        assertTrue(events.stream().anyMatch(event -> "CANCELLED".equals(event.get("status"))));
+        assertFalse(events.stream().anyMatch(event -> "COMPLETED".equals(event.get("status"))));
+        verify(workerPublisher, never()).publish(any(AgentExecutionCompletedEvent.class));
+        verify(workerPublisher, never()).publish(any(AgentExecutionFailedEvent.class));
+        List<AiRunEvent> runEvents = runs.events(
+                run.id(), ACTOR.tenantId(), ACTOR.userId().value(), 0, 100);
+        assertEquals(AiRunStatus.CANCELLED,
+                runs.requireRun(run.id(), ACTOR.tenantId(), ACTOR.userId().value()).status());
+        assertEquals(1, runEvents.stream()
+                .filter(event -> event.type() == AiRunEventType.RUN_CANCELLED).count());
+        assertEquals(0, runEvents.stream()
+                .filter(event -> event.type() == AiRunEventType.RUN_COMPLETED).count());
+    }
+
+    @Test
+    void completedEventPublicationIsRetriedBeforeTheStreamReportsCompletion() throws Exception {
+        AtomicInteger attempts = new AtomicInteger();
+        EventPublisher publisher = mock(EventPublisher.class);
+        doAnswer(invocation -> {
+            if (attempts.incrementAndGet() == 1) {
+                throw new IllegalStateException("completion event unavailable");
+            }
+            return null;
+        }).when(publisher).publish(any(AgentExecutionCompletedEvent.class));
+        AgentRuntimeImpl runtime = newRuntime(newRecordingExecutionRepository(),
+                new ReleasingNode(), publisher);
+        CountDownLatch terminal = new CountDownLatch(1);
+        List<Map<String, Object>> events = new CopyOnWriteArrayList<>();
+
+        disposable = runtime.executeStream(ACTOR, "agent-1", Map.of())
+                .subscribe(events::add, error -> terminal.countDown(), terminal::countDown);
+
+        assertTrue(terminal.await(5, TimeUnit.SECONDS));
+        assertEquals(2, attempts.get());
+        assertTrue(events.stream().anyMatch(event -> "COMPLETED".equals(event.get("status"))));
     }
 
     @Test
     void clientDisconnectCancelsRunningExecutionAndPersistsCancelled() throws Exception {
         BlockingNode node = new BlockingNode();
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         ExecutionRecorder recorder = new ExecutionRecorder(repository);
         AgentRuntimeImpl runtime = newRuntime(repository, node);
 
@@ -398,17 +908,18 @@ class AgentRuntimeImplControlTest {
         node.release.countDown();
 
         verify(repository, timeout(5000).atLeastOnce())
-                .update(
+                .updateIfStatus(
                         any(TenantId.class),
                         argThat(
                                 bo ->
                                         executionId.equals(bo.getExecutionId())
-                                                && Integer.valueOf(4).equals(bo.getStatus())));
+                                                && Integer.valueOf(4).equals(bo.getStatus())),
+                        anyInt());
     }
 
     @Test
     void persistenceFailureFailsTheExecutionCommand() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         doThrow(new IllegalStateException("database unavailable"))
                 .when(repository)
                 .insert(any(TenantId.class), any(AgentExecutionBO.class));
@@ -425,6 +936,9 @@ class AgentRuntimeImplControlTest {
         java.util.concurrent.atomic.AtomicInteger writes =
                 new java.util.concurrent.atomic.AtomicInteger();
         when(repository.selectByExecutionId(any(TenantId.class), anyString())).thenReturn(null);
+        when(repository.updateCheckpointIfStatus(
+                        any(TenantId.class), anyString(), anyString(), anyInt()))
+                .thenReturn(1);
         doAnswer(
                         invocation -> {
                             if (writes.incrementAndGet() > 1) {
@@ -455,25 +969,33 @@ class AgentRuntimeImplControlTest {
     @Test
     void retriesCompletedTerminalPersistenceWithoutPublishingFalseFailure() {
         AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
-        java.util.concurrent.atomic.AtomicInteger terminalWrites =
-                new java.util.concurrent.atomic.AtomicInteger();
-        when(repository.selectByExecutionId(any(TenantId.class), anyString())).thenReturn(null);
-        doAnswer(
-                        invocation -> {
-                            AgentExecutionBO saved = invocation.getArgument(1);
-                            if (Integer.valueOf(1).equals(saved.getStatus())
-                                    && terminalWrites.incrementAndGet() == 1) {
-                                throw new IllegalStateException("terminal write failed");
-                            }
-                            return null;
-                        })
-                .when(repository)
-                .insert(any(TenantId.class), any(AgentExecutionBO.class));
+        AtomicReference<AgentExecutionBO> stored = new AtomicReference<>();
+        AtomicInteger terminalWrites = new AtomicInteger();
+        when(repository.selectByExecutionId(any(TenantId.class), anyString()))
+                .thenAnswer(invocation -> stored.get());
+        doAnswer(invocation -> {
+            stored.set(invocation.getArgument(1));
+            return null;
+        }).when(repository).insert(any(TenantId.class), any(AgentExecutionBO.class));
         EventPublisher publisher = mock(EventPublisher.class);
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode(), publisher);
+        doAnswer(invocation -> {
+            AgentExecutionBO update = invocation.getArgument(1);
+            AgentExecutionBO current = stored.get();
+            Integer expectedStatus = invocation.getArgument(2);
+            if (current == null || !java.util.Objects.equals(
+                    current.getStatus(), expectedStatus)) return 0;
+            if (Integer.valueOf(1).equals(update.getStatus())
+                    && terminalWrites.incrementAndGet() == 1) {
+                throw new IllegalStateException("terminal write failed");
+            }
+            copyExecutionState(update, current);
+            return 1;
+        }).when(repository).updateIfStatus(
+                any(TenantId.class), any(AgentExecutionBO.class), anyInt());
 
-        assertEquals(ExecutionStatus.COMPLETED,
-                runtime.execute(ACTOR, "agent-1", Map.of("message", "hello")).getStatus());
+        Execution result = runtime.execute(ACTOR, "agent-1", Map.of("message", "hello"));
+        assertEquals(ExecutionStatus.COMPLETED, result.getStatus(), result.getErrorMessage());
         verify(publisher)
                 .publish(
                         any(
@@ -508,8 +1030,7 @@ class AgentRuntimeImplControlTest {
                 AgentDefinition.builder().agentId("agent-1").currentVersion("v1").build();
         definition.addVersion(version);
         when(loader.loadFromDb(ACTOR, "agent-1")).thenReturn(definition);
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
-        when(repository.selectByExecutionId(any(TenantId.class), anyString())).thenReturn(null);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
 
         AgentRuntimeImpl runtime =
                 new AgentRuntimeImpl(
@@ -526,7 +1047,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void rejectsUnknownControlOperations() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode());
         assertThrows(IllegalStateException.class, () -> runtime.pause(ACTOR, "missing"));
         assertThrows(IllegalStateException.class, () -> runtime.resume(ACTOR, "missing"));
@@ -535,7 +1056,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void synchronousExecutionPublishesCompletionAndPersistsOutput() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         ExecutionRecorder recorder = new ExecutionRecorder(repository);
         EventPublisher publisher = mock(EventPublisher.class);
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode(), publisher);
@@ -561,7 +1082,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void failedNodeOutputCannotCompleteSynchronousExecution() {
-        AgentRuntimeImpl runtime = newRuntime(mock(AgentExecutionRepository.class),
+        AgentRuntimeImpl runtime = newRuntime(newRecordingExecutionRepository(),
                 new FailedOutputNode());
 
         Execution result = runtime.execute(ACTOR, "agent-1", Map.of("message", "hello"));
@@ -610,7 +1131,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void failedNodeOutputCannotCompleteStreamingExecution() {
-        AgentRuntimeImpl runtime = newRuntime(mock(AgentExecutionRepository.class),
+        AgentRuntimeImpl runtime = newRuntime(newRecordingExecutionRepository(),
                 new FailedOutputNode());
 
         assertThrows(RuntimeException.class, () -> runtime.executeStream(ACTOR, "agent-1",
@@ -619,7 +1140,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void synchronousGraphFailureReturnsFailedExecutionAndPublishesFailure() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         EventPublisher publisher = mock(EventPublisher.class);
         AgentRuntimeImpl runtime = newRuntime(repository, new FailingNode(), publisher);
 
@@ -636,7 +1157,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void streamFailurePublishesFailureAndPropagatesTheOriginalError() throws Exception {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         EventPublisher publisher = mock(EventPublisher.class);
         AgentRuntimeImpl runtime = newRuntime(repository, new FailingNode(), publisher);
         CountDownLatch terminal = new CountDownLatch(1);
@@ -663,7 +1184,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void historyAndUserHistoryEnforceTenantAndUserOwnership() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentExecutionBO bo = new AgentExecutionBO();
         bo.setExecutionId("history-1");
         bo.setAgentId("agent-1");
@@ -687,7 +1208,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void cancellationFromFinalNodeEventCannotBecomeCompleted() throws Exception {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode());
         CountDownLatch terminal = new CountDownLatch(1);
         List<Map<String, Object>> events = new CopyOnWriteArrayList<>();
@@ -713,7 +1234,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void trustedActorStaysOutOfPersistedExecutionAndStreamEvents() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode());
         ActorContext forged = new ActorContext(new TenantId(99), new UserId(88), false);
         Map<String, Object> input = Map.of("message", "hello",
@@ -740,7 +1261,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void agentHistoryExcludesOtherUsersExecutionsBeforeApplyingLimit() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentExecutionBO owned = persisted("owned", 1, LocalDateTime.now(), null);
         AgentExecutionBO foreign = persisted("foreign", 1, LocalDateTime.now(), null);
         foreign.setUserId(8L);
@@ -759,7 +1280,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void executionDetailAndControlRejectAnotherUserInTheSameTenant() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentExecutionBO foreign = persisted("foreign", 3, LocalDateTime.now(), null);
         foreign.setUserId(8L);
         when(repository.selectByExecutionId(new TenantId(9), "foreign")).thenReturn(foreign);
@@ -779,7 +1300,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void userHistoryRejectsUnexpectedForeignRowsEvenIfRepositoryReturnsThem() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentExecutionBO owned = persisted("owned", 1, LocalDateTime.now(), null);
         AgentExecutionBO foreign = persisted("foreign", 1, LocalDateTime.now(), null);
         foreign.setUserId(8L);
@@ -808,7 +1329,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void userHistoryIncludesExecutionsWithIndependentConversationSessionIds() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentExecutionBO owned = persisted("custom-session", 1, LocalDateTime.now(), null);
         owned.setSessionId("conversation-42");
         when(repository.selectByUserId(new TenantId(9), 7L, 10)).thenReturn(List.of(owned));
@@ -820,7 +1341,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void rebuildsPersistedExecutionsAndDerivesTerminalStatusFromEndTime() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentExecutionBO running = persisted("stored-1", 0, null, null);
         when(repository.selectByExecutionId(new TenantId(9), "stored-1")).thenReturn(running);
         when(repository.selectByExecutionId(new TenantId(10), "stored-1")).thenReturn(running);
@@ -847,7 +1368,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void rejectsPersistedPauseWithoutCheckpointAndCancelsPersistedExecution() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentExecutionBO paused = persisted("stored-2", 3, null, null);
         when(repository.selectByExecutionId(new TenantId(9), "stored-2")).thenReturn(paused);
         when(repository.selectByAgentId(new TenantId(9), "agent-1", 1)).thenReturn(List.of(paused));
@@ -857,22 +1378,23 @@ class AgentRuntimeImplControlTest {
         IllegalStateException rejected = assertThrows(IllegalStateException.class,
                 () -> runtime.resume(ACTOR, "stored-2"));
         assertTrue(rejected.getMessage().contains("无可恢复检查点"));
-        verify(repository, never()).update(any(TenantId.class),
-                argThat(value -> "stored-2".equals(value.getExecutionId())));
+        verify(repository, never()).updateIfStatus(any(TenantId.class),
+                argThat(value -> "stored-2".equals(value.getExecutionId())), anyInt());
         assertEquals(1, runtime.getHistory(ACTOR, "agent-1", 0).size());
 
         AgentExecutionBO cancellable = persisted("stored-3", 0, null, null);
         when(repository.selectByExecutionId(new TenantId(9), "stored-3")).thenReturn(cancellable);
         runtime.cancel(ACTOR, "stored-3");
         verify(repository)
-                .update(
+                .updateIfStatus(
                         any(TenantId.class),
-                        argThat(value -> Integer.valueOf(4).equals(value.getStatus())));
+                        argThat(value -> Integer.valueOf(4).equals(value.getStatus())),
+                        anyInt());
     }
 
     @Test
     void cancellingPersistedExecutionRemovesItsCheckpoints() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
         AgentExecutionBO persisted = persisted("stored-cancel", 3, null, null);
         when(repository.selectByExecutionId(ACTOR.tenantId(), "stored-cancel"))
@@ -882,14 +1404,14 @@ class AgentRuntimeImplControlTest {
 
         runtime.cancel(ACTOR, "stored-cancel");
 
-        verify(repository).update(eq(ACTOR.tenantId()),
-                argThat(value -> Integer.valueOf(4).equals(value.getStatus())));
+        verify(repository).updateIfStatus(eq(ACTOR.tenantId()),
+                argThat(value -> Integer.valueOf(4).equals(value.getStatus())), anyInt());
         verify(checkpoints).deleteByExecutionId(ACTOR.tenantId(), "stored-cancel");
     }
 
     @Test
     void administratorCancellationPreservesExecutionOwner() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentExecutionBO owned = persisted("owner-preserved", 3, null, null);
         when(repository.selectByExecutionId(ACTOR.tenantId(), "owner-preserved"))
                 .thenReturn(owned);
@@ -898,15 +1420,15 @@ class AgentRuntimeImplControlTest {
 
         runtime.cancel(administrator, "owner-preserved");
 
-        verify(repository).update(eq(ACTOR.tenantId()),
+        verify(repository).updateIfStatus(eq(ACTOR.tenantId()),
                 argThat(value -> "owner-preserved".equals(value.getExecutionId())
                         && Long.valueOf(7).equals(value.getUserId())
-                        && Integer.valueOf(4).equals(value.getStatus())));
+                        && Integer.valueOf(4).equals(value.getStatus())), anyInt());
     }
 
     @Test
     void persistedPauseWithoutCheckpointDoesNotReplayUntrustedInput() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentExecutionBO paused = persisted("resume-actor", 3, null, null);
         paused.setInputData("{\"tenantId\":9,\"userId\":88,\"__knowledgeAccessContext\":{\"tenantId\":99}}");
         when(repository.selectByExecutionId(new TenantId(9), "resume-actor"))
@@ -928,13 +1450,13 @@ class AgentRuntimeImplControlTest {
         AgentRuntimeImpl runtime = newRuntime(repository, actorNode);
 
         assertThrows(IllegalStateException.class, () -> runtime.resume(ACTOR, "resume-actor"));
-        verify(repository, never()).update(any(TenantId.class),
-                argThat(value -> "resume-actor".equals(value.getExecutionId())));
+        verify(repository, never()).updateIfStatus(any(TenantId.class),
+                argThat(value -> "resume-actor".equals(value.getExecutionId())), anyInt());
     }
 
     @Test
     void persistedPauseWithFinalCheckpointUsesSavedOutputWithoutInvokingNode() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
         AgentExecutionBO paused = persisted("saved-result", 3, null, null);
         when(repository.selectByExecutionId(ACTOR.tenantId(), "saved-result"))
@@ -1009,9 +1531,12 @@ class AgentRuntimeImplControlTest {
                 mock(EventPublisher.class), null, checkpoints);
         java.util.concurrent.atomic.AtomicBoolean claimed =
                 new java.util.concurrent.atomic.AtomicBoolean();
-        when(repository.claimPausedForResume(
-                        ACTOR.tenantId(), executionId, "checkpoint-ready"))
-                .thenAnswer(invocation -> claimed.compareAndSet(false, true));
+        doAnswer(invocation -> {
+            if (!claimed.compareAndSet(false, true)) return false;
+            paused.setStatus(0);
+            return true;
+        }).when(repository).claimPausedForResume(
+                ACTOR.tenantId(), executionId, "checkpoint-ready");
         java.util.concurrent.ExecutorService callers =
                 java.util.concurrent.Executors.newFixedThreadPool(2);
         try {
@@ -1039,7 +1564,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void persistedPauseRejectsCheckpointThatDiffersFromExecutionRecord() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
         AgentExecutionBO paused = persisted("checkpoint-drift", 3, null, null);
         paused.setLastCheckpointId("recorded-checkpoint");
@@ -1062,12 +1587,13 @@ class AgentRuntimeImplControlTest {
         assertTrue(rejected.getMessage().contains("不是最新检查点"));
         assertEquals(ExecutionStatus.PAUSED,
                 runtime.getStatus(ACTOR, "checkpoint-drift"));
-        verify(repository, never()).update(any(TenantId.class), any(AgentExecutionBO.class));
+        verify(repository, never()).updateIfStatus(
+                any(TenantId.class), any(AgentExecutionBO.class), anyInt());
     }
 
     @Test
     void executionRecordTracksTheLastDurableGraphCheckpoint() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
         AtomicReference<AgentExecutionBO> stored = new AtomicReference<>();
         List<String> checkpointIds = new CopyOnWriteArrayList<>();
@@ -1078,9 +1604,22 @@ class AgentRuntimeImplControlTest {
             return null;
         }).when(repository).insert(eq(ACTOR.tenantId()), any(AgentExecutionBO.class));
         doAnswer(invocation -> {
-            stored.set(invocation.getArgument(1));
-            return null;
-        }).when(repository).update(eq(ACTOR.tenantId()), any(AgentExecutionBO.class));
+            AgentExecutionBO updated = invocation.getArgument(1);
+            AgentExecutionBO current = stored.get();
+            if (current == null || !java.util.Objects.equals(
+                    current.getStatus(), invocation.getArgument(2))) return 0;
+            stored.set(updated);
+            return 1;
+        }).when(repository).updateIfStatus(
+                eq(ACTOR.tenantId()), any(AgentExecutionBO.class), anyInt());
+        doAnswer(invocation -> {
+            AgentExecutionBO current = stored.get();
+            if (current == null || !java.util.Objects.equals(
+                    current.getStatus(), invocation.getArgument(3))) return 0;
+            current.setLastCheckpointId(invocation.getArgument(2));
+            return 1;
+        }).when(repository).updateCheckpointIfStatus(
+                eq(ACTOR.tenantId()), anyString(), anyString(), anyInt());
         doAnswer(invocation -> {
             AgentCheckpointBO checkpoint = invocation.getArgument(1);
             checkpointIds.add(checkpoint.getCheckpointId());
@@ -1112,22 +1651,21 @@ class AgentRuntimeImplControlTest {
                 .thenReturn(finalCheckpoint);
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode(),
                 mock(EventPublisher.class), null, checkpoints);
-        when(repository.claimPausedForResume(
-                        ACTOR.tenantId(), "resume-claim-failed", null))
-                .thenReturn(false);
+        doReturn(false).when(repository).claimPausedForResume(
+                ACTOR.tenantId(), "resume-claim-failed", null);
 
         assertThrows(IllegalStateException.class,
                 () -> runtime.resume(ACTOR, "resume-claim-failed"));
 
         assertEquals(ExecutionStatus.PAUSED,
                 runtime.getStatus(ACTOR, "resume-claim-failed"));
-        verify(repository, never()).update(eq(ACTOR.tenantId()),
-                argThat(value -> "resume-claim-failed".equals(value.getExecutionId())));
+        verify(repository, never()).updateIfStatus(eq(ACTOR.tenantId()),
+                argThat(value -> "resume-claim-failed".equals(value.getExecutionId())), anyInt());
     }
 
     @Test
     void missingDefinitionDuringCheckpointResumeKeepsPersistedExecutionPaused() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
         AgentExecutionBO paused = persisted("missing-definition", 3, null, null);
         paused.setAgentId("removed-agent");
@@ -1147,12 +1685,13 @@ class AgentRuntimeImplControlTest {
                 () -> runtime.resume(ACTOR, "missing-definition"));
         assertEquals(ExecutionStatus.PAUSED,
                 runtime.getStatus(ACTOR, "missing-definition"));
-        verify(repository, never()).update(any(TenantId.class), any(AgentExecutionBO.class));
+        verify(repository, never()).updateIfStatus(
+                any(TenantId.class), any(AgentExecutionBO.class), anyInt());
     }
 
     @Test
     void persistedPauseWithIntermediateCheckpointKeepsPausedStatus() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
         AgentExecutionBO paused = persisted("tool-done", 3, null, null);
         when(repository.selectByExecutionId(ACTOR.tenantId(), "tool-done"))
@@ -1172,12 +1711,13 @@ class AgentRuntimeImplControlTest {
 
         assertTrue(rejected.getMessage().contains("旧格式中间检查点缺少下一节点"));
         assertEquals(ExecutionStatus.PAUSED, runtime.getStatus(ACTOR, "tool-done"));
-        verify(repository, never()).update(any(TenantId.class), any(AgentExecutionBO.class));
+        verify(repository, never()).updateIfStatus(
+                any(TenantId.class), any(AgentExecutionBO.class), anyInt());
     }
 
     @Test
     void persistedStartedMarkerKeepsPauseAndNeverReplaysTheNode() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
         AgentExecutionBO paused = persisted("started-node", 3, null, null);
         when(repository.selectByExecutionId(ACTOR.tenantId(), "started-node"))
@@ -1199,12 +1739,13 @@ class AgentRuntimeImplControlTest {
 
         assertTrue(rejected.getMessage().contains("拒绝重复副作用"));
         assertEquals(ExecutionStatus.PAUSED, runtime.getStatus(ACTOR, "started-node"));
-        verify(repository, never()).update(any(TenantId.class), any(AgentExecutionBO.class));
+        verify(repository, never()).updateIfStatus(
+                any(TenantId.class), any(AgentExecutionBO.class), anyInt());
     }
 
     @Test
     void persistedNonresumableStateKeepsPauseAndNeverReplaysTheNode() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentCheckpointRepository checkpoints = mock(AgentCheckpointRepository.class);
         AgentExecutionBO paused = persisted("typed-state", 3, null, null);
         when(repository.selectByExecutionId(ACTOR.tenantId(), "typed-state"))
@@ -1226,7 +1767,8 @@ class AgentRuntimeImplControlTest {
 
         assertTrue(rejected.getMessage().contains("拒绝自动续跑"));
         assertEquals(ExecutionStatus.PAUSED, runtime.getStatus(ACTOR, "typed-state"));
-        verify(repository, never()).update(any(TenantId.class), any(AgentExecutionBO.class));
+        verify(repository, never()).updateIfStatus(
+                any(TenantId.class), any(AgentExecutionBO.class), anyInt());
     }
 
     @Test
@@ -1266,7 +1808,7 @@ class AgentRuntimeImplControlTest {
         assertSame(input, withRuntime.invoke(null, input, null));
 
         AgentRuntimeImpl runtime =
-                newRuntime(mock(AgentExecutionRepository.class), new ReleasingNode());
+                newRuntime(newRecordingExecutionRepository(), new ReleasingNode());
         Method number = AgentRuntimeImpl.class.getDeclaredMethod("number", Object.class);
         number.setAccessible(true);
         assertEquals(3L, number.invoke(runtime, 3));
@@ -1282,7 +1824,7 @@ class AgentRuntimeImplControlTest {
     @Test
     void coversRestoredExecutionAndRuntimeEventHelperBoundaries() throws Exception {
         AgentRuntimeImpl runtime =
-                newRuntime(mock(AgentExecutionRepository.class), new ReleasingNode());
+                newRuntime(newRecordingExecutionRepository(), new ReleasingNode());
         Method resolve =
                 AgentRuntimeImpl.class.getDeclaredMethod("resolveStatus", AgentExecutionBO.class);
         resolve.setAccessible(true);
@@ -1336,7 +1878,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void coversExecutionInputParsingLoaderMissAndTenantAccessGuard() throws Exception {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode());
         Method create =
                 AgentRuntimeImpl.class.getDeclaredMethod(
@@ -1409,9 +1951,19 @@ class AgentRuntimeImplControlTest {
                         isNull(),
                         anyString()))
                 .thenReturn(runtimeRun);
+        when(aiRuntime.requireRun("runtime-run", runtimeRun.tenantId(), 7L))
+                .thenReturn(runtimeRun);
+        when(aiRuntime.finish("runtime-run", runtimeRun.tenantId(), 7L,
+                AiRunStatus.COMPLETED, null)).thenReturn(runtimeRun.transition(AiRunStatus.COMPLETED));
+        when(aiRuntime.finish("runtime-run", runtimeRun.tenantId(), 7L,
+                AiRunStatus.CANCELLED, "CLIENT_CANCELLED"))
+                .thenReturn(runtimeRun.transition(AiRunStatus.CANCELLED));
+        when(aiRuntime.finish("runtime-run", runtimeRun.tenantId(), 7L,
+                AiRunStatus.FAILED, "AGENT_EXECUTION_FAILED"))
+                .thenReturn(runtimeRun.transition(AiRunStatus.FAILED));
         AgentRuntimeImpl runtime =
                 newRuntime(
-                        mock(AgentExecutionRepository.class),
+                        newRecordingExecutionRepository(),
                         new ReleasingNode(),
                         mock(EventPublisher.class),
                         aiRuntime);
@@ -1483,7 +2035,7 @@ class AgentRuntimeImplControlTest {
                         new com.shiyu.ai.kernel.context.TenantId(9L),
                         7L,
                         AiRunStatus.CANCELLED,
-                        null);
+                        "CLIENT_CANCELLED");
         Execution failed = mock(Execution.class);
         when(failed.getStatus()).thenReturn(ExecutionStatus.FAILED);
         when(failed.getErrorMessage()).thenReturn("boom");
@@ -1503,7 +2055,8 @@ class AgentRuntimeImplControlTest {
                         7L,
                         AiRunStatus.FAILED,
                         "AGENT_EXECUTION_FAILED");
-        finish.invoke(runtime, runtimeRun, failed);
+        assertThrows(InvocationTargetException.class,
+                () -> finish.invoke(runtime, runtimeRun, failed));
     }
 
     private static AgentExecutionBO persisted(
@@ -1523,6 +2076,12 @@ class AgentRuntimeImplControlTest {
         bo.setEndTime(endTime);
         bo.setDurationMs(1L);
         return bo;
+    }
+
+    private static AgentExecutionRepository newRecordingExecutionRepository() {
+        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        new ExecutionRecorder(repository);
+        return repository;
     }
 
     private static AgentRuntimeImpl newRuntime(
@@ -1550,7 +2109,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void blankVersionPersistsTheVersionThatActuallyRan() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode());
 
         Execution result = runtime.execute(ACTOR, "agent-1", " ", Map.of("message", "hello"));
@@ -1563,7 +2122,7 @@ class AgentRuntimeImplControlTest {
 
     @Test
     void missingVersionIsRejectedBeforeAnExecutionIsPersisted() {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
         AgentRuntimeImpl runtime = newRuntime(repository, new ReleasingNode());
 
         assertThrows(IllegalArgumentException.class,
@@ -1572,14 +2131,31 @@ class AgentRuntimeImplControlTest {
     }
 
     @Test
+    void streamingMissingVersionDoesNotRegisterAnExecutionWorker() throws Exception {
+        AgentRuntimeImpl runtime =
+                newRuntime(newRecordingExecutionRepository(), new ReleasingNode());
+
+        assertThrows(
+                RuntimeException.class,
+                () ->
+                        runtime.executeStream(ACTOR, "agent-1", "missing", Map.of())
+                                .collectList()
+                                .block(java.time.Duration.ofSeconds(5)));
+
+        java.lang.reflect.Field lifecycleField =
+                AgentRuntimeImpl.class.getDeclaredField("lifecycle");
+        lifecycleField.setAccessible(true);
+        Object lifecycle = lifecycleField.get(runtime);
+        java.lang.reflect.Field workersField =
+                AgentExecutionLifecycle.class.getDeclaredField("executionWorkers");
+        workersField.setAccessible(true);
+        assertTrue(((Map<?, ?>) workersField.get(lifecycle)).isEmpty());
+    }
+
+    @Test
     void completedEventFailureStillRemovesTerminalExecutionFromMemory() throws Exception {
-        AgentExecutionRepository repository = mock(AgentExecutionRepository.class);
-        AtomicReference<String> executionId = new AtomicReference<>();
-        doAnswer(invocation -> {
-            AgentExecutionBO saved = invocation.getArgument(1);
-            executionId.set(saved.getExecutionId());
-            return null;
-        }).when(repository).insert(any(TenantId.class), any(AgentExecutionBO.class));
+        AgentExecutionRepository repository = newRecordingExecutionRepository();
+        ExecutionRecorder recorder = new ExecutionRecorder(repository);
         EventPublisher publisher = mock(EventPublisher.class);
         IllegalStateException eventFailure = new IllegalStateException("completion event unavailable");
         doThrow(eventFailure).when(publisher).publish(any(AgentExecutionCompletedEvent.class));
@@ -1592,7 +2168,7 @@ class AgentRuntimeImplControlTest {
         stateStoreField.setAccessible(true);
         var stateStore = (com.shiyu.ai.agent.implementation.runtime.port.AgentRuntimeStateStore)
                 stateStoreField.get(runtime);
-        assertNull(stateStore.active(executionId.get()));
+        assertNull(stateStore.active(recorder.stored.getFirst().getExecutionId()));
     }
 
     @Test
@@ -1636,7 +2212,7 @@ class AgentRuntimeImplControlTest {
                 return List.of();
             }
         };
-        AgentRuntimeImpl runtime = newRuntime(mock(AgentExecutionRepository.class), node);
+        AgentRuntimeImpl runtime = newRuntime(newRecordingExecutionRepository(), node);
         reactor.core.publisher.Flux<Map<String, Object>> stream =
                 runtime.executeStream(ACTOR, "agent-1", Map.of());
 
@@ -1656,6 +2232,18 @@ class AgentRuntimeImplControlTest {
         return newRuntime(repository, node, publisher, runtime, checkpointRepository, null);
     }
 
+    private static void copyExecutionState(AgentExecutionBO source, AgentExecutionBO target) {
+        target.setStatus(source.getStatus());
+        target.setSessionId(source.getSessionId());
+        target.setLastCheckpointId(source.getLastCheckpointId());
+        target.setInputData(source.getInputData());
+        target.setOutputData(source.getOutputData());
+        target.setErrorMessage(source.getErrorMessage());
+        target.setStartTime(source.getStartTime());
+        target.setEndTime(source.getEndTime());
+        target.setDurationMs(source.getDurationMs());
+    }
+
     private static AgentRuntimeImpl newRuntime(
             AgentExecutionRepository repository,
             BaseNode node,
@@ -1663,8 +2251,41 @@ class AgentRuntimeImplControlTest {
             AiRuntimeService runtime,
             AgentCheckpointRepository checkpointRepository,
             ToolApprovalService approvals) {
-        when(repository.claimPausedForResume(any(TenantId.class), anyString(), any()))
-                .thenReturn(true);
+        doAnswer(invocation -> {
+            AgentExecutionBO current = repository.selectByExecutionId(
+                    invocation.getArgument(0), invocation.getArgument(1));
+            String expectedCheckpoint = invocation.getArgument(2);
+            if (current == null || !Integer.valueOf(3).equals(current.getStatus())
+                    || !java.util.Objects.equals(
+                            current.getLastCheckpointId(), expectedCheckpoint)) {
+                return false;
+            }
+            current.setStatus(0);
+            return true;
+        }).when(repository).claimPausedForResume(
+                any(TenantId.class), anyString(), org.mockito.ArgumentMatchers.nullable(String.class));
+        doAnswer(invocation -> {
+            AgentExecutionBO update = invocation.getArgument(1);
+            AgentExecutionBO current = repository.selectByExecutionId(
+                    invocation.getArgument(0), update.getExecutionId());
+            Integer expectedStatus = invocation.getArgument(2);
+            if (current == null
+                    || !java.util.Objects.equals(current.getStatus(), expectedStatus)) {
+                return 0;
+            }
+            copyExecutionState(update, current);
+            return 1;
+        }).when(repository).updateIfStatus(
+                any(TenantId.class), any(AgentExecutionBO.class), anyInt());
+        doAnswer(invocation -> {
+            AgentExecutionBO current = repository.selectByExecutionId(
+                    invocation.getArgument(0), invocation.getArgument(1));
+            if (current == null || !java.util.Objects.equals(
+                    current.getStatus(), invocation.getArgument(3))) return 0;
+            current.setLastCheckpointId(invocation.getArgument(2));
+            return 1;
+        }).when(repository).updateCheckpointIfStatus(
+                any(TenantId.class), anyString(), anyString(), anyInt());
         AgentAdminRepository adminRepository = mock(AgentAdminRepository.class);
         AgentLoader loader = mock(AgentLoader.class);
         AgentCacheManager cacheManager = new AgentCacheManager(adminRepository, loader);
@@ -1715,6 +2336,29 @@ class AgentRuntimeImplControlTest {
                             })
                     .when(repository)
                     .insert(any(TenantId.class), any(AgentExecutionBO.class));
+            doAnswer(invocation -> {
+                AgentExecutionBO updated = invocation.getArgument(1);
+                AgentExecutionBO current = stored.stream()
+                        .filter(bo -> updated.getExecutionId().equals(bo.getExecutionId()))
+                        .findFirst().orElse(null);
+                if (current == null || !java.util.Objects.equals(
+                        current.getStatus(), invocation.getArgument(2))) return 0;
+                stored.remove(current);
+                stored.add(updated);
+                return 1;
+            }).when(repository).updateIfStatus(
+                    any(TenantId.class), any(AgentExecutionBO.class), anyInt());
+            doAnswer(invocation -> {
+                String executionId = invocation.getArgument(1);
+                String checkpointId = invocation.getArgument(2);
+                AgentExecutionBO current = stored.stream()
+                        .filter(bo -> executionId.equals(bo.getExecutionId()))
+                        .findFirst().orElse(null);
+                if (current == null || !Integer.valueOf(0).equals(current.getStatus())) return 0;
+                current.setLastCheckpointId(checkpointId);
+                return 1;
+            }).when(repository).updateCheckpointIfStatus(
+                    any(TenantId.class), anyString(), anyString(), anyInt());
             when(repository.selectByExecutionId(any(TenantId.class), anyString()))
                     .thenAnswer(
                             invocation -> {

@@ -8,7 +8,6 @@ import static org.mockito.Mockito.*;
 import com.shiyu.ai.common.foundation.context.model.UserContext;
 import com.shiyu.ai.common.foundation.context.UserContextHolder;
 import com.shiyu.ai.conversation.contract.api.*;
-import com.shiyu.ai.conversation.contract.api.GenerationAdmission;
 import com.shiyu.ai.conversation.contract.model.*;
 import com.shiyu.ai.conversation.implementation.application.*;
 import com.shiyu.ai.conversation.implementation.domain.model.*;
@@ -29,10 +28,10 @@ import java.util.Optional;
  */
 class GenerationControllerTest {
     private final GenerationRepository generations = mock(GenerationRepository.class);
-    private final GenerationAdmission admission = mock(GenerationAdmission.class);
     private final GenerationRunner runner = mock(GenerationRunner.class);
+    private final ConversationRepository conversations = mock(ConversationRepository.class);
     private final GenerationController controller =
-            new GenerationController(generations, admission, null, runner);
+            new GenerationController(generations, null, runner, conversations);
     private final Instant now = Instant.now();
 
     @BeforeEach
@@ -67,22 +66,25 @@ class GenerationControllerTest {
     void cancelsRunningGenerationAndEmitsProjectionEvent() {
         GenerationRun run = generation(GenerationStatus.RUNNING);
         when(generations.find("g1", new TenantId(7), 8)).thenReturn(Optional.of(run));
-        when(generations.update(any(GenerationRun.class), eq(0L))).thenReturn(1);
-        when(generations.nextEventSequence("g1", new TenantId(7))).thenReturn(3);
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), eq(0L), eq(8L), anyList()))
+                .thenReturn(1);
 
         assertTrue(controller.cancel("g1").isSuccess());
-        verify(runner).cancel("g1");
-        verify(generations)
-                .appendEvent(
+        verify(conversations)
+                .transitionRunningGeneration(
                         argThat(
-                                event ->
-                                        event.type() == GenerationEventType.CANCELLED
-                                                && event.sequence() == 3),
-                        eq(new TenantId(7L)));
-        verify(admission)
-                .release(
-                        any(),
-                        argThat(cancelled -> cancelled.status() == GenerationStatus.CANCELLED));
+                                cancelled ->
+                                        cancelled.status() == GenerationStatus.CANCELLED
+                                                && cancelled.cancelRequested()
+                                                && cancelled.version() == 1),
+                        eq(0L),
+                        eq(8L),
+                        eq(List.of()));
+        verify(runner).cancel("g1");
+        verify(runner).processTerminalPostProcessing("g1");
+        verify(generations, never()).update(any(GenerationRun.class), anyLong());
+        verify(generations, never()).appendEvent(any(), any(TenantId.class));
     }
 
     @Test
@@ -92,6 +94,16 @@ class GenerationControllerTest {
         GenerationRun created = generation(GenerationStatus.CREATED);
         when(generations.find("g2", new TenantId(7), 8)).thenReturn(Optional.of(created));
         assertThrows(RuntimeException.class, () -> controller.cancel("g2"));
+
+        when(generations.find("g3", new TenantId(7), 8))
+                .thenReturn(Optional.of(generation(GenerationStatus.RUNNING)));
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), eq(0L), eq(8L), anyList()))
+                .thenReturn(0);
+        assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> controller.cancel("g3"));
+        verify(runner, never()).cancel("g3");
     }
 
     private GenerationRun generation(GenerationStatus status) {

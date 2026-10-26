@@ -347,74 +347,148 @@ public class UserContextInterceptor implements AsyncHandlerInterceptor {
         if (userContext.getCurrentTenantId() == null) {
             return false;
         }
-        // 租户或角色发生变化时，以 user.ext_info 中的持久化选择为准。
-        // 父级超级管理员切换属于临时上下文，不复用普通用户 Session。
-        if (userContext.isParentSuperAdminSwitch()) {
-            return false;
-        }
         AuthUserResponse user = authContextService.user(userContext.getUserId());
         if (!isActive(user)) {
             return false;
         }
-        AuthTenantResponse tenant = authContextService.tenant(userContext.getCurrentTenantId());
+
+        Map<String, Object> persistedSelection = Map.of();
+        if (user.getExtInfo() != null && !user.getExtInfo().isEmpty()) {
+            try {
+                Map<String, Object> parsedSelection =
+                        JSONUtils.parseObject(
+                                user.getExtInfo(), new TypeReference<Map<String, Object>>() {});
+                if (parsedSelection != null) {
+                    persistedSelection = parsedSelection;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        List<AuthScopeRoleResponse> assignments =
+                authContextService.scopeRoles(userContext.getUserId());
+        Long selectedTenantId = null;
+        Object persistedTenantId = persistedSelection.get("currentTenantId");
+        if (persistedTenantId instanceof Number number) {
+            selectedTenantId = number.longValue();
+        }
+        if (selectedTenantId == null && assignments != null) {
+            selectedTenantId =
+                    assignments.stream()
+                            .filter(this::isActive)
+                            .map(AuthScopeRoleResponse::getTenantId)
+                            .filter(java.util.Objects::nonNull)
+                            .findFirst()
+                            .orElse(null);
+        }
+        if (!java.util.Objects.equals(selectedTenantId, userContext.getCurrentTenantId())) {
+            return false;
+        }
+        final Long contextTenantId = selectedTenantId;
+
+        Long selectedHomeTenantId = null;
+        Object persistedHomeTenantId = persistedSelection.get("homeTenantId");
+        if (persistedHomeTenantId instanceof Number number) {
+            selectedHomeTenantId = number.longValue();
+        }
+        if (selectedHomeTenantId == null) {
+            selectedHomeTenantId = selectedTenantId;
+        }
+        if (!java.util.Objects.equals(selectedHomeTenantId, userContext.getHomeTenantId())) {
+            return false;
+        }
+
+        AuthTenantResponse tenant = authContextService.tenant(selectedTenantId);
         if (!isActive(tenant)) {
             return false;
         }
-        List<AuthScopeRoleResponse> assignments =
-                authContextService.scopeRoles(userContext.getUserId());
         boolean assigned =
                 assignments != null
                         && assignments.stream()
                                 .anyMatch(
                                         item ->
-                                                userContext
-                                                                .getCurrentTenantId()
-                                                                .equals(item.getTenantId())
+                                                contextTenantId.equals(item.getTenantId())
                                                         && isActive(item)
                                                         && item.getRoleId() != null
                                                         && isActiveRoleInTenant(
                                                                 authContextService.role(
                                                                         item.getRoleId()),
-                                                                userContext.getCurrentTenantId()));
+                                                                contextTenantId));
+        Object persistedSwitchMode = persistedSelection.get("switchMode");
+        boolean requestedDelegation =
+                persistedSwitchMode instanceof String switchMode
+                        && "PARENT_SUPER_ADMIN".equals(switchMode);
+        AuthRoleResponse delegatedRole = null;
         boolean delegated =
-                "PARENT_SUPER_ADMIN".equals(userContext.getSwitchMode())
+                !assigned
+                        && requestedDelegation
                         && isParentSuperAdmin(
-                                userContext.getUserId(), userContext.getHomeTenantId(), assignments)
+                                userContext.getUserId(), selectedHomeTenantId, assignments)
                         && authContextService
-                                .descendantTenantIds(tenantId(userContext.getHomeTenantId()))
-                                .contains(userContext.getCurrentTenantId())
-                        && isActiveTenantSuperRole(
-                                authContextService.tenantSuperRole(
-                                        tenantId(userContext.getCurrentTenantId())),
-                                userContext.getCurrentTenantId());
+                                .descendantTenantIds(tenantId(selectedHomeTenantId))
+                                .contains(selectedTenantId);
+        if (delegated) {
+            delegatedRole = authContextService.tenantSuperRole(tenantId(selectedTenantId));
+            delegated =
+                    isActiveTenantSuperRole(delegatedRole, selectedTenantId)
+                            && isTenantSuperCode(delegatedRole.getCode());
+        }
         if (!assigned && !delegated) {
             return false;
         }
-        if (userContext.getCurrentRoleCode() != null) {
-            boolean roleValid =
-                    delegated && isTenantSuperCode(userContext.getCurrentRoleCode())
-                            || assignments.stream()
-                                    .anyMatch(
-                                            item -> {
-                                                if (!userContext
-                                                                .getCurrentTenantId()
-                                                                .equals(item.getTenantId())
-                                                        || !isActive(item)
-                                                        || item.getRoleId() == null) {
-                                                    return false;
-                                                }
-                                                AuthRoleResponse role =
-                                                        authContextService.role(item.getRoleId());
-                                                return isActiveRoleInTenant(
-                                                                role,
-                                                                userContext.getCurrentTenantId())
-                                                        && userContext
-                                                                .getCurrentRoleCode()
-                                                                .equals(role.getCode());
-                                            });
-            if (!roleValid) {
-                return false;
+
+        String selectedSwitchMode = delegated ? "PARENT_SUPER_ADMIN" : "NORMAL";
+        if (!selectedSwitchMode.equals(userContext.getSwitchMode())) {
+            return false;
+        }
+        Long selectedSwitchFromTenantId = null;
+        Object persistedSwitchFromTenantId = persistedSelection.get("switchFromTenantId");
+        if (persistedSwitchFromTenantId instanceof Number number) {
+            selectedSwitchFromTenantId = number.longValue();
+        }
+        if (!java.util.Objects.equals(
+                delegated ? selectedSwitchFromTenantId : null,
+                userContext.getSwitchFromTenantId())) {
+            return false;
+        }
+
+        Long selectedRoleId = null;
+        String selectedRoleCode = null;
+        Object persistedRole = persistedSelection.get("currentRole");
+        if (persistedRole instanceof Map<?, ?> roleMap) {
+            Object roleId = roleMap.get("roleId");
+            Object roleCode = roleMap.get("roleKey");
+            if (roleId instanceof Number number && roleCode instanceof String code) {
+                selectedRoleId = number.longValue();
+                selectedRoleCode = code;
             }
+        }
+        if (delegated) {
+            selectedRoleId = delegatedRole.getId();
+            selectedRoleCode = delegatedRole.getCode();
+        } else if (selectedRoleId != null) {
+            Long selectedRoleIdValue = selectedRoleId;
+            boolean roleAssigned =
+                    assignments != null
+                            && assignments.stream()
+                                    .anyMatch(
+                                            item ->
+                                                    contextTenantId.equals(item.getTenantId())
+                                                            && selectedRoleIdValue.equals(
+                                                                    item.getRoleId())
+                                                            && isActive(item));
+            AuthRoleResponse role =
+                    roleAssigned ? authContextService.role(selectedRoleId) : null;
+            if (!isActiveRoleInTenant(role, selectedTenantId)
+                    || !selectedRoleCode.equals(role.getCode())) {
+                selectedRoleId = null;
+                selectedRoleCode = null;
+            }
+        }
+        if (!java.util.Objects.equals(selectedRoleId, userContext.getCurrentRoleId())
+                || !java.util.Objects.equals(selectedRoleCode, userContext.getCurrentRoleCode())) {
+            return false;
         }
         return true;
     }

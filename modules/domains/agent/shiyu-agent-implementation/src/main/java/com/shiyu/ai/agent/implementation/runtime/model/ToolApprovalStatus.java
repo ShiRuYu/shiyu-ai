@@ -12,5 +12,7 @@ public enum ToolApprovalStatus {
     COMPLETED,
     NOT_EXECUTED,
     REJECTED,
-    EXPIRED
+    EXPIRED,
+    COMPENSATING,
+    COMPENSATED
 }

@@ -128,11 +128,7 @@ public final class PgVectorStore implements VectorStore {
                                 + " AND dimension = ?");
         List<Object> arguments =
                 new ArrayList<>(List.of(literal(request.getQueryVector()), namespace, dimension));
-        for (Map.Entry<String, Object> entry : request.getFilter().entrySet()) {
-            sql.append(" AND metadata ->> ? = ?");
-            arguments.add(entry.getKey());
-            arguments.add(String.valueOf(entry.getValue()));
-        }
+        appendMetadataFilters(sql, arguments, request.getFilter());
         sql.append(" AND 1 - (")
                 .append(vectorColumn)
                 .append(" <=> CAST(? AS ")
@@ -200,6 +196,36 @@ public final class PgVectorStore implements VectorStore {
                         Integer.class,
                         namespace);
         return count == null ? 0 : count;
+    }
+
+    @Override
+    public int count(Map<String, Object> filter) {
+        StringBuilder sql =
+                new StringBuilder(
+                        "SELECT COUNT(*) FROM shiyu_vector_item WHERE vector_namespace = ? AND dimension = ?");
+        List<Object> arguments = new ArrayList<>(List.of(namespace, dimension));
+        Map<String, Object> filters = filter == null ? Map.of() : filter;
+        appendMetadataFilters(sql, arguments, filters);
+        Integer count =
+                jdbc.queryForObject(
+                        sql.toString(), Integer.class, arguments.toArray(new Object[0]));
+        return count == null ? 0 : count;
+    }
+
+    private void appendMetadataFilters(
+            StringBuilder sql, List<Object> arguments, Map<String, Object> filters) {
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            if (entry.getValue() == null) {
+                sql.append(
+                        " AND (metadata -> ? = 'null'::jsonb OR NOT jsonb_exists(metadata, ?))");
+                arguments.add(entry.getKey());
+                arguments.add(entry.getKey());
+            } else {
+                sql.append(" AND metadata -> ? = CAST(? AS jsonb)");
+                arguments.add(entry.getKey());
+                arguments.add(JSONUtils.toJsonString(entry.getValue()));
+            }
+        }
     }
 
     private void initializeSchema() {

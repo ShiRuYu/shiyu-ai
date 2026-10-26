@@ -109,17 +109,21 @@ class GenerationRunnerBranchTest {
                         anyString(),
                         isNull(),
                         isNull());
+        when(conversations.transitionRunningGeneration(
+                        any(GenerationRun.class), anyLong(), anyLong(), anyList()))
+                .thenReturn(1);
 
         runner(engine, generations, conversations, usage, admission, runtime)
                 .start(created, new TenantId(1), 2);
 
-        verify(runtime)
-                .finish(
-                        eq("r1"),
-                        eq(new TenantId(1L)),
+        verify(conversations)
+                .transitionRunningGeneration(
+                        argThat(run -> run.status() == GenerationStatus.FAILED),
+                        anyLong(),
                         eq(2L),
-                        eq(AiRunStatus.FAILED),
-                        eq("IllegalStateException"));
+                        anyList());
+        verify(runtime, never())
+                .finish(anyString(), any(TenantId.class), anyLong(), any(), any());
         verify(usage).failed(argThat(run -> run.status() == GenerationStatus.FAILED));
         verify(engine, never()).stream(any());
     }

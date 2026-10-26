@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -41,6 +42,22 @@ public class JdbcGenerationRepository implements GenerationRepository {
      * runtimeRuns 属性，保存当前对象中的业务数据或协作依赖。
      */
     private final AiRunRepository runtimeRuns;
+    private final TransactionTemplate transactions;
+
+    public com.shiyu.ai.agent.contract.runtime.AiRun finishRuntimeTerminal(
+            String runtimeRunId,
+            TenantId tenantId,
+            long ownerUserId,
+            AiRunStatus status,
+            String errorCode,
+            List<AiRunEventType> precedingEvents,
+            String turnId,
+            String stepId) {
+        if (runtimeRunId == null || runtimeRunId.isBlank()) return null;
+        return runtimeRuns.finishGenerationRun(
+                runtimeRunId, tenantId, ownerUserId, status, errorCode, precedingEvents, turnId, stepId);
+    }
+
     /**
      * 执行 Jdbc 生成 相关业务操作，并维护必要的状态和协作关系。
      *
@@ -51,6 +68,10 @@ public class JdbcGenerationRepository implements GenerationRepository {
             @Qualifier("agentDataSource") DataSource dataSource, AiRunRepository runtimeRuns) {
         this.jdbc = new JdbcTemplate(dataSource);
         this.runtimeRuns = runtimeRuns;
+        this.transactions =
+                new TransactionTemplate(
+                        new org.springframework.jdbc.datasource.DataSourceTransactionManager(
+                                dataSource));
     }
 
     /**
@@ -114,6 +135,25 @@ public class JdbcGenerationRepository implements GenerationRepository {
      * @param ownerUserId 当前操作涉及的用户标识。
      * @return 返回可能存在的业务对象；不存在时返回空值容器。
      */
+    @Override
+    @Transactional
+    public int deleteCreated(String id, TenantId tenantId, long ownerUserId) {
+        TenantScope.requireMatches(tenantId);
+        int deleted =
+                jdbc.update(
+                        "DELETE FROM CHAT_GENERATION_RUN WHERE ID=? AND TENANT_ID=? AND"
+                                + " STATUS='CREATED'",
+                        id,
+                        tenantId.value());
+        if (deleted == 1) {
+            jdbc.update(
+                    "DELETE FROM CHAT_GENERATION_ACTIVE WHERE GENERATION_ID=? AND TENANT_ID=?",
+                    id,
+                    tenantId.value());
+        }
+        return deleted;
+    }
+
     @Override
     public Optional<GenerationRun> find(String id, TenantId tenantId, long ownerUserId) {
         TenantScope.requireMatches(tenantId);
@@ -200,7 +240,6 @@ public class JdbcGenerationRepository implements GenerationRepository {
      * @return 返回 Jdbc 生成 相关操作生成的结果数据。
      */
     @Override
-    @Transactional
     public List<RecoveredGeneration> recoverStaleGenerations(long timeoutMs) {
         long grace = Math.max(1000L, timeoutMs);
         Timestamp cutoff = Timestamp.from(Instant.now().minusMillis(grace));
@@ -222,7 +261,9 @@ public class JdbcGenerationRepository implements GenerationRepository {
         for (StaleGeneration abandoned : stale) {
             TenantScope.withTenant(
                             new TenantId(abandoned.tenantId()),
-                            () -> recoverOneStaleGeneration(abandoned))
+                            () ->
+                                    transactions.execute(
+                                            status -> recoverOneStaleGeneration(abandoned)))
                     .ifPresent(recovered::add);
         }
         return List.copyOf(recovered);
@@ -252,6 +293,7 @@ public class JdbcGenerationRepository implements GenerationRepository {
                         Instant.now(),
                         failed.runtimeRunId());
         if (update(failed, current.version()) != 1) return Optional.empty();
+        enqueueGenerationPostProcessing(failed, new TenantId(abandoned.tenantId()), abandoned.ownerUserId());
         if (failed.runtimeRunId() != null && !failed.runtimeRunId().isBlank()) {
             try {
                 AiRun run =
@@ -306,23 +348,31 @@ public class JdbcGenerationRepository implements GenerationRepository {
                         failed, new TenantId(abandoned.tenantId()), abandoned.ownerUserId()));
     }
 
-    /**
-     * 更新或设置 Jdbc 生成 相关业务数据，并返回处理结果。
-     *
-     * @param g 用于完成本次业务处理的 g 参数。
-     * @param expectedVersion 用于完成本次业务处理的 expectedVersion 参数。
-     * @return 返回 Jdbc 生成 相关操作生成的结果数据。
-     */
+    @Override
+    public int touchRunning(String generationId, TenantId tenantId) {
+        TenantScope.requireMatches(tenantId);
+        return jdbc.update(
+                "UPDATE CHAT_GENERATION_RUN SET UPDATED_AT=? WHERE ID=? AND TENANT_ID=? AND STATUS='RUNNING'",
+                ts(Instant.now()),
+                generationId,
+                tenantId.value());
+    }
+
     @Override
     @Transactional
     public int update(GenerationRun g, long expectedVersion) {
         TenantId currentTenant = TenantScope.current().orElse(null);
         if (currentTenant != null) {
+            boolean terminal =
+                    g.status() == GenerationStatus.COMPLETED
+                            || g.status() == GenerationStatus.FAILED
+                            || g.status() == GenerationStatus.CANCELLED;
             int updated =
                     jdbc.update(
                             "UPDATE CHAT_GENERATION_RUN SET"
                                     + " STATUS=?,PROMPT_TOKENS=?,COMPLETION_TOKENS=?,LATENCY_MS=?,ERROR_CODE=?,LAST_EVENT_SEQUENCE=?,CANCEL_REQUESTED=?,VERSION=?,UPDATED_AT=?,RUNTIME_RUN_ID=COALESCE(?,RUNTIME_RUN_ID)"
-                                    + " WHERE ID=? AND TENANT_ID=? AND VERSION=?",
+                                    + " WHERE ID=? AND TENANT_ID=? AND VERSION=?"
+                                    + " AND STATUS IN ('CREATED','RUNNING')",
                             g.status().name(),
                             g.promptTokens(),
                             g.completionTokens(),
@@ -347,11 +397,15 @@ public class JdbcGenerationRepository implements GenerationRepository {
             }
             return updated;
         }
+        boolean terminal =
+                g.status() == GenerationStatus.COMPLETED
+                        || g.status() == GenerationStatus.FAILED
+                        || g.status() == GenerationStatus.CANCELLED;
         int updated =
                 jdbc.update(
                         "UPDATE CHAT_GENERATION_RUN SET"
                             + " STATUS=?,PROMPT_TOKENS=?,COMPLETION_TOKENS=?,LATENCY_MS=?,ERROR_CODE=?,LAST_EVENT_SEQUENCE=?,CANCEL_REQUESTED=?,VERSION=?,UPDATED_AT=?,RUNTIME_RUN_ID=COALESCE(?,RUNTIME_RUN_ID)"
-                            + " WHERE ID=? AND VERSION=?",
+                            + " WHERE ID=? AND VERSION=? AND STATUS IN ('CREATED','RUNNING')",
                         g.status().name(),
                         g.promptTokens(),
                         g.completionTokens(),
@@ -473,6 +527,22 @@ public class JdbcGenerationRepository implements GenerationRepository {
             throw new IllegalStateException("generation tenant not found");
         }
         return tenantId;
+    }
+
+    private void enqueueGenerationPostProcessing(
+            GenerationRun run, TenantId tenantId, long ownerUserId) {
+        jdbc.update(
+                "INSERT INTO CHAT_GENERATION_POSTPROCESSING (GENERATION_ID,TENANT_ID,OWNER_USER_ID,QUOTA_ACTION,USAGE_ACTION,QUOTA_DONE,USAGE_DONE,ATTEMPTS,NEXT_ATTEMPT_AT,CREATED_AT) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                run.id(),
+                tenantId.value(),
+                ownerUserId,
+                "RELEASE",
+                "FAILED",
+                false,
+                false,
+                0,
+                ts(Instant.now()),
+                ts(Instant.now()));
     }
 
     private AiRunEventType runtimeType(GenerationEventType type) {
