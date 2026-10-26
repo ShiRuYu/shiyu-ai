@@ -18,5 +18,5 @@ mybatis-flex:
       driver-class-name: org.postgresql.Driver
       url: ${SHIYU_DB_URL:jdbc:postgresql://localhost:5433/postgres}
       username: ${SHIYU_DB_USERNAME:postgres}
-      password: ${SHIYU_DB_PASSWORD:}
+      password: ${SHIYU_DB_PASSWORD:FjEdY+0ShHBJNTHuNl5cyQVmWlG23vaC}
       validation-query: SELECT 1
