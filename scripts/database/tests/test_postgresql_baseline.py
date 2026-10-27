@@ -14,6 +14,14 @@ SPEC.loader.exec_module(MODULE)
 
 
 class PostgreSqlBaselineTest(unittest.TestCase):
+    def test_agent_version_flag_conversion_drops_character_default_before_cast(self) -> None:
+        converted = MODULE.convert_update(
+            "ALTER TABLE AGENT_VERSION ALTER COLUMN DEL_FLAG TINYINT DEFAULT 0;"
+        )
+        self.assertLess(converted.index("DROP DEFAULT"), converted.index("TYPE SMALLINT USING CAST"))
+        self.assertLess(converted.index("TYPE SMALLINT USING CAST"), converted.index("SET DEFAULT 0"))
+        self.assertNotIn("SMALLINT DEFAULT 0;", converted)
+
     def test_order_column_keeps_quotes(self) -> None:
         converted = MODULE.convert('CREATE TABLE "AUTH_TENANT" ("ORDER" INTEGER);')
         self.assertIn('CREATE TABLE "auth_tenant"', converted)
@@ -42,7 +50,7 @@ class PostgreSqlBaselineTest(unittest.TestCase):
 
     def test_auto_update_columns_are_discovered_for_triggers(self) -> None:
         source = '''
-CREATE CACHED TABLE "PUBLIC"."EDU_STUDENT"(
+CREATE CACHED TABLE IF NOT EXISTS "PUBLIC"."EDU_STUDENT"(
     "UPDATED_AT" TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE CACHED TABLE "PUBLIC"."EDU_QUESTION"(
@@ -53,6 +61,16 @@ CREATE CACHED TABLE "PUBLIC"."EDU_QUESTION"(
             [("edu_student", "updated_at"), ("edu_question", "update_time")],
             MODULE.auto_update_columns(source),
         )
+
+    def test_identity_sequences_restart_under_table_lock(self) -> None:
+        identity_sql = "\n".join(MODULE.identity_sequence_sql(MODULE.SCHEMA))
+        self.assertIn("'memory_consolidation_job'", identity_sql)
+        self.assertIn("LOCK TABLE %I.%I IN ACCESS EXCLUSIVE MODE", identity_sql)
+        self.assertIn("COALESCE(MAX(%I), 0) + 1", identity_sql)
+        self.assertIn("ALTER TABLE %I.%I ALTER COLUMN %I RESTART WITH %s", identity_sql)
+        self.assertNotIn("pg_get_serial_sequence", identity_sql)
+        self.assertNotIn("setval", identity_sql)
+
 
     def test_json_seed_content_preserves_case(self) -> None:
         source = 'INSERT INTO "APP" ("CONFIG") VALUES (\'{"NodeType":"Start"}\');'
@@ -75,6 +93,38 @@ CREATE CACHED TABLE "PUBLIC"."EDU_QUESTION"(
             [MODULE.postgresql_update_resource(path) for path in MODULE.UPDATES],
         )
 
+    def test_permission_updates_use_generated_identity_but_keep_h2_sources(self) -> None:
+        MODULE.write_baseline_resources()
+        initializer = (
+            MODULE.ROOT
+            / "modules/applications/shiyu-platform-composition/src/main/java/com/shiyu/ai/composition/database/DatabaseInitializer.java"
+        ).read_text(encoding="utf-8")
+        fresh_branch = initializer.index("if (freshInstall) {")
+        existing_branch = initializer.index("} else if (existingTables.contains(BASELINE_TABLE)) {")
+        updates = initializer.index("executePostgresqlUpdates(connection);")
+        fresh_sync = initializer.index(
+            '"classpath:db/baseline/postgresql/identity-sequences.sql"', fresh_branch
+        )
+        self.assertLess(fresh_sync, updates)
+        self.assertNotIn("identity-sequences-permission.sql", initializer[existing_branch:updates])
+
+        permission_updates = [
+            path for path in MODULE.UPDATES if path.endswith("20260914_platform_usage.sql")
+        ] + [
+            path for path in MODULE.UPDATES if path.endswith("20260923_permission_alignment.sql")
+        ] + [
+            path for path in MODULE.UPDATES if path.endswith("20261005_exam_attempt.sql")
+        ]
+        for path in permission_updates:
+            with self.subTest(path=path):
+                source = (MODULE.ROOT / path).read_text(encoding="utf-8")
+                generated = (
+                    MODULE.RUNTIME_RESOURCES / MODULE.postgresql_update_resource(path)
+                ).read_text(encoding="utf-8")
+                self.assertIn("COALESCE(MAX(ID), 0) + 1", source)
+                self.assertNotIn("COALESCE(MAX(ID), 0) + 1", generated)
+                self.assertIn("INSERT INTO AUTH_AUTH_CODE (CODE,", generated)
+
     def test_runtime_generation_separates_seed_and_updates(self) -> None:
         MODULE.write_baseline_resources()
         resources = MODULE.RUNTIME_RESOURCES / "db/baseline/postgresql"
@@ -91,11 +141,20 @@ CREATE CACHED TABLE "PUBLIC"."EDU_QUESTION"(
         identity_sql = (resources / "identity-sequences.sql").read_text(encoding="utf-8")
         self.assertIn("DO $$", identity_sql)
         self.assertIn("'common_dict'", identity_sql)
+        self.assertIn("'common_schema_baseline'", identity_sql)
+        self.assertIn("'memory_consolidation_job'", identity_sql)
         self.assertNotIn("AND table_name IN ()", identity_sql)
         baseline_seed = (MODULE.OUT / "baseline-seed.sql").read_text(encoding="utf-8")
+        marker_insert = baseline_seed.index("INSERT INTO common_schema_baseline")
+        sequence_sync = baseline_seed.index("DO $$")
+        self.assertLess(marker_insert, sequence_sync)
         self.assertLess(
+            sequence_sync,
+            baseline_seed.index("20260914_platform_usage.sql"),
+        )
+        self.assertLess(
+            baseline_seed.index("20260914_platform_usage.sql"),
             baseline_seed.index("20261024_generation_postprocessing.sql"),
-            baseline_seed.index("DO $$"),
         )
         self.assertEqual(
             [MODULE.postgresql_update_resource(path) for path in MODULE.UPDATES],

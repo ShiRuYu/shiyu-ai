@@ -3,7 +3,7 @@ package com.shiyu.ai.composition.database;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Splits PostgreSQL scripts without breaking quoted procedural bodies. */
+/** 拆分 PostgreSQL 脚本，同时保留引号包围的过程体内部语句。 */
 final class PostgresqlScriptExecutor {
 
     private PostgresqlScriptExecutor() {}
@@ -101,13 +101,14 @@ final class PostgresqlScriptExecutor {
                 singleQuoted = true;
                 escapeString = index > 0
                         && (script.charAt(index - 1) == 'E' || script.charAt(index - 1) == 'e')
-                        && (index < 2 || !Character.isLetterOrDigit(script.charAt(index - 2)));
+                        && (index < 2 || !isIdentifierPart(script.codePointBefore(index - 1)));
                 index++;
             } else if (current == '"') {
                 statement.append(current);
                 doubleQuoted = true;
                 index++;
-            } else if (current == '$') {
+            } else if (current == '$'
+                    && (index == 0 || !isIdentifierPart(script.codePointBefore(index)))) {
                 String tag = dollarQuoteTag(script, index);
                 if (tag == null) {
                     statement.append(current);
@@ -148,11 +149,11 @@ final class PostgresqlScriptExecutor {
     }
 
     private static boolean isIdentifierStart(char character) {
-        return character == '_' || Character.isLetter(character);
+        return character == '_' || Character.isLetter(character) || character >= 0x80;
     }
 
     private static boolean isIdentifierPart(int character) {
-        return character == '_' || Character.isLetterOrDigit(character);
+        return character == '_' || character == '$' || Character.isLetterOrDigit(character) || character >= 0x80;
     }
 
     private static void addStatement(List<String> statements, StringBuilder statement) {

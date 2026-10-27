@@ -77,7 +77,7 @@ public class ToolCallNode extends BaseNode {
             ToolExecutionPipeline executionPipeline) {
         super(config != null ? config : new ToolCallConfig());
         this.config = config != null ? config : new ToolCallConfig();
-        // Tool calls can have external side effects: fail the graph and never replay the node.
+        // 工具调用可能已产生外部副作用，因此将图标记失败且不重放该节点。
         this.config.setNodeType(NodeType.TOOL_CALL);
         this.config.setRetryCount(0);
         this.config.setErrorStrategy("THROW");

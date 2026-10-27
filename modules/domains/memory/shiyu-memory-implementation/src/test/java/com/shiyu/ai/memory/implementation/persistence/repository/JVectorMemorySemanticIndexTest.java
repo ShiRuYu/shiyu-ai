@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 
 /**
  * 验证 J 向量 记忆 Semantic 索引 相关功能、边界条件、异常路径和协作行为。
@@ -272,10 +273,88 @@ class JVectorMemorySemanticIndexTest {
                 null, null, 1, 5, 20);
     }
 
+    @Test
+    void missingOrIncompatibleEmbeddingCannotWriteAnIndex() {
+        VectorStore store = mock(VectorStore.class);
+        VectorStoreProperties properties = new VectorStoreProperties();
+        properties.setDimension(4);
+        JdbcMagmaMemoryRepository repository = mock(JdbcMagmaMemoryRepository.class);
+        MemoryEvent event = event("unavailable", "memory", MemoryEventStatus.ACTIVE);
+        JVectorMemorySemanticIndex unconfigured = new JVectorMemorySemanticIndex(store, properties, repository);
+        assertTrue(assertThrows(IllegalStateException.class, () -> unconfigured.upsert(event))
+                .getMessage().contains("EmbeddingService is not configured"));
+        for (int dimension : new int[] {0, 5}) {
+            EmbeddingService embedding = embeddings(dimension);
+            var index = new JVectorMemorySemanticIndex(store, properties, repository, provider(embedding), null);
+            assertThrows(IllegalStateException.class, () -> index.upsert(event));
+        }
+        EmbeddingService embedding = embeddings(4);
+        when(embedding.embed(any(TenantId.class), anyString())).thenReturn((float[]) null);
+        var index = new JVectorMemorySemanticIndex(store, properties, repository, provider(embedding), " ");
+        assertTrue(assertThrows(IllegalStateException.class, () -> index.upsert(event))
+                .getMessage().contains("returned dimension 0"));
+        when(embedding.embed(any(TenantId.class), anyString())).thenReturn(new float[3]);
+        assertTrue(assertThrows(IllegalStateException.class, () -> index.upsert(event))
+                .getMessage().contains("returned dimension 3"));
+        properties.setDimension(0);
+        var noDimension = new JVectorMemorySemanticIndex(store, properties, repository, provider(embedding), "test");
+        assertThrows(IllegalStateException.class, () -> noDimension.upsert(event));
+        verifyNoInteractions(store);
+    }
+
+    @Test
+    void incompatiblePersistedVectorsFailClosedWithRebuildGuidance() {
+        VectorStore store = mock(VectorStore.class);
+        VectorStoreProperties properties = new VectorStoreProperties();
+        properties.setDimension(4);
+        JdbcMagmaMemoryRepository repository = mock(JdbcMagmaMemoryRepository.class);
+        var index = new JVectorMemorySemanticIndex(store, properties, repository, provider(embeddings(4)), "test");
+        when(repository.findEventsByIds(TENANT, List.of("stale")))
+                .thenReturn(List.of(event("stale", "content", MemoryEventStatus.ACTIVE)));
+        VectorRecord valid = vectorRecord("stale", 4, "test", 0.8);
+        for (String key : List.of("embeddingProfile", "embeddingDimension")) {
+            Map<String, Object> metadata = new HashMap<>(valid.metadata());
+            metadata.put(key, "old");
+            when(store.search(any(com.shiyu.ai.common.vector.model.VectorSearchRequest.class)))
+                    .thenReturn(List.of(new VectorRecord("stale", valid.vector(), metadata)));
+            assertTrue(assertThrows(IllegalStateException.class, () -> index.search(query(), 2))
+                    .getMessage().contains("Rebuild"));
+        }
+        for (float[] vector : new float[][] {null, new float[3]}) {
+            when(store.search(any(com.shiyu.ai.common.vector.model.VectorSearchRequest.class)))
+                    .thenReturn(List.of(new VectorRecord("stale", vector, valid.metadata())));
+            assertTrue(assertThrows(IllegalStateException.class, () -> index.search(query(), 2))
+                    .getMessage().contains("Stored memory vector dimension mismatch"));
+        }
+        assertTrue(index.search(query(), 0).isEmpty());
+        verify(store, never()).upsert(any(VectorRecord.class));
+    }
+
+    @Test
+    void staleMetadataCannotExposeAnEventFromADifferentSubject() {
+        VectorStore store = mock(VectorStore.class);
+        VectorStoreProperties properties = new VectorStoreProperties();
+        properties.setDimension(4);
+        JdbcMagmaMemoryRepository repository = mock(JdbcMagmaMemoryRepository.class);
+        var index = new JVectorMemorySemanticIndex(store, properties, repository, provider(embeddings(4)), "test");
+        when(store.search(any(com.shiyu.ai.common.vector.model.VectorSearchRequest.class)))
+                .thenReturn(List.of(vectorRecord("stale", 4, "test", 0.8)));
+        MemoryEvent source = event("stale", "content", MemoryEventStatus.ACTIVE);
+        for (List<String> scope : List.of(List.of("other", "PROFILE", "u1"),
+                List.of("notes", "OTHER", "u1"), List.of("notes", "PROFILE", "u2"))) {
+            MemoryEvent moved = new MemoryEvent(source.id(), TENANT, scope.get(0), scope.get(1), scope.get(2),
+                    source.eventType(), source.content(), source.occurredAt(), source.sourceType(), source.sourceId(),
+                    source.attributes(), source.confidence(), source.importance(), source.status(), source.confirmationPolicy(),
+                    source.createdAt(), source.updatedAt());
+            when(repository.findEventsByIds(TENANT, List.of("stale"))).thenReturn(List.of(moved));
+            assertTrue(index.search(query(), 2).isEmpty());
+        }
+    }
+
     private static ObjectProvider<EmbeddingService> provider(EmbeddingService embeddings) {
-        ObjectProvider<EmbeddingService> provider = mock(ObjectProvider.class);
-        when(provider.getIfAvailable()).thenReturn(embeddings);
-        return provider;
+        return new org.springframework.beans.factory.support.StaticListableBeanFactory(
+                        Map.of("embeddingService", embeddings))
+                .getBeanProvider(EmbeddingService.class);
     }
 
     private static EmbeddingService embeddings(int dimension) {

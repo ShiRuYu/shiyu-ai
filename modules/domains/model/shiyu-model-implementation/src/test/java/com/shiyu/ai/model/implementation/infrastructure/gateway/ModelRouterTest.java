@@ -231,6 +231,7 @@ class ModelRouterTest {
 
         assertEquals("fast", model);
     }
+    /** 提供测试可推进的时钟，用于确定性验证路由熔断窗口。 */
 
     private static final class MutableClock extends Clock {
         private final AtomicReference<Instant> current;

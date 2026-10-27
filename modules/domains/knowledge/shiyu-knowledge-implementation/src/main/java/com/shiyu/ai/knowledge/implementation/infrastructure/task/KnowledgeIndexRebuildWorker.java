@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
-/** Processes durable knowledge-space index rebuild jobs. */
+/** 处理持久化的知识空间索引重建任务。 */
 @Slf4j
 @Component
 @DependsOn("databaseInitializer")

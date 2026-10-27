@@ -132,9 +132,10 @@ public class InMemoryVectorStore implements VectorStore {
     }
 
     /**
-     * 删除或移除 In 记忆 向量 相关业务操作，并维护必要的状态和协作关系。
+     * 统计当前存储中满足元数据过滤条件的向量记录，不修改索引。
      *
-     * @param id 用于定位目标业务对象的标识。
+     * @param filter 元数据匹配条件，空条件匹配全部记录
+     * @return 满足过滤条件的记录数量
      */
     @Override
     public int count(Map<String, Object> filter) {

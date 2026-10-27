@@ -10,6 +10,7 @@ import com.shiyu.ai.kernel.context.UserId;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import java.time.Clock;
@@ -27,14 +28,7 @@ class InMemoryQuotaGovernanceTest {
 
     @Test
     void minimumReservationTtlRenewsBeforeItCanExpire() {
-        org.h2.jdbcx.JdbcDataSource dataSource = new org.h2.jdbcx.JdbcDataSource();
-        dataSource.setURL(
-                "jdbc:h2:mem:quota_ttl_"
-                        + java.util.UUID.randomUUID()
-                        + ";MODE=MySQL;DB_CLOSE_DELAY=-1");
-        new ResourceDatabasePopulator(
-                        new ClassPathResource("db/baseline/h2/schema/governance/05_governance.sql"))
-                .execute(dataSource);
+        org.h2.jdbcx.JdbcDataSource dataSource = newDataSource();
         MutableClock clock = new MutableClock(Instant.parse("2026-01-01T00:00:30Z"));
         InMemoryQuotaGovernance quota =
                 new InMemoryQuotaGovernance(100, 1, 100, 1_000L, clock, dataSource);
@@ -50,7 +44,7 @@ class InMemoryQuotaGovernanceTest {
 
     @Test
     void reservesSettlesAndEnforcesDailyTokensPerTenant() {
-        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(10, 2, 100, CLOCK);
+        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(10, 2, 100, 300_000L, CLOCK, newDataSource());
 
         var first = quota.reserve(ACTOR, new QuotaRequest(6, 0));
         assertTrue(first.allowed());
@@ -64,7 +58,7 @@ class InMemoryQuotaGovernanceTest {
     @Test
     void activeReservationContinuesToCountAgainstTheDailyLimitAfterMidnight() {
         MutableClock clock = new MutableClock(Instant.parse("2026-01-01T23:58:30Z"));
-        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(10, 2, 100, clock);
+        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(10, 2, 100, 300_000L, clock, newDataSource());
         var reservation = quota.reserve(ACTOR, new QuotaRequest(8, 0));
         assertTrue(reservation.allowed());
 
@@ -77,7 +71,7 @@ class InMemoryQuotaGovernanceTest {
 
     @Test
     void releaseMakesConcurrentCapacityAvailableAgain() {
-        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(100, 1, 100, CLOCK);
+        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(100, 1, 100, 300_000L, CLOCK, newDataSource());
 
         var first = quota.reserve(ACTOR, new QuotaRequest(1, 0));
         assertTrue(first.allowed());
@@ -89,7 +83,7 @@ class InMemoryQuotaGovernanceTest {
 
     @Test
     void crossTenantSettlementIsRejected() {
-        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(100, 1, 100, CLOCK);
+        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(100, 1, 100, 300_000L, CLOCK, newDataSource());
         var reservation = quota.reserve(ACTOR, new QuotaRequest(1, 0));
         ActorContext otherTenant = new ActorContext(new TenantId(8), new UserId(11), false);
 
@@ -100,11 +94,11 @@ class InMemoryQuotaGovernanceTest {
 
     @Test
     void enforcesRequestsPerMinuteAndHonorsRequestedConcurrentLimit() {
-        InMemoryQuotaGovernance rpm = new InMemoryQuotaGovernance(0, 4, 1, CLOCK);
+        InMemoryQuotaGovernance rpm = new InMemoryQuotaGovernance(0, 4, 1, 300_000L, CLOCK, newDataSource());
         assertTrue(rpm.reserve(ACTOR, new QuotaRequest(1, 0)).allowed());
         assertEquals("QUOTA_RPM", rpm.reserve(ACTOR, new QuotaRequest(1, 0)).errorCode());
 
-        InMemoryQuotaGovernance concurrent = new InMemoryQuotaGovernance(100, 4, 100, CLOCK);
+        InMemoryQuotaGovernance concurrent = new InMemoryQuotaGovernance(100, 4, 100, 300_000L, CLOCK, newDataSource());
         assertTrue(concurrent.reserve(ACTOR, new QuotaRequest(1, 1)).allowed());
         assertEquals(
                 "QUOTA_CONCURRENT", concurrent.reserve(ACTOR, new QuotaRequest(1, 1)).errorCode());
@@ -112,7 +106,7 @@ class InMemoryQuotaGovernanceTest {
 
     @Test
     void treatsUnknownReservationsAndUnlimitedTokenLimitsAsNoOpsOrAllowed() {
-        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(0, 2, 100, CLOCK);
+        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(0, 2, 100, 300_000L, CLOCK, newDataSource());
         quota.release(ACTOR, 9999L);
         quota.settle(ACTOR, 9999L, new QuotaUsage(100, 100));
         var reservation = quota.reserve(ACTOR, new QuotaRequest(1, 0));
@@ -124,7 +118,7 @@ class InMemoryQuotaGovernanceTest {
     @Test
     void resetsMinuteCountersWhenTheClockMovesToANewMinute() {
         MutableClock clock = new MutableClock(Instant.parse("2026-01-01T00:00:59Z"));
-        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(100, 2, 1, clock);
+        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(100, 2, 1, 300_000L, clock, newDataSource());
         assertTrue(quota.reserve(ACTOR, new QuotaRequest(1, 0)).allowed());
         clock.advanceSeconds(2);
         assertTrue(quota.reserve(ACTOR, new QuotaRequest(1, 0)).allowed());
@@ -133,12 +127,109 @@ class InMemoryQuotaGovernanceTest {
     @Test
     void samplesQuotaWindowAfterWaitingForTenantLock() {
         MutableClock clock = new MutableClock(Instant.parse("2026-01-01T00:00:59Z"));
-        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(100, 2, 1, clock);
+        InMemoryQuotaGovernance quota = new InMemoryQuotaGovernance(100, 2, 1, 300_000L, clock, newDataSource());
         clock.afterFirstRead(() -> clock.advanceSeconds(2));
 
         assertTrue(quota.reserve(ACTOR, new QuotaRequest(1, 0)).allowed());
         assertEquals(
                 "QUOTA_RPM", quota.reserve(ACTOR, new QuotaRequest(1, 0)).errorCode());
+    }
+
+    @Test
+    void sharedReferenceSurvivesRestartAndSettlementIsIdempotent() {
+        var dataSource = newDataSource();
+        var jdbc = new JdbcTemplate(dataSource);
+        var firstInstance = new InMemoryQuotaGovernance(20, 1, 2, 300_000L, CLOCK, dataSource);
+        var secondInstance = new InMemoryQuotaGovernance(20, 1, 2, 300_000L, CLOCK, dataSource);
+        var reservation = firstInstance.reserve(ACTOR, new QuotaRequest(6, 0), " shared ");
+
+        assertEquals(reservation.reservationId(), secondInstance.reserve(
+                ACTOR, new QuotaRequest(19, 0), "shared").reservationId());
+        assertTrue(secondInstance.renew(ACTOR, "shared"));
+        secondInstance.settle(ACTOR, "shared", new QuotaUsage(0, 2));
+        firstInstance.settle(ACTOR, "shared", new QuotaUsage(9, 9));
+
+        assertEquals(8L, jdbc.queryForObject(
+                "SELECT TOKENS_USED FROM GOVERNANCE_QUOTA_TENANT WHERE TENANT_ID=7", Long.class));
+        assertEquals(0L, jdbc.queryForObject(
+                "SELECT TOKENS_RESERVED FROM GOVERNANCE_QUOTA_TENANT WHERE TENANT_ID=7", Long.class));
+        assertEquals("QUOTA_RESERVATION_CLOSED", firstInstance.reserve(
+                ACTOR, new QuotaRequest(1, 0), "shared").errorCode());
+        assertFalse(firstInstance.renew(ACTOR, "shared"));
+        var next = firstInstance.reserve(ACTOR, new QuotaRequest(12, 0), "next");
+        assertTrue(next.allowed());
+        secondInstance.release(ACTOR, "next");
+        firstInstance.release(ACTOR, "next");
+        assertEquals(0, jdbc.queryForObject(
+                "SELECT ACTIVE_RESERVATIONS FROM GOVERNANCE_QUOTA_TENANT WHERE TENANT_ID=7", Integer.class));
+    }
+
+    @Test
+    void recoversAbandonedReservationsAndChargesLateReferenceUsageExactlyOnce() {
+        var dataSource = newDataSource();
+        var jdbc = new JdbcTemplate(dataSource);
+        var clock = new MutableClock(Instant.parse("2026-01-01T00:00:30Z"));
+        var quota = new InMemoryQuotaGovernance(20, 1, 100, 1_000L, clock, dataSource);
+        var expired = quota.reserve(ACTOR, new QuotaRequest(6, 0), "late");
+        clock.advanceSeconds(2);
+        quota.recoverExpiredReservations();
+
+        assertFalse(quota.renew(ACTOR, "late"));
+        assertEquals("QUOTA_RESERVATION_CLOSED", quota.reserve(
+                ACTOR, new QuotaRequest(1, 0), "late").errorCode());
+        var active = quota.reserve(ACTOR, new QuotaRequest(19, 0), "active");
+        assertTrue(active.allowed());
+        quota.settle(ACTOR, expired.reservationId(), new QuotaUsage(6, 2));
+        assertEquals(0L, jdbc.queryForObject(
+                "SELECT TOKENS_USED FROM GOVERNANCE_QUOTA_TENANT WHERE TENANT_ID=7", Long.class));
+        quota.settle(ACTOR, "late", new QuotaUsage(0, 2));
+        quota.settle(ACTOR, "late", new QuotaUsage(6, 2));
+        quota.release(ACTOR, "active");
+
+        assertEquals(8L, jdbc.queryForObject(
+                "SELECT TOKENS_USED FROM GOVERNANCE_QUOTA_TENANT WHERE TENANT_ID=7", Long.class));
+        assertTrue(quota.reserve(ACTOR, new QuotaRequest(12, 0)).allowed());
+        quota.recoverExpiredReservations();
+    }
+
+    @Test
+    void referenceOperationsStayTenantScopedAndUnknownReferencesAreNoOps() {
+        var dataSource = newDataSource();
+        var jdbc = new JdbcTemplate(dataSource);
+        var quota = new InMemoryQuotaGovernance(20, 1, 100, 300_000L, CLOCK, dataSource);
+        var other = new ActorContext(new TenantId(8), new UserId(11), false);
+        var mine = quota.reserve(ACTOR, new QuotaRequest(5, 0), "same");
+        assertTrue(quota.reserve(other, new QuotaRequest(7, 0), "same").allowed());
+        assertFalse(quota.renew(ACTOR, "unknown"));
+        quota.settle(ACTOR, "unknown", new QuotaUsage(1, 1));
+        quota.release(ACTOR, "unknown");
+        assertThrows(RuntimeException.class, () -> quota.release(other, mine.reservationId()));
+        quota.settle(other, "same", new QuotaUsage(7, 1));
+        quota.release(ACTOR, "same");
+
+        assertEquals(0L, jdbc.queryForObject(
+                "SELECT TOKENS_USED FROM GOVERNANCE_QUOTA_TENANT WHERE TENANT_ID=7", Long.class));
+        assertEquals(8L, jdbc.queryForObject(
+                "SELECT TOKENS_USED FROM GOVERNANCE_QUOTA_TENANT WHERE TENANT_ID=8", Long.class));
+        for (String invalid : new String[] {"", " ", "x".repeat(129)}) {
+            assertThrows(IllegalArgumentException.class,
+                    () -> quota.reserve(ACTOR, new QuotaRequest(1, 0), invalid));
+            assertThrows(IllegalArgumentException.class, () -> quota.renew(ACTOR, invalid));
+        }
+        assertThrows(IllegalArgumentException.class, () -> quota.renew(ACTOR, null));
+    }
+
+    /** 创建加载实际配额表结构的独立 H2 数据源，避免测试之间共享持久状态。 */
+    private static org.h2.jdbcx.JdbcDataSource newDataSource() {
+        org.h2.jdbcx.JdbcDataSource dataSource = new org.h2.jdbcx.JdbcDataSource();
+        dataSource.setURL(
+                "jdbc:h2:mem:quota_"
+                        + java.util.UUID.randomUUID()
+                        + ";MODE=MySQL;DB_CLOSE_DELAY=-1");
+        new ResourceDatabasePopulator(
+                        new ClassPathResource("db/baseline/h2/schema/governance/05_governance.sql"))
+                .execute(dataSource);
+        return dataSource;
     }
 
     /**

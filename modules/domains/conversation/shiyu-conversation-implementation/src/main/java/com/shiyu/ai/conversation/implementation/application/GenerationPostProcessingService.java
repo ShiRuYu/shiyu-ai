@@ -11,7 +11,7 @@ import com.shiyu.ai.kernel.context.UserId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Retries quota and usage side effects recorded with terminal generation transitions. */
+/** 重试在生成进入终态时记录的配额和用量副作用。 */
 @org.springframework.stereotype.Component
 public final class GenerationPostProcessingService {
     private static final Logger log = LoggerFactory.getLogger(GenerationPostProcessingService.class);

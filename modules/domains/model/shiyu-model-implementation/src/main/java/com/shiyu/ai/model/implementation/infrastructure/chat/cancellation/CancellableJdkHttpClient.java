@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-/** Adds request cancellation to LangChain4j's callback based streaming HTTP API. */
+/** 为 LangChain4j 回调式流式 HTTP 接口提供请求取消能力。 */
 final class CancellableJdkHttpClient implements HttpClient {
     private final HttpClient synchronousClient;
     private final java.net.http.HttpClient transport;
@@ -77,6 +77,7 @@ final class CancellableJdkHttpClient implements HttpClient {
                         : BodyPublishers.ofString(request.body()));
         return builder.build();
     }
+    /** 管理一次流式 HTTP 请求的取消、响应体读取和完成回调生命周期。 */
 
     private final class StreamingCall {
         private final ServerSentEventParser parser;

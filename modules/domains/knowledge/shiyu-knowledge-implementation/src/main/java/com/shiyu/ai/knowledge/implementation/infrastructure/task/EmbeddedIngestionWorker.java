@@ -361,6 +361,7 @@ public class EmbeddedIngestionWorker {
         enterpriseRepository.failClaimedIngestion(
                 tenantId, job, retry ? "PENDING" : "FAILED");
     }
+    /** 标识导入任务的领取权已失效，阻止旧工作线程继续发布索引结果。 */
 
     private static final class StaleIngestionClaimException extends RuntimeException {
         private static final long serialVersionUID = 1L;

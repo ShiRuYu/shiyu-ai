@@ -14,6 +14,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.util.Map;
 import java.util.UUID;
+/** 在隔离 PostgreSQL 模式中验证 pgvector 维度、过滤和存储约束。 */
 
 class PgVectorStoreLocalValidationTest {
 

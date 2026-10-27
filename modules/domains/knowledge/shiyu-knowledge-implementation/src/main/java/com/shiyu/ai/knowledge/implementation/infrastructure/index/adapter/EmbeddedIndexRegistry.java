@@ -136,11 +136,12 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
     }
 
     /**
-     * 执行 Embedded 索引 相关业务数据，并返回处理结果。
+     * 领取并续期知识空间的重建租约，构建并发布新索引后释放租约。
      *
-     * @param tenant 当前操作涉及的租户标识。
-     * @param spaceId 用于定位space的标识。
-     * @return 返回 Embedded 索引 相关操作生成的结果数据。
+     * @param tenant 需要重建索引的租户
+     * @param spaceId 需要重建索引的知识空间标识
+     * @return 成功发布的索引版本
+     * @throws ServiceException 重建租约已被其他任务占用时抛出
      */
     @Override
     public long rebuild(TenantId tenant, Long spaceId) {
@@ -766,8 +767,10 @@ public class EmbeddedIndexRegistry implements KnowledgeIndexService {
      * 封装 索引 Key 相关的不可变数据及其字段约束。
      */
     record IndexKey(Long tenantId, Long spaceId, Long version) {}
+    /** 以租户和知识空间标识同一索引的重建互斥范围。 */
 
     private record RebuildKey(Long tenantId, Long spaceId) {}
+    /** 保存索引重建互斥锁及引用数，避免并发重建与锁清理相互干扰。 */
 
     private static final class RebuildLock {
         private final ReentrantLock lock = new ReentrantLock();

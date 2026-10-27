@@ -270,7 +270,7 @@ public class AgentConversationService implements AgentConversationCompletionPort
                     }
                 }
             } catch (RuntimeException ignored) {
-                // Fall back to the client disconnect outcome when execution state is unavailable.
+                // 无法读取执行状态时，回退到客户端断开连接的处理结果。
             }
         }
         return saveTerminal(actor, conversationId, inputId, appId, executionId,

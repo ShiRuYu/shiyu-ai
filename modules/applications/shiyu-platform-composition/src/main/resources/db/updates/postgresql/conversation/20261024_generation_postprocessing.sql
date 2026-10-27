@@ -1,6 +1,6 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Converted from modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/updates/conversation/20261024_generation_postprocessing.sql
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 转换来源：modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/updates/conversation/20261024_generation_postprocessing.sql
 
 CREATE TABLE IF NOT EXISTS CHAT_GENERATION_POSTPROCESSING (
     GENERATION_ID VARCHAR(64) NOT NULL,
@@ -24,3 +24,5 @@ CREATE TABLE IF NOT EXISTS CHAT_GENERATION_POSTPROCESSING (
 );
 CREATE INDEX IF NOT EXISTS IDX_CHAT_GENERATION_POSTPROCESSING_DUE
     ON CHAT_GENERATION_POSTPROCESSING (NEXT_ATTEMPT_AT, CLAIMED_UNTIL);
+CREATE INDEX IF NOT EXISTS IDX_CHAT_GENERATION_POSTPROCESSING_TENANT
+    ON CHAT_GENERATION_POSTPROCESSING (TENANT_ID, GENERATION_ID);

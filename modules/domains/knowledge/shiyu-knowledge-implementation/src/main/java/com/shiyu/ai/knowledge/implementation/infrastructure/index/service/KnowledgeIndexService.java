@@ -22,12 +22,12 @@ public interface KnowledgeIndexService extends FullTextIndex, VectorIndex {
      */
     long rebuild(TenantId tenantId, Long spaceId);
 
-    /** Rebuild using a caller-held durable fencing token. */
+    /** 使用调用方持有的持久化隔离版本重建索引。 */
     default long rebuild(TenantId tenantId, Long spaceId, long fencingVersion) {
         return rebuild(tenantId, spaceId);
     }
 
-    /** Rebuild for a durable worker job, fencing activation against concurrent cancellation. */
+    /** 为持久化工作任务重建索引，通过隔离校验避免激活与取消并发冲突。 */
     default long rebuild(
             TenantId tenantId,
             Long spaceId,
@@ -37,7 +37,7 @@ public interface KnowledgeIndexService extends FullTextIndex, VectorIndex {
         return rebuild(tenantId, spaceId, fencingVersion);
     }
 
-    /** Rebuild while the caller still owns its durable job and space lease. */
+    /** 在调用方仍持有持久化任务和空间租约时重建索引。 */
     default long rebuild(
             TenantId tenantId,
             Long spaceId,

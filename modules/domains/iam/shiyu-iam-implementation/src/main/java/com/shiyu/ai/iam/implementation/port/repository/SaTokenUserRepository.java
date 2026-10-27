@@ -23,13 +23,15 @@ public interface SaTokenUserRepository {
     Long findUserIdByToken(String tokenValue);
 
     /**
-     * 更新或设置 Sa Token 用户 相关业务操作，并维护必要的状态和协作关系。
+     * 仅在用户扩展信息仍等于预期旧值时写入新值，避免并发更新相互覆盖。
      *
-     * @param user 当前操作涉及的用户标识。
+     * @param user 携带用户标识及新扩展信息的对象
+     * @param expectedExtInfo 更新前应匹配的扩展信息
+     * @return 条件更新成功时为 true，旧值已变化或用户不存在时为 false
      */
     boolean updateExtInfo(UserBO user, String expectedExtInfo);
 
-    /** Atomically removes one live token and its token session, returning its owner. */
+    /** 原子移除一个有效令牌及其会话，并返回所属用户。 */
     Long consumeToken(String tokenValue);
 
 }

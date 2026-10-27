@@ -1,4 +1,4 @@
--- Upgrade existing MySQL baseline v4 databases before starting this application version.
+-- 启动此应用版本前，升级已有的 MySQL 第四版基线数据库。
 CREATE TABLE IF NOT EXISTS GOVERNANCE_QUOTA_TENANT (
     TENANT_ID BIGINT NOT NULL,
     DAY_START DATE NOT NULL,

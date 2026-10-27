@@ -92,7 +92,7 @@ public class DocumentIngestionService {
         this.documentParsers = documentParsers != null ? documentParsers : List.of();
     }
 
-    /** Compatibility constructor for existing direct callers that only exercise actor validation. */
+    /** 保留兼容构造方法，供仅验证操作者的既有直接调用方使用。 */
     public DocumentIngestionService(
             EmbeddingService embeddingService,
             KnowledgeChunkRepository chunkRepository,
@@ -155,7 +155,7 @@ public class DocumentIngestionService {
         return chunkDOs;
     }
 
-    /** Stage every chunk and embed it before publishing this immutable version. */
+    /** 先暂存所有分块并生成嵌入，再发布该不可变文档版本。 */
     private List<KnowledgeChunkBO> buildChunks(
             ActorContext actor,
             Long spaceId,
@@ -210,19 +210,19 @@ public class DocumentIngestionService {
         return chunkDOs;
     }
 
-    /** Query whether a version has usable chunks. */
+    /** 查询指定文档版本是否存在可用分块。 */
     public boolean hasChunks(TenantId tenantId, Long documentId, Long versionId) {
         return !chunkRepository.findByDocumentVersion(tenantId, documentId, versionId).isEmpty();
     }
 
-    /** Clone already embedded chunks into a newly created immutable version. */
+    /** 将已有嵌入的分块复制到新建的不可变文档版本。 */
     public boolean copyVersionChunks(
             TenantId tenantId, Long documentId, Long sourceVersionId, Long targetVersionId) {
         return chunkRepository.copyByDocumentVersion(
                 tenantId, documentId, sourceVersionId, targetVersionId);
     }
 
-    /** Atomically publish staged chunks and document/job state while the lease is current. */
+    /** 在租约仍有效时，原子发布暂存分块并更新文档和任务状态。 */
     public boolean ingestIfClaimed(
             ActorContext actor,
             Long spaceId,

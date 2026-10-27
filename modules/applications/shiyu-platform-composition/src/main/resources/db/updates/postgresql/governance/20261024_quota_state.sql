@@ -1,6 +1,6 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Converted from modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/updates/governance/20261024_quota_state.sql
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 转换来源：modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/updates/governance/20261024_quota_state.sql
 
 CREATE TABLE IF NOT EXISTS GOVERNANCE_QUOTA_TENANT (
     TENANT_ID BIGINT NOT NULL,

@@ -1,6 +1,6 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Converted from modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261014_seed_deepseek_graphs.sql
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 转换来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261014_seed_deepseek_graphs.sql
 
 -- 将旧版系统 Agent 路由至 DeepSeek，同时保留图配置中的其他更改。
 

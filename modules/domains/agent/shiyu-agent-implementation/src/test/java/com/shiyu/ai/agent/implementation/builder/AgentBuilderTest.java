@@ -14,11 +14,52 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.function.Predicate;
+import java.util.function.Function;
 
 /**
  * 验证 智能体 Builder 相关功能、边界条件、异常路径和协作行为。
  */
 class AgentBuilderTest {
+    @Test
+    void rejectsRoutesWithMissingDecisionFunctionOrTargetMappings() {
+        AgentBuilder builder = new AgentBuilder();
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.addConditionalEdge("start", (Function<Map<String, Object>, String>) null, Map.of("yes", "end")));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.addConditionalEdge("start", state -> "yes", (Map<String, String>) null));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.addConditionalEdge("start", state -> "yes", Map.of()));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.addConditionalEdge("start", "end", (Map<Predicate<Map<String, Object>>, String>) null));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.addConditionalEdge("start", (String) null, Map.of()));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.addConditionalEdge("start", " ", Map.of()));
+    }
+
+    @Test
+    void rejectsNullPredicateAndNullTargetBeforeGraphRegistration() {
+        AgentBuilder builder = new AgentBuilder();
+        Map<Predicate<Map<String, Object>>, String> conditions = new HashMap<>();
+        conditions.put(null, "end");
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.addConditionalEdge("start", "end", conditions));
+        conditions.clear();
+        conditions.put(state -> true, null);
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.addConditionalEdge("start", "end", conditions));
+    }
+
+    @Test
+    void defaultOnlyRouteBuildsAUsableGraphWithoutInventingAPredicate() {
+        var definition = new AgentBuilder().agentId("default-route").name("Default route")
+                .addNode("start", node("start")).addNode("end", node("end"))
+                .setStartNode("start").setEndNode("end")
+                .addConditionalEdge("start", "end", Map.of()).build();
+        assertEquals("end", definition.getVersion(null).getGraph().getConditionalEdges().get("start")
+                .getTarget(Map.of()));
+    }
     @Test
     void rejectsWhitespaceIdentityAndEntryNodeBeforeRegistration() {
         AgentService service = mock(AgentService.class);

@@ -1,8 +1,8 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Baseline seed data
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 基线种子数据
 
--- Source: modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2/seed/common/01_common.sql
+-- 来源：modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2/seed/common/01_common.sql
 
 INSERT INTO "common_dict" VALUES(1, 'timezone', 'America/New_York (GMT-5)', 'America/New_York', 1, 1, NULL, NULL, 'N', 1, '美国纽约时区', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "common_dict" VALUES(2, 'timezone', 'Europe/London (GMT0)', 'Europe/London', 1, 2, NULL, NULL, 'N', 1, '欧洲伦敦时区', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
@@ -23,7 +23,7 @@ INSERT INTO "common_dict" VALUES(16, 'INTENT_CATEGORY', '任务', 'TASK', 1, 3, 
 INSERT INTO "common_dict" VALUES(17, 'INTENT_CATEGORY', '搜索', 'SEARCH', 1, 4, NULL, NULL, 'N', 1, '意图分类：搜索', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "common_dict" VALUES(18, 'INTENT_CATEGORY', '技术支持', 'TECHNICAL', 1, 5, NULL, NULL, 'N', 1, '意图分类：技术支持', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 
--- Source: modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql
+-- 来源：modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql
 
 INSERT INTO "auth_tenant" VALUES(1, NULL, 'default', '默认租户', 'Admin', '13800000000', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_user" VALUES(2, 'admin', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 'Admin', NULL, NULL, NULL, 'admin@example.com', NULL, NULL, NULL);
@@ -447,7 +447,7 @@ INSERT INTO "auth_tenant_auth_code" VALUES(1, 120, 1, CURRENT_TIMESTAMP, CURRENT
 INSERT INTO "auth_tenant_auth_code" VALUES(1, 121, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO "auth_tenant_auth_code" VALUES(1, 122, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Source: modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/03_agent.sql
+-- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/03_agent.sql
 
 INSERT INTO "agent_def" VALUES(1, 'tutor-bot', '辅导助手', '通用学科辅导 Agent（使用 DeepSeek deepseek-flash 模型）', 1, NULL, 'v1.0.0', 1, NULL, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "agent_def" VALUES(2, 'knowledge-tutor', '知识问答助手', '知识问答 Agent（使用 DeepSeek deepseek-flash 模型）', 1, NULL, 'v1.0.0', 1, NULL, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
@@ -480,7 +480,7 @@ INSERT INTO "agent_intent_def" VALUES(6, 'default', 'WRITING_ASSISTANCE', '写�
 INSERT INTO "agent_intent_def" VALUES(7, 'default', 'DATA_ANALYSIS', '数据分析', 1, '数据处理与分析', 'TASK', 60, 0.8, NULL, NULL, '0', NULL, NULL, NULL, '1', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "agent_intent_def" VALUES(8, 'default', 'UNKNOWN', '未知意图', 1, '无法识别的意图', 'CONVERSATION', 0, 0.5, NULL, NULL, '0', NULL, NULL, NULL, '1', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 
--- Source: modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/04_app_runtime.sql
+-- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/04_app_runtime.sql
 INSERT INTO "ai_app" ("id", "tenant_id", "owner_user_id", "name", "description", "status", "published_version_id", "created_at", "updated_at")
 VALUES ('edu-tutor-app', 1, 2, '数学学习助手', '面向七年级一元一次方程学习的教育应用示例。', 'PUBLISHED', 'edu-tutor-v1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
@@ -497,7 +497,7 @@ VALUES ('knowledge-qa-v1', 'knowledge-qa-app', 1, '1.0.0',
         '{"module":"knowledge","platform":"DEEPSEEK","model":"deepseek-flash","agentId":"rag-knowledge-agent","agentVersion":"v1.0.0","knowledgeSpaceIds":[1],"retrievalMode":"HYBRID","topK":5,"executionType":"AGENT"}',
         'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Source: modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/seed/model/03_model.sql
+-- 来源：modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/seed/model/03_model.sql
 
 INSERT INTO "model_ai_platform" VALUES(1, 'OpenAI', 'OPENAI', 'OPENAI_COMPATIBLE', 1, 'https://api.openai.com/v1', '', 0.7, 4096, 3, '["gpt-4o","gpt-4o-mini","gpt-4-turbo","gpt-3.5-turbo"]', NULL, 'N', 1, 'OpenAI 官方 API', NULL, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "model_ai_platform" VALUES(2, 'DeepSeek', 'DEEPSEEK', 'OPENAI_COMPATIBLE', 1, 'https://api.deepseek.com', '', 0.7, 4096, 3, '["deepseek-flash"]', NULL, 'Y', 1, 'DeepSeek 官方 API', NULL, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
@@ -513,7 +513,7 @@ INSERT INTO "model_ai_model" VALUES(7, 3, 'anthropic/claude-3.5-sonnet', 1, 'Cla
 INSERT INTO "model_ai_model" VALUES(8, 4, 'Qwen/Qwen3-14B', 1, 'Qwen3 14B', NULL, NULL, 'N', 1, 1, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "model_ai_model" VALUES(9, 4, 'Qwen/Qwen3-8B', 1, 'Qwen3 8B', NULL, NULL, 'Y', 1, 2, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 
--- Source: modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/04_knowledge.sql
+-- 来源：modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/04_knowledge.sql
 
 INSERT INTO "knowledge_difficulty_scale" VALUES(1, 'STANDARD_5', '标准五级难度', '适用于通用知识体系的五级难度量表', 5, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "knowledge_difficulty_scale_level" VALUES(1, 1, 1, '入门', '基础知识与概念理解', 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
@@ -522,7 +522,7 @@ INSERT INTO "knowledge_difficulty_scale_level" VALUES(3, 1, 3, '中等', '综合
 INSERT INTO "knowledge_difficulty_scale_level" VALUES(4, 1, 4, '较难', '复杂问题分析与推理', 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "knowledge_difficulty_scale_level" VALUES(5, 1, 5, '挑战', '高难度综合与创新', 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 
--- Source: modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/06_demo_content.sql
+-- 来源：modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/06_demo_content.sql
 INSERT INTO "knowledge_space"
     ("id", "code", "name", "description", "access_mode", "review_mode", "embedding_profile", "rerank_profile", "chunk_strategy", "chunk_size", "chunk_overlap", "active_index_version", "tenant_id", "status", "del_flag", "create_by", "update_by", "difficulty_scale_id", "binding_mode", "domain_code")
 VALUES (1, 'DEMO_EDU_MATH', '七年级数学知识库', '用于数学辅导问答的课程资料与例题知识库', 'TENANT', 'OPTIONAL', 'text-embedding-v3', 'default', 'HEADING', 800, 100, 1, 1, 1, 0, 'system', 'system', 1, 'OPTIONAL', 'EDUCATION');
@@ -565,7 +565,7 @@ VALUES (1001, 1, '一元一次方程移项时需要注意什么？', '[1001]',
         '移项后需要同时改变该项的符号，再合并同类项并求解。',
         1, 1, 0, 'system', TIMESTAMP '2026-09-08 08:35:00', 'system', TIMESTAMP '2026-09-08 08:35:00');
 
--- Source: modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql
+-- 来源：modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql
 INSERT INTO "auth_menu" ("id","name","code","type","parent_id","tenant_id","path","redirect","icon","component","description","show","status","order","del_flag","create_by","create_time","update_by","update_time") VALUES
 (2000,'工作台','Workbench','CATALOG',NULL,1,'/workbench','/workbench/overview','lucide:layout-dashboard','','待办、最近会话、审批与运行状态',TRUE,1,1,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2010,'AI 控制台','AiConsole','CATALOG',NULL,1,'/workspace','/workspace/chat','lucide:sparkles','','Chat、Agent、RAG 与历史会话',TRUE,1,2,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
@@ -602,7 +602,7 @@ INSERT INTO "auth_tenant_menu" ("tenant_id","menu_id","status","create_time","up
 SELECT 1, M."id", 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM "auth_menu" M WHERE M."id" BETWEEN 2000 AND 2074;
 
--- Source: modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2/seed/conversation/11_conversation.sql
+-- 来源：modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2/seed/conversation/11_conversation.sql
 INSERT INTO "chat_conversation"
     ("id", "tenant_id", "owner_user_id", "scene_type", "title", "status", "platform", "model", "version", "created_at", "updated_at")
 VALUES ('demo-conversation-20260908', 1, 2, 'EDUCATION_TUTOR', '一元一次方程复习', 'ACTIVE',
@@ -653,7 +653,7 @@ VALUES ('demo-generation-knowledge-20260908-001', 1, 'demo-conversation-knowledg
         516, 118, 940, -1, FALSE, 1,
         TIMESTAMP '2026-09-08 10:02:00', TIMESTAMP '2026-09-08 10:03:12');
 
--- Source: modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/seed/governance/10_governance.sql
+-- 来源：modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/seed/governance/10_governance.sql
 INSERT INTO "governance_usage_record"
     ("id", "tenant_id", "user_id", "correlation_id", "source_type", "source_id",
      "input_tokens", "output_tokens", "cost", "occurred_at", "usage_type", "latency_ms", "session_id", "ext_info")
@@ -670,7 +670,7 @@ VALUES ('demo-usage-20260908-002', 1, 2, 'demo-chat-knowledge-20260908-001', 'CH
         TIMESTAMP '2026-09-08 10:03:12', 'METERED', 940, 'demo-session-knowledge-20260908',
         '{"appId":"knowledge-qa-app","platform":"DEEPSEEK","model":"deepseek-flash","environment":"demo"}');
 
--- Source: modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/seed/memory/12_memory.sql
+-- 来源：modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/seed/memory/12_memory.sql
 INSERT INTO "memory_entity"
     ("id", "tenant_id", "entity_type", "external_ref", "display_name", "normalized_name", "attributes", "active")
 VALUES ('demo-memory-entity-math', 1, 'KNOWLEDGE', 'knowledge:1001', '一元一次方程', '一元一次方程', '{"subject":"MATH","grade":7}', TRUE);
@@ -691,7 +691,7 @@ INSERT INTO "memory_consolidation_job"
     ("id", "tenant_id", "event_id", "status", "attempts", "available_at", "created_at", "updated_at")
 VALUES (1, 1, 'demo-memory-event-math', 'COMPLETED', 1, TIMESTAMP '2026-09-08 09:16:00', TIMESTAMP '2026-09-08 09:15:02', TIMESTAMP '2026-09-08 09:16:00');
 
--- Source: modules/domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2/seed/tooling/15_plugin_market.sql
+-- 来源：modules/domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2/seed/tooling/15_plugin_market.sql
 INSERT INTO "plugin_market_entry"
     ("id", "version", "source", "manifest", "signature", "publisher_key", "permissions_json", "checksum", "update_policy", "published_at", "enabled")
 VALUES ('edu-calculator', '1.0.0', 'https://plugins.example.invalid/edu-calculator-1.0.0.jar',
@@ -699,7 +699,7 @@ VALUES ('edu-calculator', '1.0.0', 'https://plugins.example.invalid/edu-calculat
         NULL, NULL, '["calculator:read"]', 'demo-checksum-edu-calculator', 'MANUAL',
         TIMESTAMP '2026-09-08 08:00:00', FALSE);
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/01_auth.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/01_auth.sql
 -- 扩展模式：iam
 INSERT INTO "auth_auth_code" VALUES(53, 'edu:subject:list', '查看学科', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_auth_code" VALUES(54, 'edu:subject:create', '创建学科', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
@@ -739,7 +739,7 @@ INSERT INTO "auth_auth_code" VALUES(83, 'edu:review:list', '查看复习任务',
 INSERT INTO "auth_auth_code" VALUES(84, 'edu:analytics', '查看学情分析', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_auth_code" VALUES(85, 'edu:wrong-question', '查看错题管理', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/02_navigation.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/02_navigation.sql
 -- 扩展模式：iam
 INSERT INTO "auth_menu" ("id","name","code","type","parent_id","tenant_id","path","redirect","icon","component","description","show","status","order","del_flag","create_by","create_time","update_by","update_time") VALUES
 (2050,'教育中心','EducationCenter','CATALOG',NULL,1,'/education-center','/education-center/learning','lucide:graduation-cap','','学习、练习、复习与 AI 辅学',TRUE,1,6,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
@@ -771,7 +771,7 @@ SELECT 1, C."id", 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM "auth_auth_code" C
 WHERE C."id" IN (53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,211,212,213,214);
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/07_education.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/07_education.sql
 
 INSERT INTO "edu_subject"
     ("id", "code", "name", "grade_level", "icon", "sort_order", "status", "tenant_id", "del_flag", "create_by", "update_by")
@@ -822,7 +822,7 @@ INSERT INTO "edu_ability"
     ("id", "student_id", "knowledge_id", "remember", "understand", "apply", "analyze", "evaluate", "create_score", "overall_mastery", "tenant_id", "status", "del_flag", "create_by", "update_by")
 VALUES (1, 1, 1001, 98.0, 96.0, 95.0, 93.0, 92.0, 90.0, 94.0, 1, 1, 0, 'system', 'system');
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/08_learning_progress.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/08_learning_progress.sql
 INSERT INTO "edu_review_task"
     ("id", "student_id", "knowledge_id", "review_date", "review_round", "status", "result_score", "completed_at", "tenant_id", "create_by", "update_by", "del_flag")
 VALUES (1, 1, 1001, DATE '2026-09-10', 1, 0, NULL, NULL, 1, 'system', 'system', 0);
@@ -847,7 +847,7 @@ INSERT INTO "edu_achievement"
     ("id", "student_id", "code", "name", "description", "icon", "earned_at", "tenant_id", "status", "del_flag", "create_by", "update_by")
 VALUES (1, 1, 'ALGEBRA_FOUNDATION', '代数基础达标', '完成一元一次方程阶段测验并达到 90 分以上。', 'achievement-algebra', TIMESTAMP '2026-09-08 20:00:00', 1, 1, 0, 'system', 'system');
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/09_curriculum.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/09_curriculum.sql
 INSERT INTO "edu_textbook"
     ("id", "name", "subject_code", "grade", "publisher", "isbn", "tenant_id", "status", "del_flag", "create_by", "update_by")
 VALUES (1, '义务教育教科书 数学 七年级上册', 'MATH', 7, '人民教育出版社', '9787107335661', 1, 1, 0, 'system', 'system');
@@ -876,7 +876,7 @@ INSERT INTO "edu_course_knowledge"
     ("course_id", "knowledge_id", "section_id", "sort_order", "tenant_id", "status", "del_flag", "create_by", "update_by")
 VALUES (1, 1001, 1, 1, 1, 1, 0, 'system', 'system');
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/10_resources.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/10_resources.sql
 INSERT INTO "edu_resource"
     ("id", "name", "type", "url", "size_bytes", "duration_sec", "subject_code", "grade", "difficulty", "description", "status", "view_count", "tenant_id", "del_flag", "create_by", "update_by")
 VALUES (1, '一元一次方程例题讲解', 'VIDEO', '/education/resources/math-linear-equation-intro.mp4', 52428800, 780, 'MATH', 7, 2, '用生活化例子讲解列方程与解方程的完整步骤。', 1, 86, 1, 0, 'system', 'system');
@@ -890,7 +890,7 @@ INSERT INTO "edu_question_knowledge"
 VALUES (1, 1001, 1.0, 1, 1, 0, 'system', 'system'),
        (2, 1001, 1.0, 1, 1, 0, 'system', 'system');
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/11_resource_variants.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/11_resource_variants.sql
 INSERT INTO "edu_resource"
     ("id", "name", "type", "url", "size_bytes", "subject_code", "grade", "difficulty", "description", "status", "view_count", "tenant_id", "del_flag", "create_by", "update_by")
 VALUES (2, '一元一次方程课后练习册', 'PDF', '/education/resources/math-linear-equation-practice.pdf', 1048576, 'MATH', 7, 2, '包含 12 道基础到中等难度练习题，适合课后巩固。', 1, 42, 1, 0, 'system', 'system');
@@ -899,16 +899,37 @@ INSERT INTO "edu_resource_knowledge"
     ("resource_id", "knowledge_id", "sort_order", "tenant_id", "status", "del_flag", "create_by", "update_by")
 VALUES (2, 1001, 2, 1, 1, 0, 'system', 'system');
 
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Idempotent startup updates, in initializer order
+-- 在数据库结构和种子语句完成后写入版本标记。
+INSERT INTO common_schema_baseline (id, baseline_version, seed_profile) VALUES (1, '4', 'system-ai');
 
--- Source: modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260914_platform_usage.sql
+-- 显式种子标识写入后需要同步 PostgreSQL 自增序列。
+DO $$
+DECLARE identity_column record; identity_value bigint;
+BEGIN
+  FOR identity_column IN
+    SELECT table_name, column_name FROM information_schema.columns
+    WHERE table_schema = 'public' AND is_identity = 'YES' AND table_name IN ('agent_checkpoint', 'agent_def', 'agent_eval_case', 'agent_eval_dataset', 'agent_eval_run', 'agent_execution', 'agent_intent_def', 'agent_node_execution', 'agent_version', 'ai_app', 'ai_app_version', 'ai_run', 'ai_run_event', 'ai_tool_approval', 'auth_auth_code', 'auth_menu', 'auth_role', 'auth_role_scope_auth_code', 'auth_role_scope_menu', 'auth_tenant', 'auth_tenant_auth_code', 'auth_tenant_menu', 'auth_user', 'auth_user_scope_role', 'chat_character_asset', 'chat_conversation', 'chat_generation_active', 'chat_generation_postprocessing', 'chat_generation_run', 'chat_group_chat', 'chat_idempotency_key', 'chat_lorebook_asset', 'chat_message', 'chat_persona_asset', 'chat_prompt_template', 'common_dict', 'common_schema_baseline', 'edu_ability', 'edu_achievement', 'edu_chapter', 'edu_course', 'edu_course_chapter', 'edu_course_knowledge', 'edu_course_section', 'edu_exam', 'edu_exam_attempt', 'edu_exam_attempt_question', 'edu_exam_question', 'edu_exam_section', 'edu_knowledge_textbook', 'edu_learning_state', 'edu_question', 'edu_question_knowledge', 'edu_resource', 'edu_resource_knowledge', 'edu_review_task', 'edu_student', 'edu_study_plan', 'edu_study_plan_item', 'edu_study_record', 'edu_subject', 'edu_teacher', 'edu_textbook', 'edu_wrong_question', 'governance_quota_reservation', 'governance_quota_tenant', 'governance_usage_record', 'knowledge_audit_log', 'knowledge_base', 'knowledge_difficulty_scale', 'knowledge_difficulty_scale_level', 'knowledge_doc_relation', 'knowledge_document', 'knowledge_document_relation', 'knowledge_document_version', 'knowledge_evaluation_case', 'knowledge_ingestion_job', 'knowledge_relation', 'knowledge_review_record', 'knowledge_space', 'knowledge_space_member', 'memory_consolidation_job', 'memory_edge', 'memory_entity', 'memory_event', 'memory_retrieval_trace', 'model_ai_model', 'model_ai_platform', 'observation_audit_log', 'observation_execution_timeline', 'plugin_market_entry', 'storage_object', 'storage_upload_chunk', 'storage_upload_session', 'vector_knowledge_chunk')
+  LOOP
+    EXECUTE format('LOCK TABLE %I.%I IN ACCESS EXCLUSIVE MODE',
+      'public', identity_column.table_name);
+    EXECUTE format('SELECT COALESCE(MAX(%I), 0) + 1 FROM %I.%I',
+      identity_column.column_name, 'public', identity_column.table_name) INTO identity_value;
+    EXECUTE format('ALTER TABLE %I.%I ALTER COLUMN %I RESTART WITH %s',
+      'public', identity_column.table_name, identity_column.column_name, identity_value);
+  END LOOP;
+END;
+$$;
+
+
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 按初始化器顺序执行幂等启动增补
+
+-- 来源：modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260914_platform_usage.sql
 -- v4 权限增补；在事务内执行，不覆盖已有权限或授权的启停状态。
 -- 启动升级由基线记录行锁串行化。外部数据库由部署方在维护窗口执行。
-INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
-SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
-       'platform:usage:read', '查看平台全租户用量', 1, 0, 'system', 'system'
+INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT 'platform:usage:read', '查看平台全租户用量', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'platform:usage:read');
 
 INSERT INTO AUTH_TENANT_AUTH_CODE (TENANT_ID, AUTH_CODE_ID, STATUS, CREATE_TIME, UPDATE_TIME)
@@ -930,7 +951,7 @@ WHERE T.ID = 1 AND T.STATUS = 1 AND T.DEL_FLAG = 0
   AND NOT EXISTS (SELECT 1 FROM AUTH_ROLE_SCOPE_AUTH_CODE G
                   WHERE G.ROLE_ID = R.ID AND G.TENANT_ID = T.ID AND G.AUTH_CODE_ID = C.ID);
 
--- Source: modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260916_tenant_module_access.sql
+-- 来源：modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260916_tenant_module_access.sql
 -- 租户级业务模块开关。关闭仅更新 STATUS，不删除业务表或历史数据。
 CREATE TABLE IF NOT EXISTS AUTH_TENANT_MODULE (
     TENANT_ID BIGINT NOT NULL,
@@ -957,21 +978,18 @@ WHERE T.STATUS = 1
         AND M.MODULE_ID = 'education'
   );
 
--- Source: modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260923_permission_alignment.sql
+-- 来源：modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260923_permission_alignment.sql
 -- 权限契约对齐；只补齐缺失记录，不覆盖现有权限或授权的启停状态。
-INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
-SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
-       'model:admin', '管理模型网关', 1, 0, 'system', 'system'
+INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT 'model:admin', '管理模型网关', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'model:admin');
 
-INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
-SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
-       'agent:intent:edit', '编辑意图', 1, 0, 'system', 'system'
+INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT 'agent:intent:edit', '编辑意图', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'agent:intent:edit');
 
-INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
-SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
-       'plugin:market', '访问插件市场', 1, 0, 'system', 'system'
+INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT 'plugin:market', '访问插件市场', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'plugin:market');
 
 INSERT INTO AUTH_TENANT_AUTH_CODE (TENANT_ID, AUTH_CODE_ID, STATUS, CREATE_TIME, UPDATE_TIME)
@@ -1014,7 +1032,7 @@ WHERE T.ID = 1
       AND G.AUTH_CODE_ID = C.ID
   );
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261005_exam_attempt.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261005_exam_attempt.sql
 -- 对已标记为基线版本 4 的 H2 数据库执行幂等升级。
 UPDATE EDU_EXAM SET DEL_FLAG=0 WHERE DEL_FLAG IS NULL;
 UPDATE EDU_COURSE SET DEL_FLAG=0 WHERE DEL_FLAG IS NULL;
@@ -1056,9 +1074,8 @@ CREATE TABLE IF NOT EXISTS EDU_EXAM_ATTEMPT_QUESTION (
 );
 CREATE INDEX IF NOT EXISTS IDX_EXAM_ATTEMPT_QUESTION ON EDU_EXAM_ATTEMPT_QUESTION (TENANT_ID, ATTEMPT_ID);
 
-INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
-SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
-       'edu:exam:take', '参加考试', 1, 0, 'system', 'system'
+INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT 'edu:exam:take', '参加考试', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'edu:exam:take');
 
 INSERT INTO AUTH_TENANT_AUTH_CODE (TENANT_ID, AUTH_CODE_ID, STATUS, CREATE_TIME, UPDATE_TIME)
@@ -1080,19 +1097,19 @@ WHERE T.ID = 1 AND T.STATUS = 1 AND T.DEL_FLAG = 0
   AND NOT EXISTS (SELECT 1 FROM AUTH_ROLE_SCOPE_AUTH_CODE G
                   WHERE G.ROLE_ID = R.ID AND G.TENANT_ID = T.ID AND G.AUTH_CODE_ID = C.ID);
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261006_question_purpose.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261006_question_purpose.sql
 ALTER TABLE EDU_QUESTION ADD COLUMN IF NOT EXISTS PURPOSE VARCHAR(20) DEFAULT 'PRACTICE' NOT NULL;
 UPDATE EDU_QUESTION SET PURPOSE='EXAM_PRIVATE'
 WHERE ID IN (SELECT QUESTION_ID FROM EDU_EXAM_QUESTION WHERE TENANT_ID=EDU_QUESTION.TENANT_ID);
 
--- Source: modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/updates/knowledge/20261007_demo_education_access.sql
+-- 来源：modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/updates/knowledge/20261007_demo_education_access.sql
 UPDATE "knowledge_space"
 SET "access_mode" = 'TENANT'
 WHERE "code" = 'DEMO_EDU_MATH'
   AND "domain_code" = 'EDUCATION'
   AND "access_mode" = 'PRIVATE';
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261007_practice_submission.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261007_practice_submission.sql
 ALTER TABLE "edu_study_record" ALTER COLUMN "knowledge_id" DROP NOT NULL;
 ALTER TABLE "edu_study_record" ADD COLUMN IF NOT EXISTS "submission_key" CHARACTER VARYING(36);
 ALTER TABLE "edu_study_record" ADD COLUMN IF NOT EXISTS "selected_answer" CHARACTER VARYING(32);
@@ -1103,7 +1120,7 @@ ALTER TABLE "edu_study_record" ADD COLUMN IF NOT EXISTS "analysis_applied" BOOLE
 CREATE UNIQUE INDEX IF NOT EXISTS "uk_sr_practice_submission"
     ON "edu_study_record"("tenant_id", "student_id", "submission_key");
 
--- Source: modules/domains/model/shiyu-model-implementation/src/main/resources/db/updates/model/20261011_deepseek_flash.sql
+-- 来源：modules/domains/model/shiyu-model-implementation/src/main/resources/db/updates/model/20261011_deepseek_flash.sql
 UPDATE "model_ai_model"
 SET "model_name" = 'deepseek-flash',
     "display_name" = 'DeepSeek Flash',
@@ -1125,10 +1142,10 @@ WHERE "id" = 2 AND "tenant_id" = 1 AND "code" = 'DEEPSEEK'
   AND "available_models" = '["deepseek-v4-flash","deepseek-reasoner"]'
   AND "create_by" = 'system';
 
--- Source: modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261012_checkpoint_pointer.sql
+-- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261012_checkpoint_pointer.sql
 ALTER TABLE AGENT_EXECUTION ADD COLUMN IF NOT EXISTS LAST_CHECKPOINT_ID VARCHAR(64);
 
--- Source: modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261013_sample_apps.sql
+-- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261013_sample_apps.sql
 INSERT INTO "ai_app"
     ("id", "tenant_id", "owner_user_id", "name", "description", "status",
      "published_version_id", "created_at", "updated_at")
@@ -1178,7 +1195,7 @@ WHERE "tenant_id" = 1 AND "owner_user_id" = 1 AND "status" = 'PUBLISHED'
   AND EXISTS (SELECT 1 FROM "auth_user"
               WHERE "id" = 2 AND "username" = 'admin');
 
--- Source: modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261014_seed_deepseek_graphs.sql
+-- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261014_seed_deepseek_graphs.sql
 -- 将旧版系统 Agent 路由至 DeepSeek，同时保留图配置中的其他更改。
 
 UPDATE "agent_version"
@@ -1240,7 +1257,7 @@ SET "description" = REPLACE("description", '使用硅基流动 Qwen3-8B 模型',
 WHERE "id" BETWEEN 1 AND 11 AND "create_by" = 'system'
   AND "description" LIKE '%使用硅基流动 Qwen3-8B 模型%';
 
--- Source: modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/updates/governance/20261024_quota_state.sql
+-- 来源：modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/updates/governance/20261024_quota_state.sql
 CREATE TABLE IF NOT EXISTS GOVERNANCE_QUOTA_TENANT (
     TENANT_ID BIGINT NOT NULL,
     DAY_START DATE NOT NULL,
@@ -1280,10 +1297,10 @@ CREATE INDEX IF NOT EXISTS IDX_GOVERNANCE_QUOTA_EXPIRY
 CREATE INDEX IF NOT EXISTS IDX_GOVERNANCE_QUOTA_TENANT_STATUS
     ON GOVERNANCE_QUOTA_RESERVATION (TENANT_ID, STATUS);
 
--- Source: modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/updates/conversation/20261024_idempotency_fingerprint.sql
+-- 来源：modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/updates/conversation/20261024_idempotency_fingerprint.sql
 ALTER TABLE CHAT_IDEMPOTENCY_KEY ADD COLUMN IF NOT EXISTS FINGERPRINT CHARACTER VARYING(64);
 
--- Source: modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/updates/conversation/20261024_generation_postprocessing.sql
+-- 来源：modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/updates/conversation/20261024_generation_postprocessing.sql
 CREATE TABLE IF NOT EXISTS CHAT_GENERATION_POSTPROCESSING (
     GENERATION_ID VARCHAR(64) NOT NULL,
     TENANT_ID BIGINT NOT NULL,
@@ -1306,25 +1323,11 @@ CREATE TABLE IF NOT EXISTS CHAT_GENERATION_POSTPROCESSING (
 );
 CREATE INDEX IF NOT EXISTS IDX_CHAT_GENERATION_POSTPROCESSING_DUE
     ON CHAT_GENERATION_POSTPROCESSING (NEXT_ATTEMPT_AT, CLAIMED_UNTIL);
+CREATE INDEX IF NOT EXISTS IDX_CHAT_GENERATION_POSTPROCESSING_TENANT
+    ON CHAT_GENERATION_POSTPROCESSING (TENANT_ID, GENERATION_ID);
 
--- Explicit seed IDs require synchronizing PostgreSQL identity sequences.
-DO $$
-DECLARE identity_column record; identity_value bigint; has_rows boolean;
-BEGIN
-  FOR identity_column IN
-    SELECT table_name, column_name FROM information_schema.columns
-    WHERE table_schema = 'public' AND is_identity = 'YES' AND table_name IN ('agent_checkpoint', 'agent_def', 'agent_eval_case', 'agent_eval_dataset', 'agent_eval_run', 'agent_execution', 'agent_intent_def', 'agent_node_execution', 'agent_version', 'auth_auth_code', 'auth_menu', 'auth_role', 'auth_role_scope_auth_code', 'auth_role_scope_menu', 'auth_tenant', 'auth_tenant_auth_code', 'auth_tenant_menu', 'auth_user', 'auth_user_scope_role', 'common_dict', 'common_schema_baseline', 'edu_ability', 'edu_achievement', 'edu_chapter', 'edu_course', 'edu_course_chapter', 'edu_course_knowledge', 'edu_course_section', 'edu_exam', 'edu_exam_attempt', 'edu_exam_attempt_question', 'edu_exam_question', 'edu_exam_section', 'edu_knowledge_textbook', 'edu_learning_state', 'edu_question', 'edu_question_knowledge', 'edu_resource', 'edu_resource_knowledge', 'edu_review_task', 'edu_student', 'edu_study_plan', 'edu_study_plan_item', 'edu_study_record', 'edu_subject', 'edu_teacher', 'edu_textbook', 'edu_wrong_question', 'governance_quota_reservation', 'governance_quota_tenant', 'governance_usage_record', 'knowledge_audit_log', 'knowledge_base', 'knowledge_difficulty_scale', 'knowledge_difficulty_scale_level', 'knowledge_doc_relation', 'knowledge_document', 'knowledge_document_relation', 'knowledge_document_version', 'knowledge_evaluation_case', 'knowledge_ingestion_job', 'knowledge_relation', 'knowledge_review_record', 'knowledge_space', 'knowledge_space_member', 'model_ai_model', 'model_ai_platform', 'observation_audit_log', 'observation_execution_timeline', 'storage_object', 'storage_upload_chunk', 'storage_upload_session', 'vector_knowledge_chunk')
-  LOOP
-    EXECUTE format('SELECT COALESCE(MAX(%I), 1) FROM %I.%I',
-      identity_column.column_name, 'public', identity_column.table_name) INTO identity_value;
-    EXECUTE format('SELECT EXISTS (SELECT 1 FROM %I.%I)',
-      'public', identity_column.table_name) INTO has_rows;
-    PERFORM setval(
-      pg_get_serial_sequence(format('%I.%I', 'public', identity_column.table_name), identity_column.column_name),
-      identity_value, has_rows);
-  END LOOP;
-END;
-$$;
-
--- The marker is written after schema, seed and update statements.
-INSERT INTO common_schema_baseline (id, baseline_version, seed_profile) VALUES (1, '4', 'system-ai');
+-- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261027_version_numeric_delete_flag.sql
+-- 删除标志与 BaseEntity 的整数属性对齐，保留已有 0、1 和 NULL。
+ALTER TABLE AGENT_VERSION ALTER COLUMN DEL_FLAG DROP DEFAULT;
+ALTER TABLE AGENT_VERSION ALTER COLUMN DEL_FLAG TYPE SMALLINT USING CAST(DEL_FLAG AS SMALLINT);
+ALTER TABLE AGENT_VERSION ALTER COLUMN DEL_FLAG SET DEFAULT 0;

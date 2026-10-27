@@ -4,8 +4,11 @@ import com.shiyu.ai.common.foundation.utils.JSONUtils;
 import com.shiyu.ai.common.vector.api.VectorStore;
 import com.shiyu.ai.common.vector.model.VectorRecord;
 import com.shiyu.ai.common.vector.model.VectorSearchRequest;
+import com.shiyu.ai.common.vector.model.VectorSearchType;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -14,7 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 管理 Pg 向量 相关的运行时状态、注册信息或临时数据。
+ * 在 PostgreSQL 中持久化 namespace 隔离的向量，提供统一余弦分数和精确/近似检索。
  */
 public final class PgVectorStore implements VectorStore {
 
@@ -30,6 +33,8 @@ public final class PgVectorStore implements VectorStore {
      * 维度，表示当前对象中的对应属性。
      */
     private final int dimension;
+    /** 将 ANN 扫描设置限制在当前事务，避免污染连接池中的后续请求。 */
+    private final TransactionTemplate transactions;
 
     /**
      * 执行 Pg 向量 相关业务操作，并维护必要的状态和协作关系。
@@ -43,12 +48,18 @@ public final class PgVectorStore implements VectorStore {
         if (namespace == null || namespace.isBlank()) {
             throw new IllegalArgumentException("Vector store namespace must not be blank");
         }
-        if (dimension <= 0) {
-            throw new IllegalArgumentException("Vector dimension must be greater than zero");
+        if (dimension <= 0 || dimension > 16000) {
+            throw new IllegalArgumentException("Vector dimension must be between 1 and 16000");
         }
         this.namespace = namespace;
         this.dimension = dimension;
-        initializeSchema();
+        this.transactions = new TransactionTemplate(
+                new DataSourceTransactionManager(Objects.requireNonNull(jdbc.getDataSource(), "DataSource must not be null")));
+        transactions.executeWithoutResult(status -> {
+            // IF NOT EXISTS 本身不能消除并发创建表或索引时的系统目录竞争。
+            jdbc.execute("SELECT pg_advisory_xact_lock(746821044, 5)");
+            initializeSchema();
+        });
     }
 
     /**
@@ -124,28 +135,52 @@ public final class PgVectorStore implements VectorStore {
                                 + vectorColumn
                                 + " <=> CAST(? AS "
                                 + vectorType
-                                + ")) AS score FROM shiyu_vector_item WHERE vector_namespace = ?"
-                                + " AND dimension = ?");
+                                + ")) / 2.0 AS score FROM shiyu_vector_item WHERE vector_namespace = ?"
+                                + " AND dimension = " + dimension
+                                + " AND vector_dims(embedding::vector) = " + dimension);
         List<Object> arguments =
-                new ArrayList<>(List.of(literal(request.getQueryVector()), namespace, dimension));
+                new ArrayList<>(List.of(literal(request.getQueryVector()), namespace));
         appendMetadataFilters(sql, arguments, request.getFilter());
         sql.append(" AND 1 - (")
                 .append(vectorColumn)
                 .append(" <=> CAST(? AS ")
                 .append(vectorType)
-                .append(")) >= ?");
+                .append(")) / 2.0 >= ?");
         arguments.add(literal(request.getQueryVector()));
         arguments.add(request.getMinScore());
-        sql.append(" ORDER BY ")
-                .append(vectorColumn)
-                .append(" <=> CAST(? AS ")
-                .append(vectorType)
-                .append(") LIMIT ?");
-        arguments.add(literal(request.getQueryVector()));
+        if (request.getSearchType() == VectorSearchType.EXACT) {
+            sql.append(" ORDER BY score DESC");
+        } else {
+            sql.append(" ORDER BY ")
+                    .append(vectorColumn)
+                    .append(" <=> CAST(? AS ")
+                    .append(vectorType)
+                    .append(")");
+            arguments.add(literal(request.getQueryVector()));
+        }
+        sql.append(" LIMIT ?");
         arguments.add(request.getTopK());
 
+        if (request.getSearchType() == VectorSearchType.ANN && dimension <= 2000) {
+            List<VectorRecord> matches = transactions.execute(status -> {
+                jdbc.execute("SET LOCAL hnsw.iterative_scan = strict_order");
+                return query(sql.toString(), arguments);
+            });
+            if (matches.size() < request.getTopK()) {
+                // namespace/元数据过滤可能耗尽 ANN 候选；精确补查避免已有数据返回空结果。
+                return search(VectorSearchRequest.builder()
+                        .queryVector(request.getQueryVector()).topK(request.getTopK())
+                        .minScore(request.getMinScore()).filter(request.getFilter())
+                        .searchType(VectorSearchType.EXACT).build());
+            }
+            return matches;
+        }
+        return query(sql.toString(), arguments);
+    }
+
+    private List<VectorRecord> query(String sql, List<Object> arguments) {
         return jdbc.query(
-                sql.toString(),
+                sql,
                 statement -> {
                     for (int i = 0; i < arguments.size(); i++) {
                         statement.setObject(i + 1, arguments.get(i));
@@ -264,6 +299,8 @@ public final class PgVectorStore implements VectorStore {
                             + ": expected "
                             + dimension);
         }
+        // vector 的 HNSW 索引最多支持 2000 维；更高维度保留原始精度并使用精确扫描。
+        if (dimension > 2000) return;
         String indexName = "shiyu_vector_item_embedding_d" + dimension;
         jdbc.execute(
                 "CREATE INDEX IF NOT EXISTS "

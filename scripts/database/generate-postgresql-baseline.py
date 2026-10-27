@@ -66,6 +66,7 @@ UPDATES = [
     "modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/updates/governance/20261024_quota_state.sql",
     "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/updates/conversation/20261024_idempotency_fingerprint.sql",
     "modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/updates/conversation/20261024_generation_postprocessing.sql",
+    "modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/updates/agent/20261027_version_numeric_delete_flag.sql",
 ]
 
 
@@ -96,7 +97,7 @@ def auto_update_columns(text: str) -> list[tuple[str, str]]:
     columns = []
     for line in text.splitlines():
         declaration = re.match(
-            r'\s*CREATE\s+(?:CACHED\s+)?TABLE\s+(?:"PUBLIC"\.)?"([A-Za-z_][A-Za-z0-9_]*)"',
+            r'\s*CREATE\s+(?:CACHED\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:"PUBLIC"\.)?"([A-Za-z_][A-Za-z0-9_]*)"',
             line,
             flags=re.I,
         )
@@ -111,22 +112,22 @@ def auto_update_columns(text: str) -> list[tuple[str, str]]:
 
 def generated_header(description: str) -> list[str]:
     return [
-        "-- PostgreSQL resources generated from the H2 resources.",
-        "-- Do not edit this generated file directly; update the source and regenerate.",
+        "-- 从 H2 源资源生成的 PostgreSQL 资源。",
+        "-- 不要直接编辑此生成文件；请修改源资源后重新生成。",
         f"-- {description}",
         "",
     ]
 
 
 def schema_sql(paths: list[str]) -> str:
-    chunks = generated_header("Schema installation")
+    chunks = generated_header("安装数据库结构")
     update_columns = []
     for path in paths:
         source = (ROOT / path).read_text(encoding="utf-8")
-        chunks += [f"-- Source: {path}", convert(source).rstrip(), ""]
+        chunks += [f"-- 来源：{path}", convert(source).rstrip(), ""]
         update_columns.extend(auto_update_columns(source))
     if update_columns:
-        chunks += ["-- PostgreSQL triggers corresponding to H2 ON UPDATE CURRENT_TIMESTAMP."]
+        chunks += ["-- 使用 PostgreSQL 触发器实现 H2 的自动更新时间行为。"]
         for table, column in update_columns:
             function_name = f"shiyu_touch_{table}_{column}"
             chunks += [
@@ -145,22 +146,40 @@ def schema_sql(paths: list[str]) -> str:
 
 
 def seed_sql(paths: list[str]) -> str:
-    chunks = generated_header("Baseline seed data")
+    chunks = generated_header("基线种子数据")
     for path in paths:
         chunks += [
-            f"-- Source: {path}",
+            f"-- 来源：{path}",
             convert((ROOT / path).read_text(encoding="utf-8")).rstrip(),
             "",
         ]
     return "\n".join(chunks)
 
 
+def convert_update(text: str) -> str:
+    text = convert(text)
+    # PostgreSQL 转换旧字符列时先移除字符默认值，再显式转换并恢复整数默认值。
+    text = text.replace(
+        "ALTER TABLE AGENT_VERSION ALTER COLUMN DEL_FLAG SMALLINT DEFAULT 0;",
+        "ALTER TABLE AGENT_VERSION ALTER COLUMN DEL_FLAG DROP DEFAULT;\n"
+        "ALTER TABLE AGENT_VERSION ALTER COLUMN DEL_FLAG TYPE SMALLINT USING CAST(DEL_FLAG AS SMALLINT);\n"
+        "ALTER TABLE AGENT_VERSION ALTER COLUMN DEL_FLAG SET DEFAULT 0;",
+    )
+    return re.sub(
+        r"INSERT INTO AUTH_AUTH_CODE \(ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY\)\s*"
+        r"SELECT \(SELECT COALESCE\(MAX\(ID\), 0\) \+ 1 FROM AUTH_AUTH_CODE\),\s*",
+        "INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)\nSELECT ",
+        text,
+        flags=re.I,
+    )
+
+
 def updates_sql(paths: list[str]) -> str:
-    chunks = generated_header("Idempotent startup updates, in initializer order")
+    chunks = generated_header("按初始化器顺序执行幂等启动增补")
     for path in paths:
         chunks += [
-            f"-- Source: {path}",
-            convert((ROOT / path).read_text(encoding="utf-8")).rstrip(),
+            f"-- 来源：{path}",
+            convert_update((ROOT / path).read_text(encoding="utf-8")).rstrip(),
             "",
         ]
     return "\n".join(chunks)
@@ -172,7 +191,7 @@ def identity_sequence_sql(paths: list[str]) -> list[str]:
             match.group(1).lower()
             for path in paths
             for match in re.finditer(
-                r'CREATE\s+(?:CACHED\s+)?TABLE\s+(?:"PUBLIC"\.)?"([A-Za-z_][A-Za-z0-9_]*)"',
+                r'CREATE\s+(?:CACHED\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:"PUBLIC"\.)?"([A-Za-z_][A-Za-z0-9_]*)"',
                 (ROOT / path).read_text(encoding="utf-8"),
                 flags=re.I,
             )
@@ -180,21 +199,20 @@ def identity_sequence_sql(paths: list[str]) -> list[str]:
     )
     values = ", ".join("'" + table.replace("'", "''") + "'" for table in table_names)
     return [
-        "-- Explicit seed IDs require synchronizing PostgreSQL identity sequences.",
+        "-- 显式种子标识写入后需要同步 PostgreSQL 自增序列。",
         "DO $$",
-        "DECLARE identity_column record; identity_value bigint; has_rows boolean;",
+        "DECLARE identity_column record; identity_value bigint;",
         "BEGIN",
         "  FOR identity_column IN",
         f"    SELECT table_name, column_name FROM information_schema.columns",
         f"    WHERE table_schema = 'public' AND is_identity = 'YES' AND table_name IN ({values})",
         "  LOOP",
-        "    EXECUTE format('SELECT COALESCE(MAX(%I), 1) FROM %I.%I',",
+        "    EXECUTE format('LOCK TABLE %I.%I IN ACCESS EXCLUSIVE MODE',",
+        "      'public', identity_column.table_name);",
+        "    EXECUTE format('SELECT COALESCE(MAX(%I), 0) + 1 FROM %I.%I',",
         "      identity_column.column_name, 'public', identity_column.table_name) INTO identity_value;",
-        "    EXECUTE format('SELECT EXISTS (SELECT 1 FROM %I.%I)',",
-        "      'public', identity_column.table_name) INTO has_rows;",
-        "    PERFORM setval(",
-        "      pg_get_serial_sequence(format('%I.%I', 'public', identity_column.table_name), identity_column.column_name),",
-        "      identity_value, has_rows);",
+        "    EXECUTE format('ALTER TABLE %I.%I ALTER COLUMN %I RESTART WITH %s',",
+        "      'public', identity_column.table_name, identity_column.column_name, identity_value);",
         "  END LOOP;",
         "END;",
         "$$;",
@@ -224,7 +242,7 @@ def write_baseline_resources() -> None:
     all_schema_sql = schema_sql(ordered_schema)
     ordered_seed = platform_seed + education_seed
     updates = updates_sql(UPDATES)
-    update_manifest = generated_header("Ordered PostgreSQL startup updates")
+    update_manifest = generated_header("按顺序排列的 PostgreSQL 启动增补")
     update_manifest.extend(postgresql_update_resource(path) for path in UPDATES)
 
     write_generated(RUNTIME_RESOURCES / "db/baseline/postgresql/schema.sql", platform_schema_sql)
@@ -240,7 +258,7 @@ def write_baseline_resources() -> None:
     write_generated(
         RUNTIME_RESOURCES / "db/baseline/postgresql/identity-sequences.sql",
         "\n".join(
-            generated_header("Advance identity sequences after explicit seed IDs")
+            generated_header("写入显式种子标识后推进自增序列")
             + identity_sequence_sql(SCHEMA)
         ),
     )
@@ -253,23 +271,23 @@ def write_baseline_resources() -> None:
         write_generated(
             runtime_path,
             "\n".join(
-                generated_header(f"Converted from {path}")
-                + [convert((ROOT / path).read_text(encoding="utf-8")).rstrip(), ""]
+                generated_header(f"转换来源：{path}")
+                + [convert_update((ROOT / path).read_text(encoding="utf-8")).rstrip(), ""]
             ),
         )
 
     write_generated(OUT / "baseline-schema.sql", all_schema_sql)
     baseline_seed = seed_sql(ordered_seed).rstrip().splitlines()
-    baseline_seed += [""]
-    baseline_seed += updates_sql(UPDATES).rstrip().splitlines()
-    baseline_seed += [""]
-    baseline_seed += identity_sequence_sql(ordered_schema)
     baseline_seed += [
-        "-- The marker is written after schema, seed and update statements.",
+        "",
+        "-- 在数据库结构和种子语句完成后写入版本标记。",
         "INSERT INTO common_schema_baseline (id, baseline_version, seed_profile) "
         f"VALUES (1, '{BASELINE_VERSION}', '{SEED_PROFILE}');",
         "",
     ]
+    baseline_seed += identity_sequence_sql(ordered_schema)
+    baseline_seed += [""]
+    baseline_seed += updates_sql(UPDATES).rstrip().splitlines()
     write_generated(OUT / "baseline-seed.sql", "\n".join(baseline_seed))
 
 

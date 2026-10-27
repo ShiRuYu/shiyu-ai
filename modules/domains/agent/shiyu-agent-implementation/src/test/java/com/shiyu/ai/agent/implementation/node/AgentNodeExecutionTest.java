@@ -82,6 +82,40 @@ class AgentNodeExecutionTest {
             new ActorContext(new TenantId(1L), new UserId(2L), false);
 
     @Test
+    void missingToolConfigurationCannotBeReplacedByUntrustedStateToolName() throws Exception {
+        ToolService tools = mock(ToolService.class);
+        ToolCallNode node = ToolCallNode.builder().toolService(tools).build();
+        NodeOutput result = invoke(node, trustedInput(Map.of("toolName", "external.write")));
+        assertFalse(result.isSuccess());
+        assertEquals("工具名称不能为空", result.getMsg());
+        verifyNoInteractions(tools);
+    }
+
+    @Test
+    void successfulToolMayReturnNoPayloadWithoutBecomingAnUncertainFailure() throws Exception {
+        ToolService tools = mock(ToolService.class);
+        when(tools.execute(any(), any())).thenReturn(new ToolService.ToolExecutionResult(true, null, null));
+        ToolCallNode node = ToolCallNode.builder().toolService(tools)
+                .config(ToolCallConfig.builder().toolName("empty.result").build()).build();
+        NodeOutput result = invoke(node, trustedInput(Map.of()));
+        assertTrue(result.isSuccess());
+        assertNull(result.getData("toolResult", null));
+    }
+
+    @Test
+    void configuredHighRiskToolNeverRunsWhenApprovalInfrastructureIsMissing() throws Exception {
+        for (String classification : List.of("HIGH", "HIGH_RISK")) {
+            ToolService tools = mock(ToolService.class);
+            ToolCallNode node = ToolCallNode.builder().toolService(tools)
+                    .config(ToolCallConfig.builder().toolName("external.write").toolType(classification).build()).build();
+            NodeOutput result = invoke(node, trustedInput(Map.of()));
+            assertFalse(result.isSuccess());
+            assertEquals("高风险工具审批不可用", result.getMsg());
+            verify(tools, never()).execute(any(), any());
+        }
+    }
+
+    @Test
     void llmRequestUsesTrustedActorAfterEarlierNodeChangesScalarIdentity() throws Exception {
         ChatEngine engine = mock(ChatEngine.class);
         when(engine.chat(any())).thenReturn(ChatResponse.builder().success(true)
@@ -175,7 +209,21 @@ class AgentNodeExecutionTest {
                 "basicAuthText", "Authorization: Basic dXNlcjpwYXNz",
                 "digestAuthText", "Authorization: Digest username=alice, realm=api, nonce=digest-nonce-secret, response=digest-response-secret",
                 "auth", "Basic auth-field-test-secret",
-                "headerText", "Cookie: sid=cookie-sid-secret; csrf=cookie-csrf-secret");
+                "headerText", "Cookie: sid=cookie-sid-secret; csrf=cookie-csrf-secret",
+                "nested", List.of(Map.ofEntries(
+                        Map.entry("password", "nested-password-value"),
+                        Map.entry("passwd", "nested-passwd-value"),
+                        Map.entry("passphrase", "nested-passphrase-value"),
+                        Map.entry("secret", "nested-secret-value"),
+                        Map.entry("refreshToken", "nested-refresh-token-value"),
+                        Map.entry("accessKey", "nested-access-key-value"),
+                        Map.entry("authorization", "nested-authorization-value"),
+                        Map.entry("credential", "nested-credential-value"),
+                        Map.entry("privateKey", "nested-private-key-value"),
+                        Map.entry("bearer", "nested-bearer-value"),
+                        Map.entry("signature", "nested-signature-value"),
+                        Map.entry("customSig", "nested-custom-sig-value"),
+                        Map.entry("count", 17))));
         Map<String, Object> firstCall = new java.util.HashMap<>(actionArguments);
         firstCall.put("_aiRun", run);
         NodeApprovalRequiredException pending = assertThrows(NodeApprovalRequiredException.class,
@@ -209,6 +257,13 @@ class AgentNodeExecutionTest {
         assertFalse(requested.argumentsRedacted().contains("session-test-secret"));
         assertFalse(requested.argumentsRedacted().contains("jwt-test.secret.token"));
         assertFalse(requested.argumentsRedacted().contains("test-secret-value"));
+        List<?> nestedSummary = (List<?>) summary.get("nested");
+        Map<?, ?> nestedSecrets = (Map<?, ?>) nestedSummary.getFirst();
+        for (String field : List.of("password", "passwd", "passphrase", "secret", "refreshToken", "accessKey",
+                "authorization", "credential", "privateKey", "bearer", "signature", "customSig")) {
+            assertEquals("[redacted]", nestedSecrets.get(field));
+        }
+        assertEquals(17, nestedSecrets.get("count"));
         approvals.decide(pending.approvalId(), new TenantId(1), 2, ToolApprovalStatus.APPROVED);
 
         Map<String, Object> approvedCall = new java.util.HashMap<>(actionArguments);

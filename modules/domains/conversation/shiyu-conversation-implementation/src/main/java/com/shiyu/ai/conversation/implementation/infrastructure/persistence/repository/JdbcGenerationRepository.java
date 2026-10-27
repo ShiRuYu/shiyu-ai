@@ -128,12 +128,12 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * 查询 Jdbc 生成 相关业务数据，并返回处理结果。
+     * 删除当前租户中仍处于 CREATED 状态的生成，并清理其活动生成占位。
      *
-     * @param id 用于定位目标业务对象的标识。
-     * @param tenantId 当前操作涉及的租户标识。
-     * @param ownerUserId 当前操作涉及的用户标识。
-     * @return 返回可能存在的业务对象；不存在时返回空值容器。
+     * @param id 待回滚创建的生成标识
+     * @param tenantId 生成记录所属租户，必须与当前租户上下文一致
+     * @param ownerUserId 发起创建回滚的用户标识
+     * @return 删除的生成记录数，状态已变化或记录不存在时为 0
      */
     @Override
     @Transactional
@@ -234,10 +234,10 @@ public class JdbcGenerationRepository implements GenerationRepository {
     }
 
     /**
-     * 执行 Jdbc 生成 相关业务数据，并返回处理结果。
+     * 扫描最多一百条超时的待执行或运行中生成，在各自租户事务内恢复终态并清理占位。
      *
-     * @param timeoutMs 用于完成本次业务处理的 timeoutMs 参数。
-     * @return 返回 Jdbc 生成 相关操作生成的结果数据。
+     * @param timeoutMs 判定生成未更新超时的毫秒数，实际宽限期不少于一秒
+     * @return 成功恢复的生成及其配额释放所需信息
      */
     @Override
     public List<RecoveredGeneration> recoverStaleGenerations(long timeoutMs) {

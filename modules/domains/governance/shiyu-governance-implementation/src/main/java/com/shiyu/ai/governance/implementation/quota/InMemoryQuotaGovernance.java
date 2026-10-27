@@ -27,7 +27,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -37,10 +36,10 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 /**
- * Enforces tenant quota policies using shared, durable JDBC state.
+ * 通过共享且持久化的 JDBC 状态执行租户配额策略。
  *
- * <p>The historical class name is retained for source compatibility. Runtime state is stored in the
- * governance quota tables and is shared by every application instance using the same database.
+ * <p>为保持源码兼容而保留历史类名；运行时状态保存在治理配额表中，
+ * 使用同一数据库的所有应用实例共享这些状态。
  */
 @Component
 public final class InMemoryQuotaGovernance implements QuotaGovernance {
@@ -78,7 +77,7 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
                 dataSource);
     }
 
-    /** Compatibility constructor retained for direct callers and existing integrations. */
+    /** 保留兼容构造方法，供直接调用方和既有集成使用。 */
     @Deprecated
     public InMemoryQuotaGovernance(
             long dailyTokenLimit, int defaultConcurrentLimit, long requestsPerMinute) {
@@ -91,7 +90,7 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
                 newEmbeddedDataSource());
     }
 
-    /** Compatibility constructor retained for direct callers and existing integrations. */
+    /** 保留兼容构造方法，供直接调用方和既有集成使用。 */
     @Deprecated
     public InMemoryQuotaGovernance(
             long dailyTokenLimit, int defaultConcurrentLimit, long requestsPerMinute, Clock clock) {
@@ -325,7 +324,7 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
                 });
     }
 
-    /** Expires abandoned reservations across tenants, including after an application restart. */
+    /** 跨租户清理已放弃的过期预留，也用于应用重启后的恢复。 */
     @Scheduled(
             fixedDelayString = "${shiyu.usage.quota.expiry-scan-interval-ms:60000}",
             initialDelayString = "${shiyu.usage.quota.expiry-scan-initial-delay-ms:60000}")
@@ -484,7 +483,7 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
                                             + "(TENANT_ID, REFERENCE_KEY, RESERVED_ON_DATE, ESTIMATED_TOKENS, "
                                             + "STATUS, CREATED_AT_EPOCH_MILLIS, EXPIRES_AT_EPOCH_MILLIS) "
                                             + "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                                    Statement.RETURN_GENERATED_KEYS);
+                                    new String[] {"id"});
                     statement.setLong(1, tenantId);
                     statement.setString(2, referenceKey);
                     statement.setDate(3, Date.valueOf(reservedOnDate));
@@ -656,6 +655,7 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
         return dataSource;
     }
 
+    /** 保存持锁租户的配额余额和当前计费窗口。 */
     private record TenantState(
             LocalDate dayStart,
             long minuteStartEpochSecond,
@@ -665,6 +665,7 @@ public final class InMemoryQuotaGovernance implements QuotaGovernance {
             int activeReservations,
             long nowMillis) {}
 
+    /** 保存配额预留的状态、估算量和到期信息。 */
     private record Reservation(
             long id,
             String status,

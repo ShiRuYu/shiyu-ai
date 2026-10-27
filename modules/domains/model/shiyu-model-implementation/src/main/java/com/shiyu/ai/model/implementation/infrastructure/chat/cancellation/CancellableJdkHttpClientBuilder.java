@@ -7,7 +7,7 @@ import dev.langchain4j.http.client.jdk.JdkHttpClientBuilder;
 
 import java.time.Duration;
 
-/** Builds the normal JDK client with a cancellable Server Sent Events transport. */
+/** 创建使用可取消服务端事件流传输的 JDK HTTP 客户端。 */
 public final class CancellableJdkHttpClientBuilder implements HttpClientBuilder {
     private final JdkHttpClientBuilder delegate =
             new JdkHttpClientBuilder().httpClientBuilder(java.net.http.HttpClient.newBuilder());

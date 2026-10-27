@@ -13,6 +13,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.util.Map;
 import java.util.UUID;
+/** 在临时 PostgreSQL 模式中验证向量写入、读取、检索和删除流程。 */
 
 class PgVectorStoreLocalCrudSmokeTest {
 

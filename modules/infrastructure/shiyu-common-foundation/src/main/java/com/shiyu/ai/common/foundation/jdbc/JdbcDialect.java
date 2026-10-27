@@ -28,20 +28,23 @@ public final class JdbcDialect {
     }
 
     /**
-     * 执行 Jdbc Dialect 相关业务数据，并返回处理结果。
+     * 从数据源连接的数据库产品元数据识别 SQL 方言，不对连接故障猜测方言。
      *
-     * @param jdbc 用于完成本次业务处理的 jdbc 参数。
-     * @return 返回 Jdbc Dialect 相关操作生成的结果数据。
+     * @param jdbc 提供待检测数据源的 JDBC 模板
+     * @return 与数据库产品对应的方言，未识别的产品标记为 UNKNOWN
+     * @throws IllegalStateException 缺少数据源或无法读取数据库元数据时抛出
      */
     public static JdbcDialect detect(JdbcTemplate jdbc) {
         Objects.requireNonNull(jdbc, "JdbcTemplate must not be null");
         DataSource dataSource = jdbc.getDataSource();
-        if (dataSource == null) return new JdbcDialect(Kind.H2);
+        if (dataSource == null) {
+            throw new IllegalStateException("DataSource is required to detect database dialect");
+        }
         try (Connection connection = dataSource.getConnection()) {
             String product = connection.getMetaData().getDatabaseProductName();
             return fromProduct(product);
-        } catch (SQLException | RuntimeException ignored) {
-            return new JdbcDialect(Kind.H2);
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Failed to detect database dialect", exception);
         }
     }
 

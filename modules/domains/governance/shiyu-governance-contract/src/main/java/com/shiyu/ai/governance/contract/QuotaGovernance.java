@@ -3,83 +3,81 @@ package com.shiyu.ai.governance.contract;
 import com.shiyu.ai.kernel.context.ActorContext;
 
 /**
- * Defines the collaboration boundary for quota reservations and usage accounting.
+ * 定义配额预留、续期、结算和释放的协作边界。
  */
 public interface QuotaGovernance {
 
     /**
-     * Reserves quota for a request.
+     * 为请求预留所需配额。
      *
-     * @param actor actor and tenant requesting quota
-     * @param request requested quota
-     * @return whether the request is allowed and its reservation ID
+     * @param actor 请求配额的主体及租户上下文
+     * @param request 请求预留的配额
+     * @return 是否允许请求及其配额预留标识
      */
     QuotaDecision reserve(ActorContext actor, QuotaRequest request);
 
     /**
-     * Reserves quota using a stable tenant-local reference. A retry using the same reference
-     * returns the existing reservation while it remains active.
+     * 通过租户内稳定的业务引用预留配额；相同引用重试时，返回仍然有效的既有预留。
      *
-     * @param actor actor and tenant requesting quota
-     * @param request requested quota
-     * @param referenceKey stable key such as a generation run ID
-     * @return the existing or newly created reservation decision
+     * @param actor 请求配额的主体及租户上下文
+     * @param request 请求预留的配额
+     * @param referenceKey 稳定业务引用，例如生成运行标识
+     * @return 既有或新建预留对应的准入决策
      */
     default QuotaDecision reserve(ActorContext actor, QuotaRequest request, String referenceKey) {
         return reserve(actor, request);
     }
 
     /**
-     * Renews a reservation that still represents live work.
+     * 为仍在执行的业务续期配额预留。
      *
-     * @param actor actor and tenant renewing quota
-     * @param referenceKey stable key used during reservation
-     * @return whether an active reservation was renewed
+     * @param actor 续期配额的主体及租户上下文
+     * @param referenceKey 预留配额时使用的稳定业务引用
+     * @return 是否成功续期有效预留
      */
     default boolean renew(ActorContext actor, String referenceKey) {
         return false;
     }
 
-    /** Returns the configured reservation renewal interval. */
+    /** 返回配置的配额预留续期间隔，单位为毫秒。 */
     default long reservationRenewalIntervalMillis() {
         return 60_000L;
     }
 
     /**
-     * Settles the reservation identified by its numeric ID.
+     * 按数字标识结算配额预留。
      *
-     * @param actor actor and tenant settling quota
-     * @param reservationId reservation ID
-     * @param usage actual usage to account
+     * @param actor 结算配额的主体及租户上下文
+     * @param reservationId 配额预留标识
+     * @param usage 本次需要计量的实际用量
      */
     void settle(ActorContext actor, long reservationId, QuotaUsage usage);
 
     /**
-     * Settles the reservation identified by a stable tenant-local reference. Implementations may
-     * accept a late settlement after reservation expiry so completed work can still be accounted;
-     * repeated settlements must not account usage more than once.
+     * 按租户内稳定的业务引用结算配额预留。实现可接受预留过期后的迟到结算，
+     * 确保已完成的业务仍可计量；重复结算不得重复累计用量。
      *
-     * @param actor actor and tenant settling quota
-     * @param referenceKey stable key used during reservation
-     * @param usage actual usage to account
+     * @param actor 结算配额的主体及租户上下文
+     * @param referenceKey 预留配额时使用的稳定业务引用
+     * @param usage 本次需要计量的实际用量
      */
     default void settle(ActorContext actor, String referenceKey, QuotaUsage usage) {
         throw new UnsupportedOperationException("Reference-based quota settlement is unsupported");
     }
 
     /**
-     * Releases the reservation identified by its numeric ID.
+     * 按数字标识释放配额预留。
      *
-     * @param actor actor and tenant releasing quota
-     * @param reservationId reservation ID
+     * @param actor 释放配额的主体及租户上下文
+     * @param reservationId 配额预留标识
      */
     void release(ActorContext actor, long reservationId);
 
     /**
-     * Releases the reservation identified by a stable tenant-local reference.
+     * 按租户内稳定的业务引用释放配额预留。
      *
-     * @param actor actor and tenant releasing quota
-     * @param referenceKey stable key used during reservation
+     * @param actor 释放配额的主体及租户上下文
+     * @param referenceKey 预留配额时使用的稳定业务引用
      */
     default void release(ActorContext actor, String referenceKey) {
         throw new UnsupportedOperationException("Reference-based quota release is unsupported");

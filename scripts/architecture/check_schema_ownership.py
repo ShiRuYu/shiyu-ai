@@ -45,6 +45,25 @@ def strip_comments(text: str) -> str:
     return re.sub(r"^\s*--.*?$", "", text, flags=re.M)
 
 
+def tenant_leading_tables(sql: str) -> set[str]:
+    """识别显式索引及主键、唯一约束提供的租户前缀索引。"""
+    indexed: set[str] = set()
+    for index in INDEX_COLUMNS.finditer(sql):
+        first_column = index.group(2).split(",", 1)[0]
+        first_column = re.sub(r'"|\bNULLS\s+FIRST\b', "", first_column, flags=re.I).strip().upper()
+        if first_column == "TENANT_ID":
+            indexed.add(index.group(1).upper())
+    for table_name, body in TABLE_WITH_BODY.findall(sql):
+        constraint = re.search(
+            r'\b(?:PRIMARY\s+KEY|UNIQUE(?:\s+NULLS\s+DISTINCT)?)\s*\(\s*"TENANT_ID"\s*[,)]',
+            body, re.I,
+        )
+        inline = re.search(r'"TENANT_ID"\s+[^,\n]*\b(?:PRIMARY\s+KEY|UNIQUE)\b', body, re.I)
+        if constraint or inline:
+            indexed.add(table_name.upper())
+    return indexed
+
+
 def main() -> int:
     repo = Path(__file__).resolve().parents[2]
     failures: list[str] = []
@@ -86,12 +105,7 @@ def main() -> int:
             else:
                 tables[normalized] = (owner, path)
 
-        tenant_indexes: dict[str, set[str]] = {}
-        for index in INDEX_COLUMNS.finditer(sql):
-            table_name = index.group(1).upper()
-            first_column = index.group(2).split(",", 1)[0]
-            first_column = re.sub(r'"|\bNULLS\s+FIRST\b', "", first_column, flags=re.I).strip().upper()
-            tenant_indexes.setdefault(table_name, set()).add(first_column)
+        tenant_indexes = tenant_leading_tables(sql)
         for table_name, body in TABLE_WITH_BODY.findall(sql):
             tenant_column = re.search(r'"TENANT_ID"\s+([^,\n]+)', body, re.I)
             if not tenant_column:
@@ -99,7 +113,7 @@ def main() -> int:
             normalized = table_name.upper()
             if "NOT NULL" not in tenant_column.group(1).upper():
                 failures.append(f"tenant_id must be NOT NULL for {normalized}: {path.relative_to(repo)}")
-            if "TENANT_ID" not in tenant_indexes.get(normalized, set()):
+            if normalized not in tenant_indexes:
                 failures.append(
                     f"tenant-leading index missing for {normalized}: {path.relative_to(repo)}"
                 )

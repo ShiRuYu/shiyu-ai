@@ -23,7 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-/** Verifies durable knowledge index rebuild job state transitions. */
+/** 验证持久化知识索引重建任务的状态转换。 */
 class KnowledgeIndexRebuildWorkerTest {
     private static final TenantId TENANT = new TenantId(1L);
 

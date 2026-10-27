@@ -98,7 +98,7 @@ public class KnowledgeEnterpriseRepositoryImpl
         this.evaluationMapper = evaluationMapper;
     }
 
-    /** Compatibility constructor used by repository unit fixtures predating the document mapper. */
+    /** 保留文档映射器引入前的构造方式，供仓库单元测试夹具使用。 */
     public KnowledgeEnterpriseRepositoryImpl(
             KnowledgeSpaceMapper spaceMapper,
             KnowledgeSpaceMemberMapper memberMapper,

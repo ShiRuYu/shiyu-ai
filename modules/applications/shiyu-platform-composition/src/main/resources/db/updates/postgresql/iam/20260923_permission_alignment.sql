@@ -1,21 +1,18 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Converted from modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260923_permission_alignment.sql
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 转换来源：modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260923_permission_alignment.sql
 
 -- 权限契约对齐；只补齐缺失记录，不覆盖现有权限或授权的启停状态。
-INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
-SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
-       'model:admin', '管理模型网关', 1, 0, 'system', 'system'
+INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT 'model:admin', '管理模型网关', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'model:admin');
 
-INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
-SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
-       'agent:intent:edit', '编辑意图', 1, 0, 'system', 'system'
+INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT 'agent:intent:edit', '编辑意图', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'agent:intent:edit');
 
-INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
-SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
-       'plugin:market', '访问插件市场', 1, 0, 'system', 'system'
+INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT 'plugin:market', '访问插件市场', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'plugin:market');
 
 INSERT INTO AUTH_TENANT_AUTH_CODE (TENANT_ID, AUTH_CODE_ID, STATUS, CREATE_TIME, UPDATE_TIME)

@@ -19,6 +19,15 @@ public interface GenerationRepository {
      */
     void insert(GenerationRun generation);
 
+    /**
+     * 删除属于指定租户及用户、且尚未开始执行的生成记录。
+     *
+     * @param id 生成记录标识
+     * @param tenantId 记录所属租户标识
+     * @param ownerUserId 生成或幂等记录所属用户标识
+     *
+     * @return 删除的记录数
+     */
     default int deleteCreated(String id, TenantId tenantId, long ownerUserId) {
         return 0;
     }
@@ -71,7 +80,7 @@ public interface GenerationRepository {
      */
     int update(GenerationRun generation, long expectedVersion);
 
-    /** Refreshes the stale-recovery timestamp without consuming a generation version. */
+    /** 刷新运行中生成的超时回收时间戳，不递增生成版本。 */
     default int touchRunning(String generationId, TenantId tenantId) {
         return 0;
     }

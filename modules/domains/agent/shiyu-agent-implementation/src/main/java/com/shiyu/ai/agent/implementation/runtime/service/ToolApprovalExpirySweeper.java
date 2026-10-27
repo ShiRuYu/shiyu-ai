@@ -100,7 +100,7 @@ public final class ToolApprovalExpirySweeper {
                 throw new IllegalStateException("expired approval compensation lease was lost");
             }
         } catch (RuntimeException failure) {
-            // Keep COMPENSATING with its lease. The row becomes claimable when the lease expires.
+            // 保持补偿中状态及其租约；租约过期后该记录才可重新领取。
             throw failure;
         }
     }

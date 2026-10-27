@@ -33,6 +33,90 @@ class AiRuntimeControllerCoverageTest {
             new ActorContext(new TenantId(7), new UserId(9), false);
 
     @Test
+    void eventReplayRepairsRuntimeTerminalStateFromAuthoritativeExecution() {
+        for (AiRunStatus terminal : List.of(AiRunStatus.COMPLETED, AiRunStatus.CANCELLED, AiRunStatus.FAILED)) {
+            AiRuntimeService runtime = mock(AiRuntimeService.class);
+            AgentRuntime agents = mock(AgentRuntime.class);
+            AiRuntimeController controller = new AiRuntimeController(runtime, agents);
+            AiRun current = run("reconcile", "generation", "execution");
+            Execution execution = new Execution("agent", "v1", Map.of());
+            execution.start();
+            switch (terminal) {
+                case COMPLETED -> execution.complete(Map.of("answer", "done"));
+                case CANCELLED -> execution.cancel();
+                default -> execution.fail("internal detail");
+            }
+            when(agents.getExecution(ACTOR, "execution")).thenReturn(execution);
+            when(runtime.requireRun("reconcile", ACTOR.tenantId(), 9)).thenReturn(current);
+            when(runtime.finish(eq("reconcile"), eq(ACTOR.tenantId()), eq(9L), eq(terminal), nullable(String.class)))
+                    .thenReturn(current.transition(terminal));
+            try (var auth = mockStatic(ActorContextHttpAdapter.class)) {
+                auth.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+                auth.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+                auth.when(ActorContextHttpAdapter::currentActor).thenReturn(ACTOR);
+
+                assertTrue(controller.events("reconcile", 0, 10, false, 1000, null).collectList().block().isEmpty());
+
+                verify(runtime).finish("reconcile", ACTOR.tenantId(), 9, terminal,
+                        terminal == AiRunStatus.FAILED ? "AGENT_EXECUTION_FAILED"
+                                : terminal == AiRunStatus.CANCELLED ? "CLIENT_CANCELLED" : null);
+            }
+        }
+    }
+
+    @Test
+    void eventReplayKeepsPersistedEventsAvailableWhenTerminalRepairConflictsOrFails() {
+        for (boolean conflict : List.of(true, false)) {
+            AiRuntimeService runtime = mock(AiRuntimeService.class);
+            AgentRuntime agents = mock(AgentRuntime.class);
+            AiRuntimeController controller = new AiRuntimeController(runtime, agents);
+            AiRun current = run("repair", "generation", "execution");
+            Execution execution = new Execution("agent", "v1", Map.of());
+            execution.start();
+            execution.cancel();
+            when(agents.getExecution(ACTOR, "execution")).thenReturn(execution);
+            when(runtime.requireRun("repair", ACTOR.tenantId(), 9)).thenReturn(current);
+            if (conflict) when(runtime.finish("repair", ACTOR.tenantId(), 9, AiRunStatus.CANCELLED, "CLIENT_CANCELLED"))
+                    .thenReturn(current.transition(AiRunStatus.COMPLETED));
+            else when(runtime.finish("repair", ACTOR.tenantId(), 9, AiRunStatus.CANCELLED, "CLIENT_CANCELLED"))
+                    .thenThrow(new IllegalStateException("storage temporarily unavailable"));
+            AiRunEvent event = new AiRunEvent("repair", ACTOR.tenantId(), 1, AiRunEventType.MODEL_STARTED,
+                    "{}", true, Instant.now());
+            when(runtime.events("repair", ACTOR.tenantId(), 9, 0, 10)).thenReturn(List.of(event));
+            try (var auth = mockStatic(ActorContextHttpAdapter.class)) {
+                auth.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+                auth.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+                auth.when(ActorContextHttpAdapter::currentActor).thenReturn(ACTOR);
+                var replay = controller.events("repair", 0, 10, false, 1000, null).collectList().block();
+                assertEquals(1, replay.size());
+                assertEquals(event, replay.getFirst().data());
+            }
+        }
+    }
+
+    @Test
+    void eventReplayDoesNotOverwriteAnAlreadyTerminalRuntimeWinner() {
+        for (AiRunStatus terminal : List.of(AiRunStatus.COMPLETED, AiRunStatus.CANCELLED, AiRunStatus.FAILED)) {
+            AiRuntimeService runtime = mock(AiRuntimeService.class);
+            AgentRuntime agents = mock(AgentRuntime.class);
+            AiRuntimeController controller = new AiRuntimeController(runtime, agents);
+            AiRun current = run("terminal", "generation", "execution").transition(terminal);
+            Execution stale = new Execution("agent", "v1", Map.of());
+            stale.start();
+            stale.complete(Map.of("stale", true));
+            when(agents.getExecution(ACTOR, "execution")).thenReturn(stale);
+            when(runtime.requireRun("terminal", ACTOR.tenantId(), 9)).thenReturn(current);
+            try (var auth = mockStatic(ActorContextHttpAdapter.class)) {
+                auth.when(ActorContextHttpAdapter::tenantId).thenReturn(7L);
+                auth.when(ActorContextHttpAdapter::userId).thenReturn(9L);
+                auth.when(ActorContextHttpAdapter::currentActor).thenReturn(ACTOR);
+                assertTrue(controller.events("terminal", 0, 10, false, 1000, null).collectList().block().isEmpty());
+                verify(runtime, never()).finish(anyString(), any(), anyLong(), any(), nullable(String.class));
+            }
+        }
+    }
+
+    @Test
     void mapsCrudRunsSnapshotsAndNonFollowingStreams() {
         AiRuntimeService runtime = mock(AiRuntimeService.class);
         AgentRuntime agents = mock(AgentRuntime.class);

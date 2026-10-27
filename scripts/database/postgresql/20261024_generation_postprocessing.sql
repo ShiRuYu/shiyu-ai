@@ -1,4 +1,4 @@
--- Durable retry queue for quota and usage side effects from terminal generations.
+-- 为终态生成的配额和用量副作用提供持久化重试队列。
 CREATE TABLE IF NOT EXISTS chat_generation_postprocessing (
     generation_id CHARACTER VARYING(64) NOT NULL,
     tenant_id BIGINT NOT NULL,
@@ -21,3 +21,5 @@ CREATE TABLE IF NOT EXISTS chat_generation_postprocessing (
 );
 CREATE INDEX IF NOT EXISTS idx_chat_generation_postprocessing_due
     ON chat_generation_postprocessing (next_attempt_at, claimed_until);
+CREATE INDEX IF NOT EXISTS idx_chat_generation_postprocessing_tenant
+    ON chat_generation_postprocessing (tenant_id, generation_id);

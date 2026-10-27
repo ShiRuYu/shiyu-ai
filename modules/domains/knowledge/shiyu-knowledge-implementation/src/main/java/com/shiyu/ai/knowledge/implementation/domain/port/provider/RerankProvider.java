@@ -16,12 +16,13 @@ public interface RerankProvider {
     String profile();
 
     /**
-     * 执行 Rerank 相关业务数据，并返回处理结果。
+     * 按查询相关性返回候选片段在原列表中的索引，供调用方重排检索结果。
      *
-     * @param query 用于筛选目标数据的查询条件。
-     * @param candidates 用于完成本次业务处理的 candidates 参数。
-     * @param topK 用于完成本次业务处理的 topK 参数。
-     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
+     * @param tenantId 本次重排请求所属租户
+     * @param query 用于评价片段相关性的查询文本
+     * @param candidates 待排序的候选片段文本列表
+     * @param topK 期望保留的最高相关片段数量
+     * @return 按相关性从高到低排列的候选索引
      */
     List<Integer> rerank(TenantId tenantId, String query, List<String> candidates, int topK);
 }

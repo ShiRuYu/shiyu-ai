@@ -16,6 +16,7 @@ import com.shiyu.ai.model.contract.model.ChatResponse;
 import org.junit.jupiter.api.Test;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 import java.time.Instant;
 import java.util.List;
@@ -171,28 +172,46 @@ class GenerationRunnerBranchTest {
     }
 
     @Test
-    void releasesAdmissionWhenInitialGenerationCasIsLost() {
+    void preservesWinningAdmissionWhenInitialGenerationCasIsLost() {
         ChatEngine engine = mock(ChatEngine.class);
         GenerationRepository generations = mock(GenerationRepository.class);
         ConversationRepository conversations = mock(ConversationRepository.class);
         GenerationAdmission admission = mock(GenerationAdmission.class);
+        GenerationUsageSink usage = mock(GenerationUsageSink.class);
+        GenerationRun created = generation("g-cas");
+        Sinks.Empty<ChatResponse> provider = Sinks.empty();
         setupBasic(conversations, generations);
-        when(generations.update(any(GenerationRun.class), anyLong())).thenReturn(0);
+        when(generations.update(any(GenerationRun.class), anyLong()))
+                .thenReturn(1)
+                .thenReturn(0);
+        when(generations.find("g-cas", new TenantId(1), 2))
+                .thenReturn(Optional.of(created.transition(GenerationStatus.RUNNING)));
+        when(conversations.completeGeneration(
+                        any(), anyLong(), any(), any(), anyLong(), anyList()))
+                .thenReturn(1);
+        when(engine.stream(any())).thenReturn(provider.asMono().flux());
+        GenerationRunner winner = runner(engine, generations, conversations, usage, admission, null);
+        GenerationRunner loser = runner(engine, generations, conversations, usage, admission, null);
+
+        winner.start(created, new TenantId(1), 2);
 
         org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalStateException.class,
-                () ->
-                        runner(
-                                        engine,
-                                        generations,
-                                        conversations,
-                                        mock(GenerationUsageSink.class),
-                                        admission,
-                                        null)
-                                .start(generation("g-cas"), new TenantId(1), 2));
-        verify(admission).reserve(any(), any(), anyInt());
-        verify(admission).release(any(), any());
-        verify(engine, never()).stream(any());
+                () -> loser.start(created, new TenantId(1), 2));
+        verify(admission, times(2)).reserve(any(), eq(created), anyInt());
+        verify(admission, never()).release(any(), any());
+        verify(engine).stream(any());
+
+        org.junit.jupiter.api.Assertions.assertEquals(Sinks.EmitResult.OK, provider.tryEmitEmpty());
+
+        verify(admission).settle(
+                any(), argThat(run -> run.id().equals("g-cas") && run.status() == GenerationStatus.COMPLETED));
+        verify(usage).completed(
+                argThat(run -> run.id().equals("g-cas") && run.status() == GenerationStatus.COMPLETED),
+                eq(new TenantId(1)), eq(new UserId(2)));
+        verify(admission, never()).release(any(), any());
+        verify(usage, never()).failed(any());
+        verify(engine).stream(any());
     }
 
     private static GenerationRunner runner(

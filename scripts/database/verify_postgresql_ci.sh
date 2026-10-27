@@ -56,6 +56,15 @@ export SHIYU_DB_USERNAME='shiyu_verify'
 export SHIYU_DB_PASSWORD=''
 export SHIYU_VERIFY_BASE_URL='http://127.0.0.1:19001'
 
+# 使用同一个一次性实例验证真实 JDBC 写入与跨 provider 的检索契约。
+export SHIYU_PG_TEST_URL="$SHIYU_DB_URL"
+export SHIYU_PG_TEST_USERNAME="$SHIYU_DB_USERNAME"
+export SHIYU_PG_TEST_PASSWORD="$SHIYU_DB_PASSWORD"
+mvn --batch-mode --no-transfer-progress \
+  -pl modules/infrastructure/shiyu-common-vector,modules/domains/governance/shiyu-governance-implementation,modules/domains/knowledge/shiyu-knowledge-implementation,modules/domains/agent/shiyu-agent-implementation \
+  -am test -Dtest=PgVectorStorePostgresqlTest,QuotaGovernancePostgresqlTest,KnowledgeSpaceMapperPostgresqlTest,AgentVersionPostgresqlTest \
+  -Dsurefire.failIfNoSpecifiedTests=false -Ddependency-check.skip=true
+
 start_app() {
   local app_home
   app_home="$(mktemp -d)"
@@ -98,7 +107,7 @@ python scripts/database/verify_postgresql_api.py
 
 docker exec "$container" psql -U shiyu_verify -d shiyu_verify \
   -v ON_ERROR_STOP=1 -c "INSERT INTO common_dict (dict_type, dict_label, dict_value, tenant_id, remark) VALUES ('ci-sentinel', 'preserve', 'persisted', 1, 'startup restart sentinel')" >/dev/null
-# A customized seed row and sentinel must survive a matching-baseline restart.
+# 匹配基线的重启必须保留已修改的种子记录和哨兵数据。
 docker exec "$container" psql -U shiyu_verify -d shiyu_verify \
   -v ON_ERROR_STOP=1 -c "UPDATE common_dict SET remark='customized by PostgreSQL CI' WHERE id=1" >/dev/null
 stop_app
@@ -114,7 +123,7 @@ fi
 python scripts/database/verify_postgresql_api.py
 stop_app
 
-# A mismatched marker must fail closed without changing application rows.
+# 版本标记不匹配时必须拒绝启动，并保留应用记录。
 docker exec "$container" psql -U shiyu_verify -d shiyu_verify \
   -v ON_ERROR_STOP=1 -c "UPDATE common_schema_baseline SET baseline_version='3' WHERE id=1" >/dev/null
 if start_app; then
@@ -129,10 +138,10 @@ if [[ "$custom_seed_count" != 1 ]]; then
 fi
 stop_app
 
-# Verify non-empty unmarked databases fail closed and retain their contents.
+# 验证非空且无标记的数据库会拒绝初始化，并保留已有内容。
 docker exec "$container" psql -U shiyu_verify -d shiyu_verify \
   -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public; CREATE EXTENSION vector' >/dev/null
-# A schema-local object also confirms the initializer only reasons about public application tables.
+# 通过其他模式内的对象确认初始化器仅检查 public 模式中的应用表。
 docker exec "$container" psql -U shiyu_verify -d shiyu_verify \
   -v ON_ERROR_STOP=1 -c 'CREATE TABLE public.unmarked_sentinel (id integer PRIMARY KEY); INSERT INTO public.unmarked_sentinel VALUES (7)' >/dev/null
 if start_app; then

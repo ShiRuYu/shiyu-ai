@@ -208,14 +208,14 @@ public class InMemoryAiRunRepository implements AiRunRepository {
     }
 
     /**
-     * 更新或设置 In 记忆 AI 运行 相关业务数据，并返回处理结果。
+     * 按预期版本更新运行终态并追加事件；事件追加失败时恢复原运行和事件流。
      *
-     * @param run 用于完成本次业务处理的 run 参数。
-     * @param expectedVersion 用于完成本次业务处理的 expectedVersion 参数。
-     * @param eventType 用于完成本次业务处理的 eventType 参数。
-     * @param payload 本次流程携带的事件或业务数据。
-     * @param redacted 用于完成本次业务处理的 redacted 参数。
-     * @return 返回 In 记忆 AI 运行 相关操作生成的结果数据。
+     * @param run 包含目标终态的运行快照
+     * @param expectedVersion 更新前应匹配的运行版本
+     * @param eventType 追加到运行事件流的终态事件类型
+     * @param payload 终态事件携带的序列化内容
+     * @param redacted 事件内容是否已经脱敏
+     * @return 携带最新事件序号的运行快照
      */
     @Override
     public AiRun updateTerminalAndAppend(

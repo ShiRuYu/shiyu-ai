@@ -339,7 +339,7 @@ class MagmaConsolidationWorkerTest {
     private static MagmaConsolidationWorker newWorker(JdbcTemplate jdbc) throws Exception {
         when(jdbc.queryForObject(anyString(), eq(Long.class), any(Object[].class)))
                 .thenReturn(7L);
-        MagmaConsolidationWorker worker = new MagmaConsolidationWorker(mock(DataSource.class));
+        MagmaConsolidationWorker worker = new MagmaConsolidationWorker(newDataSource());
         Field field = MagmaConsolidationWorker.class.getDeclaredField("jdbc");
         field.setAccessible(true);
         field.set(worker, jdbc);
@@ -369,6 +369,13 @@ class MagmaConsolidationWorkerTest {
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("No update matched " + fragment));
     }
+    /** 记录测试捕获的 SQL 更新语句及其绑定参数。 */
 
     private record UpdateCall(String sql, Object[] arguments) {}
+
+    private static DataSource newDataSource() throws Exception {
+        DataSource dataSource = mock(DataSource.class, RETURNS_DEEP_STUBS);
+        when(dataSource.getConnection().getMetaData().getDatabaseProductName()).thenReturn("H2");
+        return dataSource;
+    }
 }

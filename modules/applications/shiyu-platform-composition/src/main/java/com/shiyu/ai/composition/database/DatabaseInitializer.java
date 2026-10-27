@@ -268,6 +268,7 @@ public class DatabaseInitializer {
                 BaselineMarker marker = readBaselineMarker(connection);
                 if (BASELINE_VERSION.equals(marker.version())
                         && SEED_PROFILE.equals(marker.seedProfile())) {
+                    ensureEducationBaselinePresent(existingTables);
                     installPermissionUpdates(connection);
                     assertExpectedTables(loadPublicTables(connection));
                     assertExpectedColumns(connection);
@@ -370,7 +371,11 @@ public class DatabaseInitializer {
 
     private void initializePostgresql(Connection connection) throws Exception {
         boolean originalAutoCommit = connection.getAutoCommit();
+        int originalIsolation = connection.getTransactionIsolation();
         try {
+            if (originalIsolation != Connection.TRANSACTION_READ_COMMITTED) {
+                connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            }
             connection.setAutoCommit(false);
             try (Statement statement = connection.createStatement()) {
                 statement.execute("SET LOCAL search_path TO public");
@@ -401,6 +406,10 @@ public class DatabaseInitializer {
                             "education seed");
                 }
                 insertBaselineMarker(connection);
+                executePostgresqlResource(
+                        connection,
+                        "classpath:db/baseline/postgresql/identity-sequences.sql",
+                        "identity sequence");
             } else if (existingTables.contains(BASELINE_TABLE)) {
                 try (Statement statement = connection.createStatement();
                         ResultSet markerRow = statement.executeQuery(
@@ -414,6 +423,7 @@ public class DatabaseInitializer {
                         || !SEED_PROFILE.equals(marker.seedProfile())) {
                     throw unsupportedBaseline(marker);
                 }
+                ensureEducationBaselinePresent(existingTables);
             } else {
                 throw new IllegalStateException(
                         "Refusing to initialize a non-empty PostgreSQL database without "
@@ -423,12 +433,6 @@ public class DatabaseInitializer {
             }
 
             executePostgresqlUpdates(connection);
-            if (freshInstall) {
-                executePostgresqlResource(
-                        connection,
-                        "classpath:db/baseline/postgresql/identity-sequences.sql",
-                        "identity sequence");
-            }
             assertExpectedTables(loadPublicTables(connection));
             assertExpectedColumns(connection);
             connection.commit();
@@ -443,7 +447,19 @@ public class DatabaseInitializer {
         } finally {
             if (!connection.isClosed()) {
                 connection.setAutoCommit(originalAutoCommit);
+                if (connection.getTransactionIsolation() != originalIsolation) {
+                    connection.setTransactionIsolation(originalIsolation);
+                }
             }
+        }
+    }
+
+    private void ensureEducationBaselinePresent(Set<String> existingTables) {
+        if (hasEducationBaselineContributor()
+                && existingTables.stream().noneMatch(table -> table.startsWith("EDU_"))) {
+            throw new IllegalStateException(
+                    "Education baseline is enabled but this database was installed without"
+                            + " Education; manual rebuild required");
         }
     }
 
@@ -578,7 +594,8 @@ public class DatabaseInitializer {
                                     "classpath:db/updates/agent/20261014_seed_deepseek_graphs.sql",
                                     "classpath:db/updates/governance/20261024_quota_state.sql",
                                     "classpath:db/updates/conversation/20261024_idempotency_fingerprint.sql",
-                                    "classpath:db/updates/conversation/20261024_generation_postprocessing.sql")
+                                    "classpath:db/updates/conversation/20261024_generation_postprocessing.sql",
+                                    "classpath:db/updates/agent/20261027_version_numeric_delete_flag.sql")
                             .stream()
                             .filter(
                                     resource ->
@@ -662,7 +679,7 @@ public class DatabaseInitializer {
             while (resultSet.next()) {
                 String schema = resultSet.getString("TABLE_SCHEM");
                 if (isApplicationSchema(product, schema, catalog)) {
-                    tables.add(resultSet.getString("TABLE_NAME").toUpperCase());
+                    tables.add(resultSet.getString("TABLE_NAME").toUpperCase(Locale.ROOT));
                 }
             }
         }

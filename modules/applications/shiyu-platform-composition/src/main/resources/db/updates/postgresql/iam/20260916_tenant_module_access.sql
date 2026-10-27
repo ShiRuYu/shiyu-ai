@@ -1,6 +1,6 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Converted from modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260916_tenant_module_access.sql
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 转换来源：modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/updates/iam/20260916_tenant_module_access.sql
 
 -- 租户级业务模块开关。关闭仅更新 STATUS，不删除业务表或历史数据。
 CREATE TABLE IF NOT EXISTS AUTH_TENANT_MODULE (

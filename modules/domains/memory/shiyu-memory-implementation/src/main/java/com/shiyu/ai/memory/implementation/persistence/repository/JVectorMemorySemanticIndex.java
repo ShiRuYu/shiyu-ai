@@ -21,7 +21,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Adapts durable memory events to the configured embedding service and vector store.
+ * 将持久化记忆事件接入配置的嵌入服务和向量存储。
  */
 @Component
 public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
@@ -39,13 +39,13 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     private final ReentrantReadWriteLock indexLock = new ReentrantReadWriteLock();
 
     /**
-     * Creates an index backed by the configured embedding service.
+     * 创建使用已配置嵌入服务的语义索引。
      *
-     * @param store persistent vector store.
-     * @param properties vector store configuration.
-     * @param repository durable source of memory events used for reindexing.
-     * @param embeddingServices optional configured semantic embedding provider.
-     * @param configuredEmbeddingProfile stable configured provider and model identity for embeddings.
+     * @param store 持久化向量存储
+     * @param properties 向量存储配置
+     * @param repository 重建索引时读取的持久化记忆事件仓库
+     * @param embeddingServices 可选的已配置语义嵌入服务
+     * @param configuredEmbeddingProfile 配置的嵌入提供方及模型稳定标识
      */
     @Autowired
     public JVectorMemorySemanticIndex(
@@ -70,12 +70,12 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
 
     /**
-     * Retains the original construction signature for direct callers. Semantic operations through
-     * this constructor report that the embedding service is unavailable; there is no local fallback.
+     * 保留供直接调用方使用的原始构造签名；通过此构造方法执行语义操作时，
+     * 报告嵌入服务不可用，不提供本地回退。
      *
-     * @param store persistent vector store.
-     * @param properties vector store configuration.
-     * @param repository durable source of memory events used for reindexing.
+     * @param store 持久化向量存储
+     * @param properties 向量存储配置
+     * @param repository 重建索引时读取的持久化记忆事件仓库
      */
     public JVectorMemorySemanticIndex(
             VectorStore store,
@@ -90,10 +90,10 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
 
     /**
-     * Stores an event embedding with an explicit profile marker. The marker distinguishes these
-     * vectors from legacy UTF-8 projection vectors, whose persisted metadata has no profile.
+     * 保存带有明确配置标记的事件嵌入，以便区分这些向量与
+     * 历史 UTF-8 投影向量，后者的持久化元数据不包含配置标记。
      *
-     * @param event memory event to index.
+     * @param event 需要建立索引的记忆事件
      */
     public void upsert(MemoryEvent event) {
         indexLock.writeLock().lock();
@@ -106,11 +106,11 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
 
     /**
-     * Searches only vectors created with the active embedding profile.
+     * 仅搜索使用当前嵌入配置生成的向量。
      *
-     * @param query semantic query and tenant filters.
-     * @param limit maximum number of vector candidates.
-     * @return matching active memory events.
+     * @param query 语义查询及租户过滤条件
+     * @param limit 最多返回的向量候选数
+     * @return 匹配的有效记忆事件
      */
     public List<MemoryPath> search(MemoryQuery query, int limit) {
         Map<String, Object> filter = new HashMap<>();
@@ -185,9 +185,9 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
 
     /**
-     * Deletes an event's vector.
+     * 删除指定记忆事件的向量。
      *
-     * @param id event identifier.
+     * @param id 记忆事件标识
      */
     public void delete(String id) {
         indexLock.writeLock().lock();
@@ -200,10 +200,10 @@ public class JVectorMemorySemanticIndex implements MemorySemanticIndex {
     }
 
     /**
-     * Re-embeds durable events in the namespace, replacing legacy or stale-profile vectors.
+     * 重新嵌入命名空间中的持久化事件，替换历史向量和旧配置生成的向量。
      *
-     * @param tenantId tenant whose events should be indexed.
-     * @param namespace namespace to rebuild.
+     * @param tenantId 需要重建事件索引的租户
+     * @param namespace 需要重建的命名空间
      */
     public void rebuild(TenantId tenantId, String namespace) {
         indexLock.writeLock().lock();

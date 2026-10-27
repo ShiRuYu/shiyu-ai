@@ -194,10 +194,16 @@ class JdbcMagmaMemoryRepositoryTest {
 
     private static JdbcMagmaMemoryRepository newRepository(JdbcTemplate jdbc) throws Exception {
         JdbcMagmaMemoryRepository repository =
-                new JdbcMagmaMemoryRepository(mock(DataSource.class));
+                new JdbcMagmaMemoryRepository(newDataSource());
         Field field = JdbcMagmaMemoryRepository.class.getDeclaredField("jdbc");
         field.setAccessible(true);
         field.set(repository, jdbc);
         return repository;
+    }
+
+    private static DataSource newDataSource() throws Exception {
+        DataSource dataSource = mock(DataSource.class, RETURNS_DEEP_STUBS);
+        when(dataSource.getConnection().getMetaData().getDatabaseProductName()).thenReturn("H2");
+        return dataSource;
     }
 }

@@ -100,7 +100,7 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
                 .findFirst();
     }
 
-    /** Loads tenant-scoped events in bounded batches for semantic-index reconciliation. */
+    /** 按有界批次读取租户事件，用于核对并恢复语义索引。 */
     public List<MemoryEvent> findEventsByIds(TenantId tenantId, List<String> ids) {
         requireTenant(tenantId);
         if (ids == null || ids.isEmpty()) return List.of();
@@ -259,13 +259,13 @@ public class JdbcMagmaMemoryRepository implements MagmaMemoryRepository {
     }
 
     /**
-     * Returns every event in a namespace so semantic index rebuilds also replace vectors belonging
-     * to revoked events.
+     * 读取命名空间内的全部事件，使语义索引重建也能替换已撤销事件的向量。
      *
-     * @param tenantId tenant that owns the events.
-     * @param ns namespace to rebuild.
-     * @param limit maximum number of source events.
-     * @return all matching events, including revoked ones.
+     * @param tenantId 事件所属租户
+     * @param ns 需要重建的命名空间
+     * @param afterId 排他性的事件标识游标，为空时从首条事件开始
+     * @param limit 最多读取的源事件数
+     * @return 全部匹配事件，包括已撤销事件
      */
     public List<MemoryEvent> findEventsForSemanticIndexRebuild(
             TenantId tenantId, String ns, String afterId, int limit) {

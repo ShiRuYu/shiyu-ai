@@ -232,6 +232,9 @@ class DatabaseInitializerTest {
         assertEquals(3, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN "
                         + "('model:admin','agent:intent:edit','plugin:market')"));
+        assertEquals(3, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN "
+                        + "('model:admin','agent:intent:edit','plugin:market') AND ID>214"));
         assertEquals(6, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_ROLE_SCOPE_AUTH_CODE G JOIN AUTH_AUTH_CODE C ON C.ID=G.AUTH_CODE_ID "
                         + "JOIN AUTH_ROLE R ON R.ID=G.ROLE_ID WHERE C.CODE IN "
@@ -245,6 +248,34 @@ class DatabaseInitializerTest {
         assertEquals(3, scalar(dataSource,
                 "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN "
                         + "('model:admin','agent:intent:edit','plugin:market')"));
+        assertEquals(3, scalar(dataSource,
+                "SELECT COUNT(*) FROM AUTH_AUTH_CODE WHERE CODE IN "
+                        + "('model:admin','agent:intent:edit','plugin:market') AND ID>214"));
+        long maximumPermissionId = scalar(dataSource, "SELECT MAX(ID) FROM AUTH_AUTH_CODE");
+        execute(dataSource,
+                "INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY) "
+                        + "VALUES ('test:identity-after-update', 'test', 1, 0, 'test', 'test')");
+        assertTrue(scalar(dataSource,
+                "SELECT ID FROM AUTH_AUTH_CODE WHERE CODE='test:identity-after-update'")
+                > maximumPermissionId);
+    }
+
+    @Test
+    void refusesMarkedBaselineWithoutEducationTablesWhenEducationContributorIsEnabled() throws Exception {
+        DataSource dataSource = newDataSource();
+        DatabaseInitializer platformInitializer =
+                new DatabaseInitializer(Map.of("agent", dataSource), new StaticApplicationContext());
+        platformInitializer.initialize();
+
+        IllegalStateException error =
+                assertThrows(
+                        IllegalStateException.class,
+                        () -> newInitializer(dataSource).initialize());
+
+        assertTrue(error.getMessage().contains("installed without Education"));
+        assertEquals(0, scalar(dataSource,
+                "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                        + "WHERE TABLE_SCHEMA='PUBLIC' AND TABLE_NAME LIKE 'EDU_%'"));
     }
 
     @Test

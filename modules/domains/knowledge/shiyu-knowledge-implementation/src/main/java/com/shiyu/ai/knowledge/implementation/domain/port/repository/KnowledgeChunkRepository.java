@@ -38,11 +38,11 @@ public interface KnowledgeChunkRepository {
     List<KnowledgeChunkBO> findByDocumentVersion(
             TenantId tenantId, Long documentId, Long versionId);
 
-    /** Replace chunks for one immutable document version. */
+    /** 替换指定不可变文档版本的分块集合。 */
     boolean replaceByDocumentVersion(
             TenantId tenantId, Long documentId, Long versionId, List<KnowledgeChunkBO> chunks);
 
-    /** Replace chunks only while the provided durable ingestion claim is current. */
+    /** 仅在持久化入库任务的领取凭据仍有效时替换分块。 */
     boolean replaceByDocumentVersionIfClaimed(
             TenantId tenantId,
             Long documentId,
@@ -51,7 +51,7 @@ public interface KnowledgeChunkRepository {
             Long lockVersion,
             List<KnowledgeChunkBO> chunks);
 
-    /** Copy usable chunks from one immutable version into a newly created version. */
+    /** 将一个不可变版本的可用分块复制到新建版本。 */
     boolean copyByDocumentVersion(
             TenantId tenantId, Long documentId, Long sourceVersionId, Long targetVersionId);
 

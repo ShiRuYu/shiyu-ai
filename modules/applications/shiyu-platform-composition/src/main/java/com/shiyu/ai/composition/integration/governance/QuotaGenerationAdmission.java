@@ -48,10 +48,11 @@ public class QuotaGenerationAdmission implements GenerationAdmission {
     }
 
     /**
-     * 更新或设置 Quota 生成 相关业务操作，并维护必要的状态和协作关系。
+     * 按生成标识续期治理层配额预留，使长时间生成继续占用已获准的额度。
      *
-     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
-     * @param run 用于完成本次业务处理的 run 参数。
+     * @param actor 配额预留所属租户及用户上下文
+     * @param run 需要延长配额预留有效期的生成
+     * @return 配额预留仍有效且续期成功时为 true
      */
     @Override
     public boolean renew(ActorContext actor, GenerationRun run) {

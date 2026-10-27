@@ -1,8 +1,8 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Baseline seed data
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 基线种子数据
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/01_auth.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/01_auth.sql
 -- 扩展模式：iam
 INSERT INTO "auth_auth_code" VALUES(53, 'edu:subject:list', '查看学科', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_auth_code" VALUES(54, 'edu:subject:create', '创建学科', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
@@ -42,7 +42,7 @@ INSERT INTO "auth_auth_code" VALUES(83, 'edu:review:list', '查看复习任务',
 INSERT INTO "auth_auth_code" VALUES(84, 'edu:analytics', '查看学情分析', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_auth_code" VALUES(85, 'edu:wrong-question', '查看错题管理', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/02_navigation.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/02_navigation.sql
 -- 扩展模式：iam
 INSERT INTO "auth_menu" ("id","name","code","type","parent_id","tenant_id","path","redirect","icon","component","description","show","status","order","del_flag","create_by","create_time","update_by","update_time") VALUES
 (2050,'教育中心','EducationCenter','CATALOG',NULL,1,'/education-center','/education-center/learning','lucide:graduation-cap','','学习、练习、复习与 AI 辅学',TRUE,1,6,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
@@ -74,7 +74,7 @@ SELECT 1, C."id", 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM "auth_auth_code" C
 WHERE C."id" IN (53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,211,212,213,214);
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/07_education.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/07_education.sql
 
 INSERT INTO "edu_subject"
     ("id", "code", "name", "grade_level", "icon", "sort_order", "status", "tenant_id", "del_flag", "create_by", "update_by")
@@ -125,7 +125,7 @@ INSERT INTO "edu_ability"
     ("id", "student_id", "knowledge_id", "remember", "understand", "apply", "analyze", "evaluate", "create_score", "overall_mastery", "tenant_id", "status", "del_flag", "create_by", "update_by")
 VALUES (1, 1, 1001, 98.0, 96.0, 95.0, 93.0, 92.0, 90.0, 94.0, 1, 1, 0, 'system', 'system');
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/08_learning_progress.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/08_learning_progress.sql
 INSERT INTO "edu_review_task"
     ("id", "student_id", "knowledge_id", "review_date", "review_round", "status", "result_score", "completed_at", "tenant_id", "create_by", "update_by", "del_flag")
 VALUES (1, 1, 1001, DATE '2026-09-10', 1, 0, NULL, NULL, 1, 'system', 'system', 0);
@@ -150,7 +150,7 @@ INSERT INTO "edu_achievement"
     ("id", "student_id", "code", "name", "description", "icon", "earned_at", "tenant_id", "status", "del_flag", "create_by", "update_by")
 VALUES (1, 1, 'ALGEBRA_FOUNDATION', '代数基础达标', '完成一元一次方程阶段测验并达到 90 分以上。', 'achievement-algebra', TIMESTAMP '2026-09-08 20:00:00', 1, 1, 0, 'system', 'system');
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/09_curriculum.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/09_curriculum.sql
 INSERT INTO "edu_textbook"
     ("id", "name", "subject_code", "grade", "publisher", "isbn", "tenant_id", "status", "del_flag", "create_by", "update_by")
 VALUES (1, '义务教育教科书 数学 七年级上册', 'MATH', 7, '人民教育出版社', '9787107335661', 1, 1, 0, 'system', 'system');
@@ -179,7 +179,7 @@ INSERT INTO "edu_course_knowledge"
     ("course_id", "knowledge_id", "section_id", "sort_order", "tenant_id", "status", "del_flag", "create_by", "update_by")
 VALUES (1, 1001, 1, 1, 1, 1, 0, 'system', 'system');
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/10_resources.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/10_resources.sql
 INSERT INTO "edu_resource"
     ("id", "name", "type", "url", "size_bytes", "duration_sec", "subject_code", "grade", "difficulty", "description", "status", "view_count", "tenant_id", "del_flag", "create_by", "update_by")
 VALUES (1, '一元一次方程例题讲解', 'VIDEO', '/education/resources/math-linear-equation-intro.mp4', 52428800, 780, 'MATH', 7, 2, '用生活化例子讲解列方程与解方程的完整步骤。', 1, 86, 1, 0, 'system', 'system');
@@ -193,7 +193,7 @@ INSERT INTO "edu_question_knowledge"
 VALUES (1, 1001, 1.0, 1, 1, 0, 'system', 'system'),
        (2, 1001, 1.0, 1, 1, 0, 'system', 'system');
 
--- Source: modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/11_resource_variants.sql
+-- 来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/baseline/h2/seed/education/11_resource_variants.sql
 INSERT INTO "edu_resource"
     ("id", "name", "type", "url", "size_bytes", "subject_code", "grade", "difficulty", "description", "status", "view_count", "tenant_id", "del_flag", "create_by", "update_by")
 VALUES (2, '一元一次方程课后练习册', 'PDF', '/education/resources/math-linear-equation-practice.pdf', 1048576, 'MATH', 7, 2, '包含 12 道基础到中等难度练习题，适合课后巩固。', 1, 42, 1, 0, 'system', 'system');

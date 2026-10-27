@@ -1,6 +1,6 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Converted from modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261005_exam_attempt.sql
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 转换来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261005_exam_attempt.sql
 
 -- 对已标记为基线版本 4 的 H2 数据库执行幂等升级。
 UPDATE EDU_EXAM SET DEL_FLAG=0 WHERE DEL_FLAG IS NULL;
@@ -43,9 +43,8 @@ CREATE TABLE IF NOT EXISTS EDU_EXAM_ATTEMPT_QUESTION (
 );
 CREATE INDEX IF NOT EXISTS IDX_EXAM_ATTEMPT_QUESTION ON EDU_EXAM_ATTEMPT_QUESTION (TENANT_ID, ATTEMPT_ID);
 
-INSERT INTO AUTH_AUTH_CODE (ID, CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
-SELECT (SELECT COALESCE(MAX(ID), 0) + 1 FROM AUTH_AUTH_CODE),
-       'edu:exam:take', '参加考试', 1, 0, 'system', 'system'
+INSERT INTO AUTH_AUTH_CODE (CODE, NAME, STATUS, DEL_FLAG, CREATE_BY, UPDATE_BY)
+SELECT 'edu:exam:take', '参加考试', 1, 0, 'system', 'system'
 WHERE NOT EXISTS (SELECT 1 FROM AUTH_AUTH_CODE WHERE CODE = 'edu:exam:take');
 
 INSERT INTO AUTH_TENANT_AUTH_CODE (TENANT_ID, AUTH_CODE_ID, STATUS, CREATE_TIME, UPDATE_TIME)

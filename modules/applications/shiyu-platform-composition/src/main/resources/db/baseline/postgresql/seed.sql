@@ -1,8 +1,8 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Baseline seed data
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 基线种子数据
 
--- Source: modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2/seed/common/01_common.sql
+-- 来源：modules/infrastructure/shiyu-common-foundation/src/main/resources/db/baseline/h2/seed/common/01_common.sql
 
 INSERT INTO "common_dict" VALUES(1, 'timezone', 'America/New_York (GMT-5)', 'America/New_York', 1, 1, NULL, NULL, 'N', 1, '美国纽约时区', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "common_dict" VALUES(2, 'timezone', 'Europe/London (GMT0)', 'Europe/London', 1, 2, NULL, NULL, 'N', 1, '欧洲伦敦时区', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
@@ -23,7 +23,7 @@ INSERT INTO "common_dict" VALUES(16, 'INTENT_CATEGORY', '任务', 'TASK', 1, 3, 
 INSERT INTO "common_dict" VALUES(17, 'INTENT_CATEGORY', '搜索', 'SEARCH', 1, 4, NULL, NULL, 'N', 1, '意图分类：搜索', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "common_dict" VALUES(18, 'INTENT_CATEGORY', '技术支持', 'TECHNICAL', 1, 5, NULL, NULL, 'N', 1, '意图分类：技术支持', 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 
--- Source: modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql
+-- 来源：modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/02_auth.sql
 
 INSERT INTO "auth_tenant" VALUES(1, NULL, 'default', '默认租户', 'Admin', '13800000000', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "auth_user" VALUES(2, 'admin', '$2a$10$upTL84vHb86f9vMVMn4m8uOGqGr9Pedo.CCsg.XmZ62xhU2IIHJvy', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 'Admin', NULL, NULL, NULL, 'admin@example.com', NULL, NULL, NULL);
@@ -447,7 +447,7 @@ INSERT INTO "auth_tenant_auth_code" VALUES(1, 120, 1, CURRENT_TIMESTAMP, CURRENT
 INSERT INTO "auth_tenant_auth_code" VALUES(1, 121, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 INSERT INTO "auth_tenant_auth_code" VALUES(1, 122, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Source: modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/03_agent.sql
+-- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/03_agent.sql
 
 INSERT INTO "agent_def" VALUES(1, 'tutor-bot', '辅导助手', '通用学科辅导 Agent（使用 DeepSeek deepseek-flash 模型）', 1, NULL, 'v1.0.0', 1, NULL, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "agent_def" VALUES(2, 'knowledge-tutor', '知识问答助手', '知识问答 Agent（使用 DeepSeek deepseek-flash 模型）', 1, NULL, 'v1.0.0', 1, NULL, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
@@ -480,7 +480,7 @@ INSERT INTO "agent_intent_def" VALUES(6, 'default', 'WRITING_ASSISTANCE', '写�
 INSERT INTO "agent_intent_def" VALUES(7, 'default', 'DATA_ANALYSIS', '数据分析', 1, '数据处理与分析', 'TASK', 60, 0.8, NULL, NULL, '0', NULL, NULL, NULL, '1', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "agent_intent_def" VALUES(8, 'default', 'UNKNOWN', '未知意图', 1, '无法识别的意图', 'CONVERSATION', 0, 0.5, NULL, NULL, '0', NULL, NULL, NULL, '1', 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 
--- Source: modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/04_app_runtime.sql
+-- 来源：modules/domains/agent/shiyu-agent-implementation/src/main/resources/db/baseline/h2/seed/agent/04_app_runtime.sql
 INSERT INTO "ai_app" ("id", "tenant_id", "owner_user_id", "name", "description", "status", "published_version_id", "created_at", "updated_at")
 VALUES ('edu-tutor-app', 1, 2, '数学学习助手', '面向七年级一元一次方程学习的教育应用示例。', 'PUBLISHED', 'edu-tutor-v1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
@@ -497,7 +497,7 @@ VALUES ('knowledge-qa-v1', 'knowledge-qa-app', 1, '1.0.0',
         '{"module":"knowledge","platform":"DEEPSEEK","model":"deepseek-flash","agentId":"rag-knowledge-agent","agentVersion":"v1.0.0","knowledgeSpaceIds":[1],"retrievalMode":"HYBRID","topK":5,"executionType":"AGENT"}',
         'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Source: modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/seed/model/03_model.sql
+-- 来源：modules/domains/model/shiyu-model-implementation/src/main/resources/db/baseline/h2/seed/model/03_model.sql
 
 INSERT INTO "model_ai_platform" VALUES(1, 'OpenAI', 'OPENAI', 'OPENAI_COMPATIBLE', 1, 'https://api.openai.com/v1', '', 0.7, 4096, 3, '["gpt-4o","gpt-4o-mini","gpt-4-turbo","gpt-3.5-turbo"]', NULL, 'N', 1, 'OpenAI 官方 API', NULL, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "model_ai_platform" VALUES(2, 'DeepSeek', 'DEEPSEEK', 'OPENAI_COMPATIBLE', 1, 'https://api.deepseek.com', '', 0.7, 4096, 3, '["deepseek-flash"]', NULL, 'Y', 1, 'DeepSeek 官方 API', NULL, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
@@ -513,7 +513,7 @@ INSERT INTO "model_ai_model" VALUES(7, 3, 'anthropic/claude-3.5-sonnet', 1, 'Cla
 INSERT INTO "model_ai_model" VALUES(8, 4, 'Qwen/Qwen3-14B', 1, 'Qwen3 14B', NULL, NULL, 'N', 1, 1, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 INSERT INTO "model_ai_model" VALUES(9, 4, 'Qwen/Qwen3-8B', 1, 'Qwen3 8B', NULL, NULL, 'Y', 1, 2, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP, 0);
 
--- Source: modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/04_knowledge.sql
+-- 来源：modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/04_knowledge.sql
 
 INSERT INTO "knowledge_difficulty_scale" VALUES(1, 'STANDARD_5', '标准五级难度', '适用于通用知识体系的五级难度量表', 5, 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "knowledge_difficulty_scale_level" VALUES(1, 1, 1, '入门', '基础知识与概念理解', 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
@@ -522,7 +522,7 @@ INSERT INTO "knowledge_difficulty_scale_level" VALUES(3, 1, 3, '中等', '综合
 INSERT INTO "knowledge_difficulty_scale_level" VALUES(4, 1, 4, '较难', '复杂问题分析与推理', 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 INSERT INTO "knowledge_difficulty_scale_level" VALUES(5, 1, 5, '挑战', '高难度综合与创新', 1, 1, 0, 'system', CURRENT_TIMESTAMP, 'system', CURRENT_TIMESTAMP);
 
--- Source: modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/06_demo_content.sql
+-- 来源：modules/domains/knowledge/shiyu-knowledge-implementation/src/main/resources/db/baseline/h2/seed/knowledge/06_demo_content.sql
 INSERT INTO "knowledge_space"
     ("id", "code", "name", "description", "access_mode", "review_mode", "embedding_profile", "rerank_profile", "chunk_strategy", "chunk_size", "chunk_overlap", "active_index_version", "tenant_id", "status", "del_flag", "create_by", "update_by", "difficulty_scale_id", "binding_mode", "domain_code")
 VALUES (1, 'DEMO_EDU_MATH', '七年级数学知识库', '用于数学辅导问答的课程资料与例题知识库', 'TENANT', 'OPTIONAL', 'text-embedding-v3', 'default', 'HEADING', 800, 100, 1, 1, 1, 0, 'system', 'system', 1, 'OPTIONAL', 'EDUCATION');
@@ -565,7 +565,7 @@ VALUES (1001, 1, '一元一次方程移项时需要注意什么？', '[1001]',
         '移项后需要同时改变该项的符号，再合并同类项并求解。',
         1, 1, 0, 'system', TIMESTAMP '2026-09-08 08:35:00', 'system', TIMESTAMP '2026-09-08 08:35:00');
 
--- Source: modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql
+-- 来源：modules/domains/iam/shiyu-iam-implementation/src/main/resources/db/baseline/h2/seed/iam/05_navigation.sql
 INSERT INTO "auth_menu" ("id","name","code","type","parent_id","tenant_id","path","redirect","icon","component","description","show","status","order","del_flag","create_by","create_time","update_by","update_time") VALUES
 (2000,'工作台','Workbench','CATALOG',NULL,1,'/workbench','/workbench/overview','lucide:layout-dashboard','','待办、最近会话、审批与运行状态',TRUE,1,1,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
 (2010,'AI 控制台','AiConsole','CATALOG',NULL,1,'/workspace','/workspace/chat','lucide:sparkles','','Chat、Agent、RAG 与历史会话',TRUE,1,2,0,'system',CURRENT_TIMESTAMP,'system',CURRENT_TIMESTAMP),
@@ -602,7 +602,7 @@ INSERT INTO "auth_tenant_menu" ("tenant_id","menu_id","status","create_time","up
 SELECT 1, M."id", 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM "auth_menu" M WHERE M."id" BETWEEN 2000 AND 2074;
 
--- Source: modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2/seed/conversation/11_conversation.sql
+-- 来源：modules/domains/conversation/shiyu-conversation-implementation/src/main/resources/db/baseline/h2/seed/conversation/11_conversation.sql
 INSERT INTO "chat_conversation"
     ("id", "tenant_id", "owner_user_id", "scene_type", "title", "status", "platform", "model", "version", "created_at", "updated_at")
 VALUES ('demo-conversation-20260908', 1, 2, 'EDUCATION_TUTOR', '一元一次方程复习', 'ACTIVE',
@@ -653,7 +653,7 @@ VALUES ('demo-generation-knowledge-20260908-001', 1, 'demo-conversation-knowledg
         516, 118, 940, -1, FALSE, 1,
         TIMESTAMP '2026-09-08 10:02:00', TIMESTAMP '2026-09-08 10:03:12');
 
--- Source: modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/seed/governance/10_governance.sql
+-- 来源：modules/domains/governance/shiyu-governance-implementation/src/main/resources/db/baseline/h2/seed/governance/10_governance.sql
 INSERT INTO "governance_usage_record"
     ("id", "tenant_id", "user_id", "correlation_id", "source_type", "source_id",
      "input_tokens", "output_tokens", "cost", "occurred_at", "usage_type", "latency_ms", "session_id", "ext_info")
@@ -670,7 +670,7 @@ VALUES ('demo-usage-20260908-002', 1, 2, 'demo-chat-knowledge-20260908-001', 'CH
         TIMESTAMP '2026-09-08 10:03:12', 'METERED', 940, 'demo-session-knowledge-20260908',
         '{"appId":"knowledge-qa-app","platform":"DEEPSEEK","model":"deepseek-flash","environment":"demo"}');
 
--- Source: modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/seed/memory/12_memory.sql
+-- 来源：modules/domains/memory/shiyu-memory-implementation/src/main/resources/db/baseline/h2/seed/memory/12_memory.sql
 INSERT INTO "memory_entity"
     ("id", "tenant_id", "entity_type", "external_ref", "display_name", "normalized_name", "attributes", "active")
 VALUES ('demo-memory-entity-math', 1, 'KNOWLEDGE', 'knowledge:1001', '一元一次方程', '一元一次方程', '{"subject":"MATH","grade":7}', TRUE);
@@ -691,7 +691,7 @@ INSERT INTO "memory_consolidation_job"
     ("id", "tenant_id", "event_id", "status", "attempts", "available_at", "created_at", "updated_at")
 VALUES (1, 1, 'demo-memory-event-math', 'COMPLETED', 1, TIMESTAMP '2026-09-08 09:16:00', TIMESTAMP '2026-09-08 09:15:02', TIMESTAMP '2026-09-08 09:16:00');
 
--- Source: modules/domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2/seed/tooling/15_plugin_market.sql
+-- 来源：modules/domains/tooling/shiyu-tooling-implementation/src/main/resources/db/baseline/h2/seed/tooling/15_plugin_market.sql
 INSERT INTO "plugin_market_entry"
     ("id", "version", "source", "manifest", "signature", "publisher_key", "permissions_json", "checksum", "update_policy", "published_at", "enabled")
 VALUES ('edu-calculator', '1.0.0', 'https://plugins.example.invalid/edu-calculator-1.0.0.jar',

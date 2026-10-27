@@ -110,6 +110,18 @@ public interface ConversationRepository {
      */
     int deleteMessage(String id, TenantId tenantId, long ownerUserId);
 
+    /**
+     * 按预期版本原子提交生成完成状态、助手消息、会话更新及运行事件。
+     *
+     * @param completed 待提交的生成完成状态
+     * @param expectedGenerationVersion 生成记录应匹配的乐观锁版本
+     * @param assistant 生成的助手消息
+     * @param updatedConversation 待提交的会话最新状态
+     * @param expectedConversationVersion 会话记录应匹配的乐观锁版本
+     * @param runtimeEvents 随状态变更追加的运行事件类型
+     *
+     * @return 成功提交时返回 1；版本或运行状态已变化时返回 0
+     */
     default int completeGeneration(
             com.shiyu.ai.conversation.contract.model.GenerationRun completed,
             long expectedGenerationVersion,
@@ -120,6 +132,16 @@ public interface ConversationRepository {
         return 0;
     }
 
+    /**
+     * 按预期版本将运行中的生成转为指定终态，并追加运行事件。
+     *
+     * @param terminal 待提交的生成终态
+     * @param expectedGenerationVersion 生成记录应匹配的乐观锁版本
+     * @param ownerUserId 生成或幂等记录所属用户标识
+     * @param runtimeEvents 随状态变更追加的运行事件类型
+     *
+     * @return 成功转换时返回 1；版本或运行状态已变化时返回 0
+     */
     default int transitionRunningGeneration(
             com.shiyu.ai.conversation.contract.model.GenerationRun terminal,
             long expectedGenerationVersion,
@@ -128,16 +150,37 @@ public interface ConversationRepository {
         return 0;
     }
 
+    /**
+     * 领取指定生成的待执行后处理任务，并返回带领取凭据的任务状态。
+     *
+     * @param generationId 生成运行标识
+     *
+     * @return 成功领取的任务；不存在可领取任务时为空
+     */
     default java.util.Optional<com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing>
             claimGenerationPostProcessing(String generationId) {
         return java.util.Optional.empty();
     }
 
+    /**
+     * 领取下一条已到执行时间的生成后处理任务。
+     *
+     * @return 成功领取的任务；暂无可领取任务时为空
+     */
     default java.util.Optional<com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing>
             claimGenerationPostProcessingNext() {
         return java.util.Optional.empty();
     }
 
+    /**
+     * 仅在领取凭据仍有效时，推进生成后处理的指定步骤。
+     *
+     * @param generationId 生成运行标识
+     * @param step 已完成的后处理步骤
+     * @param claimToken 当前后处理领取凭据
+     *
+     * @return 成功推进时返回 1；领取凭据已失效时返回 0
+     */
     default int completeGenerationPostProcessing(
             String generationId,
             com.shiyu.ai.conversation.implementation.domain.model.GenerationPostProcessing.Step step,
@@ -145,6 +188,15 @@ public interface ConversationRepository {
         return 0;
     }
 
+    /**
+     * 释放当前领取的后处理任务，并安排延迟重试。
+     *
+     * @param generationId 生成运行标识
+     * @param claimToken 当前后处理领取凭据
+     * @param retryDelayMillis 再次允许领取前的等待毫秒数
+     *
+     * @return 成功释放时返回 1；领取凭据已失效时返回 0
+     */
     default int releaseGenerationPostProcessing(
             String generationId, String claimToken, long retryDelayMillis) {
         return 0;

@@ -46,12 +46,13 @@ public class ExistingRerankProvider implements RerankProvider {
     }
 
     /**
-     * 执行 Existing Rerank 相关业务数据，并返回处理结果。
+     * 调用聊天模型生成候选片段排序；模型失败或未返回有效索引时退回原始顺序。
      *
-     * @param query 用于筛选目标数据的查询条件。
-     * @param candidates 用于完成本次业务处理的 candidates 参数。
-     * @param topK 用于完成本次业务处理的 topK 参数。
-     * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
+     * @param tenantId 本次重排请求所属租户
+     * @param query 用于评价片段相关性的查询文本
+     * @param candidates 待排序的候选片段文本列表
+     * @param topK 期望保留的最高相关片段数量
+     * @return 按相关性从高到低排列的候选索引
      */
     @Override
     public List<Integer> rerank(TenantId tenantId, String query, List<String> candidates, int topK) {

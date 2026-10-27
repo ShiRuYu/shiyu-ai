@@ -346,7 +346,7 @@ public class GenerationRunner {
                                                 execution.stopReservationHeartbeat();
                                             }
                                         } catch (RuntimeException renewalFailure) {
-                                            // A transient quota-store error is retried on the next heartbeat.
+                                            // 配额存储发生瞬时错误时，在下次心跳重试。
                                         }
                                     },
                                     0,
@@ -360,7 +360,7 @@ public class GenerationRunner {
         if (generations.update(running, created.version()) != 1) {
             execution.stopReservationHeartbeat();
             activeExecutions.remove(created.id(), execution);
-            // Reference-based reservations can be shared with the start that won the CAS.
+            // 按引用建立的预留可能与成功通过条件更新的启动请求共享。
             throw new IllegalStateException("generation is already running");
         }
         appendProjection(
@@ -587,7 +587,7 @@ public class GenerationRunner {
         }
     }
 
-    /** Process queued quota and usage cleanup after a terminal controller transition. */
+    /** 控制器完成终态转换后，处理排队的配额及用量清理。 */
     public void processTerminalPostProcessing(String generationId) {
         if (postProcessing != null) postProcessing.processGeneration(generationId);
     }
@@ -1042,6 +1042,7 @@ public class GenerationRunner {
     private static ActorContext actor(long tenantId, long ownerUserId) {
         return new ActorContext(new TenantId(tenantId), new UserId(ownerUserId), false);
     }
+    /** 保存一次生成的取消状态、流式订阅和配额续期任务，协调资源释放。 */
 
     private static final class GenerationExecution {
         private final AtomicBoolean cancelled = new AtomicBoolean();

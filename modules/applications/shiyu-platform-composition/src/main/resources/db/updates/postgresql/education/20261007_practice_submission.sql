@@ -1,6 +1,6 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Converted from modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261007_practice_submission.sql
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 转换来源：modules/business/education/shiyu-education-implementation/src/main/resources/db/updates/education/20261007_practice_submission.sql
 
 ALTER TABLE "edu_study_record" ALTER COLUMN "knowledge_id" DROP NOT NULL;
 ALTER TABLE "edu_study_record" ADD COLUMN IF NOT EXISTS "submission_key" CHARACTER VARYING(36);

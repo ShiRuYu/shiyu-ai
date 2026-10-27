@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Tracks provider HTTP requests started during one streaming model invocation. */
+/** 跟踪一次模型流式调用期间发起的提供方 HTTP 请求，支持统一取消。 */
 public final class ProviderRequestCancellation {
     private static final ThreadLocal<ProviderRequestCancellation> CURRENT = new ThreadLocal<>();
 
@@ -38,14 +38,22 @@ public final class ProviderRequestCancellation {
         return () -> activeRequests.remove(cancelRequest);
     }
 
+    /** 表示当前线程中的提供方请求取消作用域，关闭时恢复先前上下文。 */
     @FunctionalInterface
     public interface Scope extends AutoCloseable {
+        /**
+         * 关闭当前取消作用域，恢复进入前的线程上下文。
+         */
         @Override
         void close();
     }
 
+    /** 表示取消回调的注册句柄，关闭时解除对应回调。 */
     @FunctionalInterface
     public interface Registration extends AutoCloseable {
+        /**
+         * 解除取消回调注册，使其不再接收后续取消通知。
+         */
         @Override
         void close();
     }

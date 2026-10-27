@@ -32,7 +32,7 @@ public interface VectorStore extends AutoCloseable {
         return search(request.getQueryVector(), request.getTopK());
     }
 
-    /** Count records whose metadata matches all supplied filters. */
+    /** 统计元数据满足全部筛选条件的向量记录数量。 */
     int count(Map<String, Object> filter);
 
     /** 删除记录 */

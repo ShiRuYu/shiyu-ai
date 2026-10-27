@@ -35,20 +35,20 @@ public interface KnowledgeEnterpriseRepository {
      */
     KnowledgeSpaceBO findSpaceByTenant(TenantId tenantId, Long id);
 
-    /** Claim the durable cross-instance index rebuild lease and return its fencing version. */
+    /** 领取跨实例的持久化索引重建租约，并返回隔离版本。 */
     Long claimIndexRebuildLease(TenantId tenantId, Long spaceId);
 
-    /** Claim the lease on behalf of a durable rebuild job. */
+    /** 代表持久化索引重建任务领取租约。 */
     default Long claimIndexRebuildLease(TenantId tenantId, Long spaceId, Long jobId) {
         return claimIndexRebuildLease(tenantId, spaceId);
     }
 
-    /** Refresh a lease only while its fencing version is still current. */
+    /** 仅在隔离版本仍有效时刷新租约。 */
     boolean heartbeatIndexRebuildLease(
             TenantId tenantId, Long spaceId, Long fencingVersion, LocalDateTime heartbeatTime);
 
 
-    /** Fence activation so a worker with an expired or replaced lease cannot publish. */
+    /** 通过隔离版本保护索引激活，阻止持有过期或被替换租约的线程发布索引。 */
     boolean activateIndexRebuild(
             TenantId tenantId,
             Long spaceId,
@@ -56,7 +56,7 @@ public interface KnowledgeEnterpriseRepository {
             Long expectedActiveVersion,
             Long newActiveVersion);
 
-    /** Activate a worker rebuild while serializing against cancellation of its durable job. */
+    /** 激活工作线程重建的索引，并与对应持久化任务的取消操作串行协调。 */
     boolean activateIndexRebuild(
             TenantId tenantId,
             Long spaceId,
@@ -66,7 +66,7 @@ public interface KnowledgeEnterpriseRepository {
             Long jobId,
             Long jobLockVersion);
 
-    /** Finish a lease only if its fencing version is still current. */
+    /** 仅在隔离版本仍有效时结束租约。 */
     boolean releaseIndexRebuildLease(
             TenantId tenantId, Long spaceId, Long fencingVersion, boolean succeeded);
 
@@ -321,7 +321,7 @@ public interface KnowledgeEnterpriseRepository {
             com.shiyu.ai.knowledge.implementation.domain.model.KnowledgeDocumentBO document,
             String parsedTitle);
 
-    /** Fenced failure/retry update, scoped to the version that is still current. */
+    /** 仅针对仍有效的任务版本更新失败或重试状态。 */
     boolean failClaimedIngestion(
             TenantId tenantId, KnowledgeIngestionJobBO job, String documentParseStatus);
 
@@ -356,13 +356,13 @@ public interface KnowledgeEnterpriseRepository {
     /** 仅允许当前租约持有者写回索引重建任务结果。 */
     boolean updateIndexRebuildJob(TenantId tenantId, KnowledgeIngestionJobBO job);
 
-    /** Cancels a pending rebuild or fences a running one. */
+    /** 取消待执行的重建任务，或使运行中的重建任务及其租约失效。 */
     boolean cancelIndexRebuildJob(TenantId tenantId, KnowledgeIngestionJobBO job);
 
-    /** Checks whether a rebuild still owns its expected running job version. */
+    /** 检查重建任务是否仍持有预期的运行版本。 */
     boolean isIndexRebuildJobCurrent(TenantId tenantId, Long jobId, Long lockVersion);
 
-    /** Atomically accounts a worker attempt only while its job claim is still current. */
+    /** 仅在任务领取凭据仍有效时原子累计工作线程的执行次数。 */
     boolean beginIndexRebuildAttempt(TenantId tenantId, Long jobId, Long lockVersion);
 
     /**

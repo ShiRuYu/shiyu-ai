@@ -13,6 +13,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+/** 验证试卷批量查询保留租户和删除状态过滤，并跳过空标识集合。 */
 
 class ExamRepositoryImplTest {
     @Test

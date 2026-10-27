@@ -245,7 +245,7 @@ class ConversationControllerTest {
         when(idempotency.find(new TenantId(7), 8, "conversation.create", "key"))
                 .thenReturn(Optional.of("c1"));
         when(idempotency.findFingerprint(new TenantId(7), 8, "conversation.create", "key"))
-                .thenReturn(Optional.of(createFingerprint), Optional.of(createFingerprint));
+                .thenReturn(Optional.of(createFingerprint));
         when(conversations.findConversation("c1", new TenantId(7), 8))
                 .thenReturn(Optional.of(conversation));
         assertEquals(conversation, controller.create("key", create).getData());
@@ -412,7 +412,8 @@ class ConversationControllerTest {
                 new ConversationController.CreateConversationRequest();
         create.setTitle("Chat");
         when(idempotency.find(new TenantId(7), 8, "conversation.create", "claim-race"))
-                .thenReturn(Optional.empty(), Optional.of("c1"));
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of("c1"));
         when(service.createIdempotent(
                         eq(new TenantId(7)),
                         eq(8L),

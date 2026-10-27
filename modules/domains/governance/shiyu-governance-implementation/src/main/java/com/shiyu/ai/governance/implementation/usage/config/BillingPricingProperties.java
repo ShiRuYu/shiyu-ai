@@ -16,9 +16,9 @@ import java.util.List;
 public class BillingPricingProperties {
     private List<ModelPrice> models = new ArrayList<>();
 
+    /** 单个模型的输入和输出 Token 单价。 */
     @Getter
     @Setter
-    /** 单个模型的输入和输出 Token 单价。 */
     public static class ModelPrice {
         private String platform;
         private String model;

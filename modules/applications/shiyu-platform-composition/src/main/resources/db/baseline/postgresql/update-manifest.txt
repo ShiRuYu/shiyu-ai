@@ -1,6 +1,6 @@
--- PostgreSQL resources generated from the H2 resources.
--- Do not edit this generated file directly; update the source and regenerate.
--- Ordered PostgreSQL startup updates
+-- 从 H2 源资源生成的 PostgreSQL 资源。
+-- 不要直接编辑此生成文件；请修改源资源后重新生成。
+-- 按顺序排列的 PostgreSQL 启动增补
 
 db/updates/postgresql/iam/20260914_platform_usage.sql
 db/updates/postgresql/iam/20260916_tenant_module_access.sql
@@ -16,3 +16,4 @@ db/updates/postgresql/agent/20261014_seed_deepseek_graphs.sql
 db/updates/postgresql/governance/20261024_quota_state.sql
 db/updates/postgresql/conversation/20261024_idempotency_fingerprint.sql
 db/updates/postgresql/conversation/20261024_generation_postprocessing.sql
+db/updates/postgresql/agent/20261027_version_numeric_delete_flag.sql

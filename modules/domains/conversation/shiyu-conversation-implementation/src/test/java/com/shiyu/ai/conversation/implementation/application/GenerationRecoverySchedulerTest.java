@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.List;
+/** 验证过期生成恢复后释放对应配额，并隔离单条恢复失败。 */
 
 class GenerationRecoverySchedulerTest {
     @Test

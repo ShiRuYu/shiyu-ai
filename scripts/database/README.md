@@ -4,7 +4,9 @@
 
 应用通过 `shiyu.infrastructure.database.provider`（`h2`、`mysql`、`postgresql`）选择数据库；连接地址、账号和密码只从环境变量或密钥管理系统注入。向量、文件、Redis 和事件 provider 的切换规则见[外部基础设施切换](../../docs/外部基础设施切换.md)。
 
-`postgresql/baseline-schema.sql` 和 `postgresql/baseline-seed.sql` 按应用启动器的 schema、seed、增补资源顺序生成。转换器保留 seed 字符串原文，将 H2 的表、类型和更新时间语法转换为 PostgreSQL 可执行 SQL，并为 `ON UPDATE CURRENT_TIMESTAMP` 生成触发器；seed 最后同步 identity 序列，再写入版本标记。源资源变更后，运行 `python scripts/database/generate-postgresql-baseline.py` 重新生成，并在全新 PostgreSQL 测试库执行完整迁移和应用冒烟。仓库 CI 使用 `scripts/database/verify_postgresql_ci.sh` 做该检查。
+JDBC 方言在连接数据库后检测；连接失败或缺少 DataSource 时直接报错，避免将 PostgreSQL/MySQL 错判为 H2 并缓存错误的 SQL 方言。
+
+`postgresql/baseline-schema.sql` 和 `postgresql/baseline-seed.sql` 按应用启动器的 schema、seed、增补资源顺序生成。转换器保留 seed 字符串原文，将 H2 的表、类型和更新时间语法转换为 PostgreSQL 可执行 SQL，并为 `ON UPDATE CURRENT_TIMESTAMP` 生成触发器；完整基线在写入种子后写入版本标记，同步 identity 序列，再运行幂等增补。源资源变更后，运行 `python scripts/database/generate-postgresql-baseline.py` 重新生成，并在全新 PostgreSQL 测试库验证基线和应用冒烟。仓库 CI 使用 `scripts/database/verify_postgresql_ci.sh` 做该检查。
 
 `migrate.ps1 -Action baseline` 在一个 PostgreSQL 事务中执行两份脚本；任一语句失败都会回滚，不会留下部分安装的 schema。只在空目标库执行基线安装。
 
@@ -15,6 +17,8 @@
 旧版内置 Agent 图仍使用 SILICON_FLOW/Qwen 时，PostgreSQL 执行 `postgresql/20261014_seed_deepseek_graphs.sql`，MySQL 执行 `mysql/20261014_seed_deepseek_graphs.sql`。脚本只替换九个系统图中的旧平台与模型字段，并同步更新 11 条内置 Agent 的旧模型说明；图内其他定制内容及非系统图保持原样。H2 启动时自动执行。执行前备份数据库，执行后核对 `agent_version` 中系统图的模型配置。
 
 旧版外部数据库还需同步教育增补和 DeepSeek 模型目录。MySQL 依次执行 `mysql/20261005_exam_attempt.sql`、`mysql/20261006_question_purpose.sql`、`mysql/20261007_practice_submission.sql`、`mysql/20261007_demo_education_access.sql` 和 `mysql/20261011_deepseek_flash.sql`；PostgreSQL 依次执行 `postgresql/20261005_exam_attempt.sql`、`postgresql/20261006_question_purpose.sql`、`postgresql/20261007_practice_submission.sql`、`postgresql/20261007_demo_education_access.sql` 和 `postgresql/20261011_deepseek_flash.sql`。先备份数据库，并在执行教育 DDL 时停用相关写入。旧库完成后核对考试作答表、练习提交列、`DEMO_EDU_MATH` 访问模式，以及 DeepSeek 模型名 `deepseek-flash` 和 `deepseek-v4-pro`。新 PostgreSQL 基线已包含这些更新；H2 在启动时自动应用资源增补。
+
+智能体版本删除标志升级：`agent_version.del_flag` 与 Java 的整数属性统一为数值列。H2 和 PostgreSQL 现有库在应用启动时自动迁移；手动迁移可执行 `pwsh ./scripts/database/migrate.ps1 -Action upgrade-agent-version-delete-flag -Provider postgresql` 或 `-Provider mysql`，对应 `postgresql/20261027_version_numeric_delete_flag.sql`、`mysql/20261027_version_numeric_delete_flag.sql`。脚本可重复执行，保留已有的 `0`、`1` 和 `NULL`，新行默认值为整数 `0`。迁移前备份数据库并暂停相关写入；MySQL 必须在升级应用前手动执行。
 
 ## 配额治理持久化迁移
 

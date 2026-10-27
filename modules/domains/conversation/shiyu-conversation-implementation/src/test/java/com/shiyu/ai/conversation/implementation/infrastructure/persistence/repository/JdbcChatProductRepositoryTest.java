@@ -67,7 +67,7 @@ class JdbcChatProductRepositoryTest {
     @SuppressWarnings({"unchecked", "rawtypes"})
     void persistsAndReadsAllChatProductAssetsWithTenantFilters() throws Exception {
         JdbcChatProductRepository repository =
-                new JdbcChatProductRepository(mock(DataSource.class));
+                new JdbcChatProductRepository(newDataSource());
         JdbcTemplate jdbc = mock(JdbcTemplate.class);
         Field field = JdbcChatProductRepository.class.getDeclaredField("jdbc");
         field.setAccessible(true);
@@ -182,5 +182,11 @@ class JdbcChatProductRepositoryTest {
                 "Study",
                 repository.findGroup(new TenantId(7), 8, "g1").orElseThrow().group().name());
         assertEquals(1, repository.listGroups(new TenantId(7), 8).size());
+    }
+
+    private static DataSource newDataSource() throws Exception {
+        DataSource dataSource = mock(DataSource.class, RETURNS_DEEP_STUBS);
+        when(dataSource.getConnection().getMetaData().getDatabaseProductName()).thenReturn("H2");
+        return dataSource;
     }
 }

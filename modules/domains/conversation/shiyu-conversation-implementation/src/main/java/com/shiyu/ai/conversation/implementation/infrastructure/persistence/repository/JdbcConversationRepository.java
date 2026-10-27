@@ -252,12 +252,15 @@ public class JdbcConversationRepository implements ConversationRepository {
     }
 
     /**
-     * 删除或移除 Jdbc 会话 相关业务数据，并返回处理结果。
+     * 在事务中以版本条件完成生成，保存助手消息和会话，并登记运行事件及后处理任务。
      *
-     * @param id 用于定位目标业务对象的标识。
-     * @param tenantId 当前操作涉及的租户标识。
-     * @param ownerUserId 当前操作涉及的用户标识。
-     * @return 返回 Jdbc 会话 相关操作生成的结果数据。
+     * @param completed 待写入的生成完成快照
+     * @param expectedGenerationVersion 生成记录更新前应匹配的版本
+     * @param assistant 本轮生成的助手消息
+     * @param updatedConversation 包含本轮更新的会话快照
+     * @param expectedConversationVersion 会话更新前应匹配的版本
+     * @param runtimeEvents 需要追加到关联运行的终态事件
+     * @return 完成写入时为 1，生成状态或版本不匹配时为 0
      */
     @Override
     @org.springframework.transaction.annotation.Transactional

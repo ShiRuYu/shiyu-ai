@@ -1,0 +1,2 @@
+-- 删除标志与 BaseEntity 的整数属性对齐，保留已有 0、1 和 NULL；可重复执行。
+ALTER TABLE AGENT_VERSION MODIFY COLUMN DEL_FLAG TINYINT NULL DEFAULT 0 COMMENT '删除标志(0存在 1删除)';

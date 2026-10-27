@@ -38,6 +38,14 @@ try {
     if ($files.Count -ne 2) {
         throw 'Baseline migration must include schema and seed scripts.'
     }
+    $global:testPsqlCalls = 0
+    & (Join-Path $PSScriptRoot '..\migrate.ps1') -Action upgrade-agent-version-delete-flag -Provider postgresql
+    if ($global:testPsqlCalls -ne 1 -or '--single-transaction' -notin $global:testPsqlArguments) {
+        throw 'Agent version delete-flag migration must use one PostgreSQL transaction.'
+    }
+    if (-not ($global:testPsqlArguments | Where-Object { $_ -like '*20261027_version_numeric_delete_flag.sql' })) {
+        throw 'Agent version delete-flag migration must execute the matching upgrade resource.'
+    }
 } finally {
     $env:PGDATABASE = $previousDatabase
     Remove-Variable -Name testPsqlCalls -Scope Global

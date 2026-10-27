@@ -17,21 +17,27 @@ public interface GenerationAdmission {
     default void reserve(ActorContext actor, GenerationRun run, int estimatedPromptTokens) {}
 
     /**
-     * 设置生成admission。
+     * 续期仍在运行的生成配额预留。
      *
      * @param actor 调用方上下文。
      * @param run 运行记录。
+     * @return 续期后预留是否仍有效
      */
-    /** Extends a live generation's quota reservation, returning whether it remains active. */
     default boolean renew(ActorContext actor, GenerationRun run) {
         return true;
     }
 
-    /** Interval for renewal callbacks, in milliseconds. */
+    /** 返回配额续期回调的间隔，单位为毫秒。 */
     default long renewalIntervalMillis() {
         return 60_000L;
     }
 
+    /**
+     * 按生成运行的实际用量结算其配额预留。
+     *
+     * @param actor 发起生成的操作主体及租户上下文
+     * @param run 携带实际用量的生成运行记录
+     */
     default void settle(ActorContext actor, GenerationRun run) {}
 
     /**

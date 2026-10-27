@@ -4,13 +4,45 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.AbstractDataSource;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
  * 验证 Jdbc Dialect 相关功能、边界条件、异常路径和协作行为。
  */
 class JdbcDialectTest {
+
+    @Test
+    void refusesToGuessDialectWhenConnectionFails() {
+        SQLException failure = new SQLException("Database unavailable");
+        JdbcTemplate jdbc = new JdbcTemplate(new AbstractDataSource() {
+            @Override
+            public Connection getConnection() throws SQLException {
+                throw failure;
+            }
+
+            @Override
+            public Connection getConnection(String username, String password) throws SQLException {
+                return getConnection();
+            }
+        });
+
+        assertThatThrownBy(() -> JdbcDialect.detect(jdbc))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("database dialect")
+                .hasCause(failure);
+    }
+
+    @Test
+    void requiresDataSourceForDialectDetection() {
+        assertThatThrownBy(() -> JdbcDialect.detect(new JdbcTemplate()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("DataSource");
+    }
 
     @Test
     void rendersVendorSpecificUpsertStatements() {

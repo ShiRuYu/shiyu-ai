@@ -378,8 +378,10 @@ public class ModelRouter {
     private String parse(String model) {
         return model.contains(":") ? model : key("default", model);
     }
+    /** 按租户和模型路由键隔离熔断健康状态。 */
 
     private record RouteHealthKey(long tenantId, String modelKey) {}
+    /** 保存路由连续失败次数、探测时间和熔断窗口，协调恢复探测。 */
 
     private record RouteHealth(
             int consecutiveFailures,

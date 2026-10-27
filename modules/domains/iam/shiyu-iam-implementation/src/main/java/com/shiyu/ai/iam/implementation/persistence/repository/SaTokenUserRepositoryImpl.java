@@ -102,10 +102,9 @@ public class SaTokenUserRepositoryImpl
                 if (ext == null || !(ext.get("tokens") instanceof Map<?, ?> rawTokens)) break;
                 Object rawEntry = rawTokens.get(tokenValue);
                 if (!(rawEntry instanceof Map<?, ?> rawToken)) break;
-                Object expireValue = rawToken.get("expireTime");
-                if (!(expireValue instanceof Number expiry)) return null;
-                if (expiry.longValue() != Long.MAX_VALUE
-                        && expiry.longValue() <= System.currentTimeMillis()) return null;
+                Long expiry = tokenExpiry(rawToken.get("expireTime"));
+                if (expiry == null) return null;
+                if (expiry != Long.MAX_VALUE && expiry <= System.currentTimeMillis()) return null;
                 if (!(rawToken.get("loginId") instanceof String loginId)
                         || !loginId.equals(userId.toString())) return null;
                 @SuppressWarnings("unchecked")
@@ -123,6 +122,19 @@ public class SaTokenUserRepositoryImpl
                 QueryWrapper query = QueryWrapper.create().where(UserDO::getId).eq(userId);
                 query.and(UserDO::getExtInfo).eq(expectedExtInfo);
                 if (userMapper.updateByQuery(update, query) == 1) return userId;
+            }
+        }
+        return null;
+    }
+
+    private static Long tokenExpiry(Object value) {
+        if (value instanceof Number number) return number.longValue();
+        // JSONUtils 为避免大整数精度丢失，会把永久有效期 Long.MAX_VALUE 写成字符串。
+        if (value instanceof String text) {
+            try {
+                return Long.valueOf(text);
+            } catch (NumberFormatException ignored) {
+                return null;
             }
         }
         return null;

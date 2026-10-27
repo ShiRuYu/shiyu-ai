@@ -1,4 +1,4 @@
--- Upgrade existing PostgreSQL baseline v4 databases before starting this application version.
+-- 启动此应用版本前，升级已有的 PostgreSQL 第四版基线数据库。
 CREATE TABLE IF NOT EXISTS governance_quota_tenant (
     tenant_id BIGINT PRIMARY KEY,
     day_start DATE NOT NULL,

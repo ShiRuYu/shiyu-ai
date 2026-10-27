@@ -46,9 +46,9 @@ public class GenerationController {
     private final com.shiyu.ai.conversation.implementation.domain.port.ConversationRepository conversations;
 
     /**
-     * 执行 生成 相关业务操作，并维护必要的状态和协作关系。
+     * 创建仅依赖生成仓库的兼容控制器，运行时、生成执行器和会话仓库保持未配置。
      *
-     * @param generations 用于完成本次业务处理的 generations 参数。
+     * @param generations 用于查询生成状态和事件的仓库
      */
     public GenerationController(GenerationRepository generations) {
         this(generations, null, null, null);

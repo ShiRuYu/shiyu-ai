@@ -17,6 +17,7 @@ import com.shiyu.ai.kernel.context.TenantId;
 import com.shiyu.ai.kernel.context.UserId;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
+/** 验证会话生成的配额预留、续期和终态释放与治理契约一致。 */
 
 class QuotaGenerationAdmissionTest {
     private static final ActorContext ACTOR =

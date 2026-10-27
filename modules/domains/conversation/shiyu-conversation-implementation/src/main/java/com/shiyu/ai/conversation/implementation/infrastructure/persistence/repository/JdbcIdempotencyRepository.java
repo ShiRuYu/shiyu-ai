@@ -61,14 +61,13 @@ public class JdbcIdempotencyRepository implements IdempotencyRepository {
     }
 
     /**
-     * 执行 Jdbc Idempotency 相关业务数据，并返回处理结果。
+     * 读取当前租户和用户在指定操作及幂等键下保存的请求指纹。
      *
-     * @param tenantId 当前操作涉及的租户标识。
-     * @param ownerUserId 当前操作涉及的用户标识。
-     * @param operation 用于完成本次业务处理的 operation 参数。
-     * @param key 用于定位或筛选目标业务对象的业务值。
-     * @param resourceId 用于定位resource的标识。
-     * @return 返回本次条件判断是否成立。
+     * @param tenantId 幂等记录所属租户，必须匹配当前租户上下文
+     * @param ownerUserId 幂等记录所属用户
+     * @param operation 请求操作名称
+     * @param key 调用方提供的幂等键
+     * @return 已保存的非空指纹；记录不存在或未保存指纹时为空
      */
     @Override
     public Optional<String> findFingerprint(

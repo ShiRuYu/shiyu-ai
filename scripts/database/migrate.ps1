@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('baseline', 'upgrade-quota', 'upgrade-conversation-idempotency', 'upgrade-generation-postprocessing', 'dump', 'restore')]
+    [ValidateSet('baseline', 'upgrade-quota', 'upgrade-conversation-idempotency', 'upgrade-generation-postprocessing', 'upgrade-agent-version-delete-flag', 'dump', 'restore')]
     [string]$Action = 'baseline',
     [ValidateSet('postgresql', 'mysql')]
     [string]$Provider = 'postgresql',
@@ -21,7 +21,7 @@ function Invoke-Postgres {
     if ([string]::IsNullOrWhiteSpace($env:PGDATABASE)) {
         throw 'PGDATABASE must be provided by the deployment environment.'
     }
-    if ($Operation -in @('baseline', 'upgrade-quota', 'upgrade-conversation-idempotency', 'upgrade-generation-postprocessing')) {
+    if ($Operation -in @('baseline', 'upgrade-quota', 'upgrade-conversation-idempotency', 'upgrade-generation-postprocessing', 'upgrade-agent-version-delete-flag')) {
         Require-Command 'psql'
     } elseif ($Operation -eq 'dump') {
         Require-Command 'pg_dump'
@@ -42,6 +42,9 @@ function Invoke-Postgres {
     } elseif ($Operation -eq 'upgrade-generation-postprocessing') {
         & psql --set ON_ERROR_STOP=1 --single-transaction `
             --file (Join-Path $repoRoot 'scripts/database/postgresql/20261024_generation_postprocessing.sql')
+    } elseif ($Operation -eq 'upgrade-agent-version-delete-flag') {
+        & psql --set ON_ERROR_STOP=1 --single-transaction `
+            --file (Join-Path $repoRoot 'scripts/database/postgresql/20261027_version_numeric_delete_flag.sql')
     } elseif ($Operation -eq 'dump') {
         & pg_dump --format=custom --file $File
     } else {
@@ -104,6 +107,8 @@ function Invoke-MySql {
         $upgradeFile = Join-Path $repoRoot 'scripts/database/mysql/20261024_conversation_idempotency.sql'
     } elseif ($Action -eq 'upgrade-generation-postprocessing') {
         $upgradeFile = Join-Path $repoRoot 'scripts/database/mysql/20261024_generation_postprocessing.sql'
+    } elseif ($Action -eq 'upgrade-agent-version-delete-flag') {
+        $upgradeFile = Join-Path $repoRoot 'scripts/database/mysql/20261027_version_numeric_delete_flag.sql'
     } else {
         $upgradeFile = $File
     }

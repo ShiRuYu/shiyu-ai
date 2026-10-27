@@ -204,10 +204,11 @@ public class AgentRuntimeImpl implements AgentRuntime {
     }
 
     /**
-     * 校验或判断 智能体 Runtime Impl 相关业务操作，并维护必要的状态和协作关系。
+     * 委托运行生命周期服务校验操作者并取消指定执行。
      *
-     * @param actor 当前操作主体上下文，用于确定租户、用户和访问权限。
-     * @param executionId 用于定位execution的标识。
+     * @param actor 发起取消的租户及用户上下文
+     * @param executionId 待取消的执行标识
+     * @return 生命周期服务返回的执行状态快照
      */
     @Override
     public Execution cancel(ActorContext actor, String executionId) {

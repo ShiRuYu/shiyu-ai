@@ -2,6 +2,7 @@
 
 import json
 import os
+import uuid
 from urllib.request import Request, urlopen
 
 
@@ -34,7 +35,28 @@ def main() -> None:
         result = request(path, token=token)
         if result.get("code") != 200:
             raise AssertionError(f"PostgreSQL API failed: {path}: {result.get('code')}")
-    print("PostgreSQL seeded login and five business reads passed.")
+    app = request(
+        "/api/agent/apps", token=token,
+        body={"name": f"PostgreSQL smoke {uuid.uuid4().hex}", "description": "不调用模型的数据库写入检查"},
+    )
+    if app.get("code") != 200:
+        raise AssertionError(f"PostgreSQL app creation failed: {app.get('code')}")
+    version = request(
+        f"/api/agent/apps/{app['data']['id']}/versions", token=token,
+        body={"version": "0.1.0", "configJson": json.dumps({
+            "executionType": "AGENT", "agentId": "simple-assistant", "agentVersion": "v1.0.0",
+            "validation": {"graph": "PASS"},
+        })},
+    )
+    if version.get("code") != 200:
+        raise AssertionError(f"PostgreSQL app version creation failed: {version.get('code')}")
+    published = request(
+        f"/api/agent/apps/{app['data']['id']}/versions/{version['data']['id']}/publish",
+        token=token, body={},
+    )
+    if published.get("code") != 200:
+        raise AssertionError(f"PostgreSQL app publication failed: {published.get('code')}")
+    print("PostgreSQL seeded login, five business reads and Agent app publication passed.")
 
 
 if __name__ == "__main__":

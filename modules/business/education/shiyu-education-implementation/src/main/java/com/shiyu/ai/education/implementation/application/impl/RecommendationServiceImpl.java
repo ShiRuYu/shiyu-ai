@@ -69,7 +69,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         this.knowledgePointPort = knowledgePointPort;
     }
 
-    /** Keeps the existing lightweight constructor usable by current unit callers. */
+    /** 保留轻量构造方式，供现有单元测试及直接调用方使用。 */
     RecommendationServiceImpl(
             AbilityRepository abilityRepository,
             QuestionService questionService,
@@ -283,6 +283,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                 ? null
                 : subject.strip().toUpperCase(Locale.ROOT);
     }
+    /** 保存推荐资源及其关联知识、掌握度和排序信息，供候选资源排序使用。 */
 
     private record ResourceCandidate(
             ResourceResponse resource,

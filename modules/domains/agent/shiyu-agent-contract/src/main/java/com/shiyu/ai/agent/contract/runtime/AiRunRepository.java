@@ -182,6 +182,13 @@ public interface AiRunRepository {
         return updateTerminalAndAppend(next, current.version(), eventType, payload, true);
     }
 
+    /**
+     * 将终态错误码转为经过转义的 JSON 事件载荷。
+     *
+     * @param errorCode 可为空的终态错误码
+     *
+     * @return 包含错误码的 JSON 对象；无错误码时返回空对象
+     */
     private static String terminalPayload(String errorCode) {
         if (errorCode == null) return "{}";
         StringBuilder payload = new StringBuilder("{\"errorCode\":\"");
