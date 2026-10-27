@@ -271,7 +271,7 @@ class AgentExecutionLifecycleRecoveryTest {
 
             assertEquals(won.name(), events.getLast().get("status"));
             verify(f.publisher, never()).publish(any(AgentExecutionFailedEvent.class));
-            verify(f.store).cleanup(eq(ACTOR), any());
+            verify(f.store, timeout(3000)).cleanup(eq(ACTOR), any());
         }
     }
 
@@ -281,7 +281,8 @@ class AgentExecutionLifecycleRecoveryTest {
         assertThrows(RuntimeException.class,
                 () -> f.lifecycle.executeStream(ACTOR, "agent", null, Map.of()).collectList().block());
         verify(f.publisher).publish(any(AgentExecutionFailedEvent.class));
-        verify(f.store).cleanup(eq(ACTOR), any());
+        // 流的终止通知可先唤醒 block；等待工作线程随后执行 finally 清理。
+        verify(f.store, timeout(3000)).cleanup(eq(ACTOR), any());
         verifyNoInteractions(f.executor);
     }
 
