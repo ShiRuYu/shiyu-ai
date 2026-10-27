@@ -57,15 +57,17 @@ class JdbcConversationLifecycleTest {
         JdbcConversationRepository target = new JdbcConversationRepository(dataSource, runtime);
         ProxyFactory proxy = new ProxyFactory(target);
         proxy.setProxyTargetClass(true);
-        proxy.addAdvice(new TransactionInterceptor(new DataSourceTransactionManager(dataSource),
-                new AnnotationTransactionAttributeSource()));
+        TransactionInterceptor transactions = new TransactionInterceptor();
+        transactions.setTransactionManager(new DataSourceTransactionManager(dataSource));
+        transactions.setTransactionAttributeSource(new AnnotationTransactionAttributeSource());
+        transactions.afterPropertiesSet();
+        proxy.addAdvice(transactions);
         conversations = (JdbcConversationRepository) proxy.getProxy();
         generations = new JdbcGenerationRepository(dataSource, runtime);
         idempotency = new JdbcIdempotencyRepository(dataSource);
         ProxyFactory serviceProxy = new ProxyFactory(new ConversationService(conversations, generations, idempotency));
         serviceProxy.setProxyTargetClass(true);
-        serviceProxy.addAdvice(new TransactionInterceptor(new DataSourceTransactionManager(dataSource),
-                new AnnotationTransactionAttributeSource()));
+        serviceProxy.addAdvice(transactions);
         service = (ConversationService) serviceProxy.getProxy();
         TenantScope.set(TENANT);
         conversations.insertConversation(conversation(0));
