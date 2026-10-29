@@ -30,7 +30,6 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1041,40 +1040,6 @@ public class GenerationRunner {
 
     private static ActorContext actor(long tenantId, long ownerUserId) {
         return new ActorContext(new TenantId(tenantId), new UserId(ownerUserId), false);
-    }
-    /** 保存一次生成的取消状态、流式订阅和配额续期任务，协调资源释放。 */
-
-    private static final class GenerationExecution {
-        private final AtomicBoolean cancelled = new AtomicBoolean();
-        private final AtomicReference<Disposable> subscription = new AtomicReference<>();
-        private final AtomicReference<ScheduledFuture<?>> reservationHeartbeat = new AtomicReference<>();
-
-        private void cancel() {
-            cancelled.set(true);
-            stopReservationHeartbeat();
-            Disposable current = subscription.get();
-            if (current != null) current.dispose();
-        }
-
-        private void attachReservationHeartbeat(ScheduledFuture<?> heartbeat) {
-            if (heartbeat == null) return;
-            reservationHeartbeat.set(heartbeat);
-            if (cancelled.get()) heartbeat.cancel(false);
-        }
-
-        private void stopReservationHeartbeat() {
-            ScheduledFuture<?> heartbeat = reservationHeartbeat.getAndSet(null);
-            if (heartbeat != null) heartbeat.cancel(false);
-        }
-
-        private void attach(Disposable value) {
-            subscription.set(value);
-            if (cancelled.get()) value.dispose();
-        }
-
-        private boolean isCancelled() {
-            return cancelled.get();
-        }
     }
 
     /**

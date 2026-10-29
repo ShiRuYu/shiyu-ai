@@ -48,3 +48,5 @@ provider 密钥、供应商协议和路由策略属于本模块实现；其他�
 运行本模块及其依赖模块的测试：
 
 `mvn --batch-mode --no-transfer-progress -pl modules/domains/model/shiyu-model-implementation -am test '-Ddependency-check.skip=true'`
+
+路由策略由 `ModelRoutePolicyStore` 写入业务数据库的 `model_route_policy` 表，按租户读取；应用在基线初始化后幂等创建增补表。外部数据库可预先执行 `scripts/database/{postgresql,mysql}/20261029_model_route_policy.sql`。数据库账号需具备建表权限，或由运维预先安装该表。

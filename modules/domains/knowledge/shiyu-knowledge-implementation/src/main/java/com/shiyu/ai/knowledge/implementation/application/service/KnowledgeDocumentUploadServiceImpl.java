@@ -29,10 +29,14 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.HexFormat;
+import java.util.List;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Flow;
 
 /**
  * 提供 知识 文档 Upload 的查询、创建、更新及调用服务，协调业务变更和领域协作。
@@ -151,7 +155,7 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
                             .GET()
                             .build();
             HttpResponse<byte[]> response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+                    httpClient.send(request, ignored -> new LimitedBodySubscriber(MAX_IMPORT_BYTES));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new ServiceException("网页内容获取失败，HTTP 状态码: " + response.statusCode());
             }
@@ -173,6 +177,65 @@ public class KnowledgeDocumentUploadServiceImpl implements KnowledgeDocumentUplo
             throw new ServiceException("网页内容获取被中断");
         } catch (IOException exception) {
             throw new ServiceException("网页内容获取失败");
+        }
+    }
+
+    /** 在响应接收过程中限制累计字节，超限时取消下载而不是继续缓冲整个响应。 */
+    static final class LimitedBodySubscriber implements HttpResponse.BodySubscriber<byte[]> {
+        private final HttpResponse.BodySubscriber<byte[]> delegate =
+                HttpResponse.BodySubscribers.ofByteArray();
+        private final long limit;
+        private long received;
+        private Flow.Subscription subscription;
+        private boolean done;
+
+        LimitedBodySubscriber(long limit) {
+            this.limit = limit;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public CompletionStage<byte[]> getBody() {
+            return delegate.getBody();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void onSubscribe(Flow.Subscription value) {
+            subscription = value;
+            delegate.onSubscribe(value);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void onNext(List<ByteBuffer> buffers) {
+            if (done) return;
+            for (ByteBuffer buffer : buffers) {
+                if (buffer.remaining() > limit - received) {
+                    done = true;
+                    subscription.cancel();
+                    delegate.onError(new IOException("网页内容超过下载大小限制"));
+                    return;
+                }
+                received += buffer.remaining();
+            }
+            delegate.onNext(buffers);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void onError(Throwable error) {
+            if (done) return;
+            done = true;
+            delegate.onError(error);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void onComplete() {
+            if (done) return;
+            done = true;
+            delegate.onComplete();
         }
     }
 

@@ -21,10 +21,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @PropertySource(value = "classpath:shiyu-web.yml", factory = YmlPropertySourceFactory.class)
 public class ResourcesConfig implements WebMvcConfigurer {
 
-    /** 应用运行目录，由 AppHomeEnvironmentPostProcessor 解析（支持 APP_HOME 和本地 runtime/dev） */
-    @Value("${app.home:${user.dir}}")
-    private String appHome;
-
     @Value(
             "${shiyu.web.cors.allowed-origin-patterns:http://localhost:5888,http://127.0.0.1:5888,http://localhost:5173,http://127.0.0.1:5173}")
     private String allowedOriginPatterns;
@@ -51,9 +47,7 @@ public class ResourcesConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/favicon.ico")
                 .addResourceLocations("classpath:/static/", "classpath:/public/");
 
-        // 处理文件上传访问
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + appHome + "/data/uploads/");
+        // 上传文件只允许通过校验租户和对象权限的业务接口读取。
     }
 
     /** 跨域配置 */

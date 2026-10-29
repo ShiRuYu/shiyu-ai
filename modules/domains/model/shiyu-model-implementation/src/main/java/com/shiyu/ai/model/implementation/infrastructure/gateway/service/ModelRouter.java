@@ -7,6 +7,7 @@ import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ProviderHe
 import com.shiyu.ai.model.implementation.infrastructure.gateway.model.ModelProviderCapabilities;
 
 import com.shiyu.ai.kernel.context.TenantId;
+import com.shiyu.ai.model.implementation.persistence.repository.ModelRoutePolicyStore;
 
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,17 @@ public class ModelRouter {
     private final Map<String, ModelRoutePolicy> policies = new ConcurrentHashMap<>();
     private final Map<String, ProviderHealth> health = new ConcurrentHashMap<>();
     private final Map<RouteHealthKey, RouteHealth> routeHealth = new ConcurrentHashMap<>();
+    private ModelRoutePolicyStore policyStore;
+
+    /**
+     * 使用持久仓储装配生产路由器。
+     * @param store 路由策略仓储
+     */
+    @org.springframework.beans.factory.annotation.Autowired
+    public ModelRouter(ModelRoutePolicyStore store) {
+        this();
+        this.policyStore = store;
+    }
     private final Clock clock;
     private final Duration healthCooldown;
 
@@ -147,7 +159,8 @@ public class ModelRouter {
                 .anyMatch(model -> !capabilities.containsKey(model))) {
             throw new IllegalArgumentException("route contains unknown model");
         }
-        policies.put(policy.id(), policy);
+        if (policyStore != null) policyStore.save(policy);
+        else policies.put(policy.id(), policy);
     }
 
     /**
@@ -157,6 +170,7 @@ public class ModelRouter {
      * @return 返回符合条件的数据集合；没有匹配项时返回空集合。
      */
     public List<ModelRoutePolicy> policies(TenantId tenantId) {
+        if (policyStore != null) return tenantId == null ? List.of() : policyStore.list(tenantId.value());
         return policies.values().stream()
                 .filter(p -> tenantId != null && p.tenantId() == tenantId.value())
                 .toList();
@@ -170,7 +184,8 @@ public class ModelRouter {
      * @return 返回 模型 相关操作生成的结果数据。
      */
     public ModelRoutePolicy requirePolicy(String id, TenantId tenantId) {
-        return Optional.ofNullable(policies.get(id))
+        return (policyStore == null ? Optional.ofNullable(policies.get(id))
+                : tenantId == null ? Optional.<ModelRoutePolicy>empty() : policyStore.find(tenantId.value(), id))
                 .filter(p -> tenantId != null && p.tenantId() == tenantId.value())
                 .orElseThrow(() -> new IllegalArgumentException("model route not found"));
     }

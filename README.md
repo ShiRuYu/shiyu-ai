@@ -9,7 +9,7 @@
 
 拾羽 AI（ShiYu AI）不是一个单一功能的 AI 应用，而是一个**可接入多 LLM 平台、以自定义 Agent 为核心、向多个业务方向扩展**的 AI 智能体平台。
 
-当前 Maven reactor 包含 31 个项目（根 POM、29 个产品模块和 1 个架构测试模块），其中 9 个业务域分别拆分为 Contract 和 Implementation。版本统一由根 POM 管理。
+当前 Maven reactor 包含 32 个项目（根 POM、30 个产品模块和 1 个架构测试模块），其中 9 个业务域分别拆分为 Contract 和 Implementation。版本统一由根 POM 管理。
 
 ```text
 模型平台 -> Model -> Agent 编排 -> Education
@@ -64,7 +64,7 @@ Governance：用量与配额
 
 - **MCP 协议集成** — 标准化的工具描述与调用协议
 - **工具注册** — 运行时注册/注销/更新工具定义
-- **工具调用执行** — 安全的工具沙箱执行环境
+- **工具调用执行** — 受控的工具执行环境
 - **动态发现** — 自动发现并注册 MCP 服务器提供的工具
 - **与 Agent 打通** — Agent 的 `TOOL_CALL` 节点直接调用注册的工具
 
@@ -92,7 +92,7 @@ Governance：用量与配额
 轻量级插件扩展框架：
 
 - **插件生命周期** — 加载 → 启用 → 停用 → 卸载 全生命周期管理
-- **沙箱隔离** — 插件沙箱执行，保障平台安全
+- **可信插件执行边界** — 进程内插件默认关闭；显式启用后仅允许可信代码，类加载器不提供安全隔离
 - **SPI 注册** — 基于 SPI 的插件发现与注册
 - **动态热插拔** — 运行时安装/卸载插件，无需重启
 
@@ -164,7 +164,7 @@ Governance：用量与配额
 
 ## 模块全景
 
-全部 29 个模块的职责、关键组件与调用链见[模块功能索引](docs/模块功能索引.md)，各模块可从索引进入对应 README。
+全部 30 个产品模块的职责、关键组件与调用链见[模块功能索引](docs/模块功能索引.md)，各模块可从索引进入对应 README。
 
 ### 🎯 业务层（面向场景的产品能力）
 
@@ -183,7 +183,7 @@ Governance：用量与配额
 | `shiyu-common-vector` | 向量存储：JVector HNSW 索引、磁盘持久化、统一 Provider API | 平台基础设施 |
 | `shiyu-conversation-implementation` | 原始会话、消息树、生成生命周期、SSE 续传和 Prompt Preview | Conversation 领域实现 |
 | `shiyu-memory-implementation` | MAGMA-based 事件、实体、多图关系、治理和可解释检索 | 平台基础设施 |
-| `shiyu-tooling-implementation` | 工具与插件体系：MCP 协议、工具注册/调用、生命周期、沙箱隔离和动态热插拔 | 平台基础设施 |
+| `shiyu-tooling-implementation` | 工具与插件体系：MCP 协议、工具注册/调用、生命周期、可信插件执行边界和动态热插拔 | 平台基础设施 |
 | `shiyu-governance-implementation` | 治理与用量计量：配额、Token 统计、实时推送、多维聚合 | 领域实现 |
 
 ### 🧱 基础设施层（纯技术底座）

@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 实现 插件 Sandbox 相关的业务处理、协作逻辑或基础设施能力。
+ * 为可信插件提供异常包装和显式包名检查；不提供代码安全隔离。
  */
 @Slf4j
 public class PluginSandbox {
@@ -56,11 +56,8 @@ public class PluginSandbox {
         }
     }
 
-    /** 在沙箱中执行插件 */
+    /** 在当前进程执行可信插件回调；不限制回调访问文件、网络或系统 API。 */
     public <T> T executeInSandbox(String pluginId, SandboxCallable<T> callable) {
-        // 简化实现：使用线程上下文检查
-        Thread currentThread = Thread.currentThread();
-        ClassLoader originalLoader = currentThread.getContextClassLoader();
 
         try {
             return callable.call();

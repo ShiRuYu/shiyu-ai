@@ -163,6 +163,7 @@ public class DatabaseInitializer {
     private static final Set<String> UPDATE_TABLES =
             Set.of(
                     "AUTH_TENANT_MODULE",
+                    "MODEL_ROUTE_POLICY",
                     "GOVERNANCE_QUOTA_TENANT",
                     "GOVERNANCE_QUOTA_RESERVATION",
                     "CHAT_GENERATION_POSTPROCESSING",

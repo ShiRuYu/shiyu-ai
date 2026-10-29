@@ -24,13 +24,18 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpResponse;
+import java.net.http.HttpRequest;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Flow;
 
 /**
  * 验证 知识 文档 Upload Service Impl 相关功能、边界条件、异常路径和协作行为。
@@ -39,6 +44,101 @@ import java.util.Map;
 class KnowledgeDocumentUploadServiceImplTest {
     private static final ActorContext ACTOR =
             new ActorContext(new TenantId(7L), new UserId(9L), false);
+
+    @Test
+    void boundsARealChunkedHttpResponseWithoutContentLength() throws Exception {
+        var server = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/body", exchange -> {
+            exchange.sendResponseHeaders(200, 0);
+            try (var output = exchange.getResponseBody()) {
+                output.write(new byte[] {1, 2, 3});
+            }
+        });
+        server.start();
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            HttpRequest request = HttpRequest.newBuilder(
+                    URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/body"))
+                    .timeout(java.time.Duration.ofSeconds(5)).build();
+            HttpResponse<byte[]> response = client.send(request,
+                    ignored -> new KnowledgeDocumentUploadServiceImpl.LimitedBodySubscriber(3));
+            assertTrue(response.headers().firstValue("Content-Length").isEmpty());
+            assertArrayEquals(new byte[] {1, 2, 3}, response.body());
+            assertThrows(IOException.class, () -> client.send(request,
+                    ignored -> new KnowledgeDocumentUploadServiceImpl.LimitedBodySubscriber(2)));
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void acceptsExactlyTheLimitAcrossChunksAndPropagatesTransportFailure() {
+        var subscriber = new KnowledgeDocumentUploadServiceImpl.LimitedBodySubscriber(5);
+        Flow.Subscription subscription = mock(Flow.Subscription.class);
+        subscriber.onSubscribe(subscription);
+        subscriber.onNext(List.of(ByteBuffer.wrap(new byte[] {1, 2})));
+        subscriber.onNext(List.of(ByteBuffer.wrap(new byte[] {3, 4, 5})));
+        subscriber.onComplete();
+        assertArrayEquals(new byte[] {1, 2, 3, 4, 5},
+                subscriber.getBody().toCompletableFuture().join());
+        verify(subscription, never()).cancel();
+
+        var failed = new KnowledgeDocumentUploadServiceImpl.LimitedBodySubscriber(5);
+        failed.onSubscribe(mock(Flow.Subscription.class));
+        IOException failure = new IOException("connection closed");
+        failed.onError(failure);
+        assertSame(failure, assertThrows(CompletionException.class,
+                () -> failed.getBody().toCompletableFuture().join()).getCause());
+    }
+
+    @Test
+    void rejectsTheFirstByteBeyondTheLimitAndIgnoresLateSignals() {
+        var subscriber = new KnowledgeDocumentUploadServiceImpl.LimitedBodySubscriber(2);
+        Flow.Subscription subscription = mock(Flow.Subscription.class);
+        subscriber.onSubscribe(subscription);
+        subscriber.onNext(List.of(ByteBuffer.wrap(new byte[] {1, 2})));
+        subscriber.onNext(List.of(ByteBuffer.wrap(new byte[] {3})));
+        subscriber.onNext(List.of(ByteBuffer.wrap(new byte[] {4})));
+        subscriber.onComplete();
+        subscriber.onError(new IOException("late failure"));
+        verify(subscription).cancel();
+        assertInstanceOf(IOException.class, assertThrows(CompletionException.class,
+                () -> subscriber.getBody().toCompletableFuture().join()).getCause());
+    }
+
+    @Test
+    void cancelsOversizedDownloadBeforeCompletingOrStoringItsBody() throws Exception {
+        ObjectStorage storage = mock(ObjectStorage.class);
+        ContentSecurityScanner scanner = mock(ContentSecurityScanner.class);
+        EnterpriseDocumentService documents = mock(EnterpriseDocumentService.class);
+        KnowledgeSpaceService spaces = mock(KnowledgeSpaceService.class);
+        var service = new KnowledgeDocumentUploadServiceImpl(storage, scanner, documents, spaces);
+        HttpClient client = mock(HttpClient.class);
+        Field clientField = KnowledgeDocumentUploadServiceImpl.class.getDeclaredField("httpClient");
+        clientField.setAccessible(true);
+        clientField.set(service, client);
+        Flow.Subscription subscription = mock(Flow.Subscription.class);
+        doAnswer(call -> {
+            HttpResponse.BodyHandler<byte[]> handler = call.getArgument(1);
+            var subscriber = handler.apply(mock(HttpResponse.ResponseInfo.class));
+            subscriber.onSubscribe(subscription);
+            // 同一缓冲区的视图模拟无 Content-Length 的超限批次，不分配 201 MB 测试数据。
+            ByteBuffer chunk = ByteBuffer.allocate(1024 * 1024);
+            subscriber.onNext(java.util.stream.IntStream.range(0, 201)
+                    .mapToObj(ignored -> chunk.duplicate()).toList());
+            verify(subscription).cancel();
+            try {
+                subscriber.getBody().toCompletableFuture().join();
+                fail("超限响应不应成功完成");
+            } catch (CompletionException exception) {
+                throw new IOException(exception.getCause());
+            }
+            return null;
+        }).when(client).send(any(), any());
+
+        assertThrows(ServiceException.class,
+                () -> service.importUrl(ACTOR, 10L, "t", "http://198.51.100.1/large"));
+        verifyNoInteractions(storage, scanner, documents);
+    }
 
     @Test
     void uploadsSecureFilesWithFallbackTitleAndDeletesDuplicateObjects() throws Exception {

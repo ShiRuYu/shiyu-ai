@@ -9,9 +9,7 @@ import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HexFormat;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 管理 Character Import Preview 相关的运行时状态、注册信息或临时数据。
@@ -19,7 +17,18 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public final class CharacterImportPreviewStore {
     private static final Duration TTL = Duration.ofMinutes(10);
-    private final Map<String, Entry> entries = new ConcurrentHashMap<>();
+    final com.github.benmanes.caffeine.cache.Cache<String, Entry> entries;
+
+    /** 创建有界、自动过期的角色卡预览缓存。 */
+    public CharacterImportPreviewStore() {
+        this(com.github.benmanes.caffeine.cache.Ticker.systemTicker());
+    }
+
+    CharacterImportPreviewStore(com.github.benmanes.caffeine.cache.Ticker ticker) {
+        entries = com.github.benmanes.caffeine.cache.Caffeine.newBuilder()
+                .maximumSize(1000).expireAfterWrite(TTL).ticker(ticker)
+                .scheduler(com.github.benmanes.caffeine.cache.Scheduler.systemScheduler()).build();
+    }
 
     /**
      * 校验或判断 Character Import Preview 相关业务数据，并返回处理结果。
@@ -55,7 +64,7 @@ public final class CharacterImportPreviewStore {
         java.util.Objects.requireNonNull(tenantId, "tenantId");
         if (token == null || token.isBlank())
             throw new IllegalArgumentException("previewToken is required");
-        Entry entry = entries.remove(token);
+        Entry entry = entries.asMap().remove(token);
         if (entry == null
                 || entry.expires().isBefore(Instant.now())
                 || !entry.tenantId().equals(tenantId)

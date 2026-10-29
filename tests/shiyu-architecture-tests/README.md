@@ -32,4 +32,4 @@
 
 `mvn --batch-mode --no-transfer-progress -pl tests/shiyu-architecture-tests -am test -Ddependency-check.skip=true`
 
-根目录执行完整构建时，本模块由根 `pom.xml` 纳入 30 个项目的 Maven reactor。
+根目录执行完整构建时，本模块由根 `pom.xml` 纳入 32 个项目的 Maven reactor。
