@@ -1527,18 +1527,6 @@
       "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.domain.enums.AgentVersionStatus|public static AgentVersionStatus fromCode(Integer code)|template-method+template-param+template-return|执行 智能体 Version 相关业务数据，并返回处理结果。 @param code 用于定位或筛选目标业务对象的业务值。 @return 返回 智能体 Version 相关操作生成的结果数据。"
     },
     {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/domain/enums/NodeExecutionStatus.java",
-      "line": 30,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.domain.enums.NodeExecutionStatus",
-      "member": "public static NodeExecutionStatus fromCode(Integer code)",
-      "category": "template-method+template-param+template-return",
-      "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param code：参数注释使用泛化模板，未说明参数的业务含义；@return：返回值注释使用泛化模板，未说明真实返回结果",
-      "summary": "执行 Node Execution 相关业务数据，并返回处理结果。 @param code 用于定位或筛选目标业务对象的业务值。 @return 返回 Node Execution 相关操作生成的结果数据。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.domain.enums.NodeExecutionStatus|public static NodeExecutionStatus fromCode(Integer code)|template-method+template-param+template-return|执行 Node Execution 相关业务数据，并返回处理结果。 @param code 用于定位或筛选目标业务对象的业务值。 @return 返回 Node Execution 相关操作生成的结果数据。"
-    },
-    {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/domain/model/AgentCheckpointBO.java",
       "line": 9,
       "source_set": "production",
@@ -6387,30 +6375,6 @@
       "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.AgentRequest|<type>|template-type|封装 智能体 操作所需的请求条件和输入数据。"
     },
     {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/CanvasConfigRequest.java",
-      "line": 33,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.request.CanvasConfigRequest.NodePosition",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "实现 Node Position 相关的业务处理、协作逻辑或基础设施能力。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.CanvasConfigRequest.NodePosition|<type>|template-type|实现 Node Position 相关的业务处理、协作逻辑或基础设施能力。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/CanvasConfigRequest.java",
-      "line": 7,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.request.CanvasConfigRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Canvas Config 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.CanvasConfigRequest|<type>|template-type|封装 Canvas Config 操作所需的请求条件和输入数据。"
-    },
-    {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/EdgeRequest.java",
       "line": 9,
       "source_set": "production",
@@ -6421,18 +6385,6 @@
       "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
       "summary": "封装 Edge 操作所需的请求条件和输入数据。",
       "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.EdgeRequest|<type>|template-type|封装 Edge 操作所需的请求条件和输入数据。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/ExecuteRequest.java",
-      "line": 11,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.request.ExecuteRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Execute 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.ExecuteRequest|<type>|template-type|封装 Execute 操作所需的请求条件和输入数据。"
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/GraphConfigRequest.java",
@@ -6471,18 +6423,6 @@
       "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.GraphConfigRequest|<type>|template-type|封装 Graph Config 操作所需的请求条件和输入数据。"
     },
     {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/GraphPreviewRequest.java",
-      "line": 7,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.request.GraphPreviewRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Graph Preview 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.GraphPreviewRequest|<type>|template-type|封装 Graph Preview 操作所需的请求条件和输入数据。"
-    },
-    {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/IntentDefRequest.java",
       "line": 11,
       "source_set": "production",
@@ -6495,30 +6435,6 @@
       "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.IntentDefRequest|<type>|template-type|封装 Intent Def 操作所需的请求条件和输入数据。"
     },
     {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/IntentPageRequest.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.request.IntentPageRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Intent Page 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.IntentPageRequest|<type>|template-type|封装 Intent Page 操作所需的请求条件和输入数据。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/ModelPageRequest.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.request.ModelPageRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 模型 Page 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.ModelPageRequest|<type>|template-type|封装 模型 Page 操作所需的请求条件和输入数据。"
-    },
-    {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/NodeConfigRequest.java",
       "line": 9,
       "source_set": "production",
@@ -6529,18 +6445,6 @@
       "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
       "summary": "封装 Node Config 操作所需的请求条件和输入数据。",
       "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.NodeConfigRequest|<type>|template-type|封装 Node Config 操作所需的请求条件和输入数据。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/PlatformPageRequest.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.request.PlatformPageRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 平台 Page 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.request.PlatformPageRequest|<type>|template-type|封装 平台 Page 操作所需的请求条件和输入数据。"
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/request/VersionRequest.java",
@@ -9553,18 +9457,6 @@
       "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
       "summary": "封装 Node Type Meta 操作向调用方返回的传输数据。",
       "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.vo.NodeTypeMetaVO|<type>|template-type|封装 Node Type Meta 操作向调用方返回的传输数据。"
-    },
-    {
-      "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/vo/RuntimeExecutionVO.java",
-      "line": 10,
-      "source_set": "production",
-      "module": "shiyu-agent-implementation",
-      "owner": "com.shiyu.ai.agent.implementation.vo.RuntimeExecutionVO",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Runtime Execution 操作向调用方返回的传输数据。",
-      "key": "production|shiyu-agent-implementation|com.shiyu.ai.agent.implementation.vo.RuntimeExecutionVO|<type>|template-type|封装 Runtime Execution 操作向调用方返回的传输数据。"
     },
     {
       "path": "modules/domains/agent/shiyu-agent-implementation/src/main/java/com/shiyu/ai/agent/implementation/web/AgentDefinitionController.java",
@@ -27519,18 +27411,6 @@
       "key": "production|shiyu-education-implementation|com.shiyu.ai.education.implementation.web.controller.WrongQuestionController|public Result<WrongQuestionResponse> getById( Long id)|template-method+template-param|查询 Wrong 题目 相关业务操作，并维护必要的状态和协作关系。 @param detail 用于完成本次业务处理的 detail 参数。"
     },
     {
-      "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/request/AnalyticsQueryRequest.java",
-      "line": 10,
-      "source_set": "production",
-      "module": "shiyu-education-implementation",
-      "owner": "com.shiyu.ai.education.implementation.web.request.AnalyticsQueryRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 分析 Query 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-education-implementation|com.shiyu.ai.education.implementation.web.request.AnalyticsQueryRequest|<type>|template-type|封装 分析 Query 操作所需的请求条件和输入数据。"
-    },
-    {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/request/ChapterRequest.java",
       "line": 13,
       "source_set": "production",
@@ -27565,18 +27445,6 @@
       "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
       "summary": "封装 考试 操作所需的请求条件和输入数据。",
       "key": "production|shiyu-education-implementation|com.shiyu.ai.education.implementation.web.request.ExamRequest|<type>|template-type|封装 考试 操作所需的请求条件和输入数据。"
-    },
-    {
-      "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/request/KnowledgeBindRequest.java",
-      "line": 10,
-      "source_set": "production",
-      "module": "shiyu-education-implementation",
-      "owner": "com.shiyu.ai.education.implementation.web.request.KnowledgeBindRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 知识 Bind 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-education-implementation|com.shiyu.ai.education.implementation.web.request.KnowledgeBindRequest|<type>|template-type|封装 知识 Bind 操作所需的请求条件和输入数据。"
     },
     {
       "path": "modules/business/education/shiyu-education-implementation/src/main/java/com/shiyu/ai/education/implementation/web/request/QuestionRequest.java",
@@ -28551,18 +28419,6 @@
       "key": "production|shiyu-governance-implementation|com.shiyu.ai.governance.implementation.usage.realtime.UsageRealtimePublisher|void publishUsageRecord( String platform, String model, int promptTokens, int completionTokens, long latencyMs, double cost)|template-method+template-param|发布或发送 用量 Realtime 相关业务操作，并维护必要的状态和协作关系。 @param platform 用于完成本次业务处理的 platform 参数。 @param model 用于完成本次业务处理的 model 参数。 @param promptTokens 用于完成本次业务处理的 promptTokens 参数。 @param completionTokens 用于完成本次业务处理的 completionTokens 参数。 @param latencyMs 用于完成本次业务处理的 latencyMs 参数。 @param cost 用于完成本次业务处理的 cost 参数。"
     },
     {
-      "path": "modules/domains/governance/shiyu-governance-implementation/src/main/java/com/shiyu/ai/governance/implementation/usage/request/UsageQueryRequest.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-governance-implementation",
-      "owner": "com.shiyu.ai.governance.implementation.usage.request.UsageQueryRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 用量 Query 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-governance-implementation|com.shiyu.ai.governance.implementation.usage.request.UsageQueryRequest|<type>|template-type|封装 用量 Query 操作所需的请求条件和输入数据。"
-    },
-    {
       "path": "modules/domains/governance/shiyu-governance-implementation/src/main/java/com/shiyu/ai/governance/implementation/usage/service/PlatformUsageService.java",
       "line": 10,
       "source_set": "production",
@@ -28765,30 +28621,6 @@
       "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@return：返回值注释使用泛化模板，未说明真实返回结果",
       "summary": "执行 用量 相关业务数据，并返回处理结果。 @return 返回 用量 相关操作生成的结果数据。",
       "key": "production|shiyu-governance-implementation|com.shiyu.ai.governance.implementation.usage.service.impl.UsageServiceImpl|public Map<String, Object> overview()|template-method+template-return|执行 用量 相关业务数据，并返回处理结果。 @return 返回 用量 相关操作生成的结果数据。"
-    },
-    {
-      "path": "modules/domains/governance/shiyu-governance-implementation/src/main/java/com/shiyu/ai/governance/implementation/usage/vo/UsageAggregateVO.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-governance-implementation",
-      "owner": "com.shiyu.ai.governance.implementation.usage.vo.UsageAggregateVO",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 用量 Aggregate 操作向调用方返回的传输数据。",
-      "key": "production|shiyu-governance-implementation|com.shiyu.ai.governance.implementation.usage.vo.UsageAggregateVO|<type>|template-type|封装 用量 Aggregate 操作向调用方返回的传输数据。"
-    },
-    {
-      "path": "modules/domains/governance/shiyu-governance-implementation/src/main/java/com/shiyu/ai/governance/implementation/usage/vo/UsageOverviewVO.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-governance-implementation",
-      "owner": "com.shiyu.ai.governance.implementation.usage.vo.UsageOverviewVO",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 用量 Overview 操作向调用方返回的传输数据。",
-      "key": "production|shiyu-governance-implementation|com.shiyu.ai.governance.implementation.usage.vo.UsageOverviewVO|<type>|template-type|封装 用量 Overview 操作向调用方返回的传输数据。"
     },
     {
       "path": "modules/domains/governance/shiyu-governance-implementation/src/main/java/com/shiyu/ai/governance/implementation/web/config/UsageWebSocketConfig.java",
@@ -31767,18 +31599,6 @@
       "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.request.DictRequest|<type>|template-type|封装 Dict 操作所需的请求条件和输入数据。"
     },
     {
-      "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/request/FilterSubTenantRequest.java",
-      "line": 12,
-      "source_set": "production",
-      "module": "shiyu-iam-implementation",
-      "owner": "com.shiyu.ai.iam.implementation.request.FilterSubTenantRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Filter Sub 租户 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.request.FilterSubTenantRequest|<type>|template-type|封装 Filter Sub 租户 操作所需的请求条件和输入数据。"
-    },
-    {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/request/ForgetPasswordRequest.java",
       "line": 13,
       "source_set": "production",
@@ -33963,18 +33783,6 @@
       "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.vo.AuthCodeOptionVO|<type>|template-type|封装 认证 Code Option 操作向调用方返回的传输数据。"
     },
     {
-      "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/vo/AuthCodeVO.java",
-      "line": 9,
-      "source_set": "production",
-      "module": "shiyu-iam-implementation",
-      "owner": "com.shiyu.ai.iam.implementation.vo.AuthCodeVO",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 认证 Code 操作向调用方返回的传输数据。",
-      "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.vo.AuthCodeVO|<type>|template-type|封装 认证 Code 操作向调用方返回的传输数据。"
-    },
-    {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/vo/CaptchaVO.java",
       "line": 6,
       "source_set": "production",
@@ -34021,30 +33829,6 @@
       "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
       "summary": "封装 Login Response 操作向调用方返回的传输数据。",
       "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.vo.LoginResponseVO|<type>|template-type|封装 Login Response 操作向调用方返回的传输数据。"
-    },
-    {
-      "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/vo/LoginVO.java",
-      "line": 31,
-      "source_set": "production",
-      "module": "shiyu-iam-implementation",
-      "owner": "com.shiyu.ai.iam.implementation.vo.LoginVO.LoginDataVO",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Login Data 操作向调用方返回的传输数据。",
-      "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.vo.LoginVO.LoginDataVO|<type>|template-type|封装 Login Data 操作向调用方返回的传输数据。"
-    },
-    {
-      "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/vo/LoginVO.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-iam-implementation",
-      "owner": "com.shiyu.ai.iam.implementation.vo.LoginVO",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Login 操作向调用方返回的传输数据。",
-      "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.vo.LoginVO|<type>|template-type|封装 Login 操作向调用方返回的传输数据。"
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/vo/MenuVO.java",
@@ -34153,30 +33937,6 @@
       "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
       "summary": "封装 Timezone Option 操作向调用方返回的传输数据。",
       "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.vo.TimezoneOptionVO|<type>|template-type|封装 Timezone Option 操作向调用方返回的传输数据。"
-    },
-    {
-      "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/vo/UserContextVO.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-iam-implementation",
-      "owner": "com.shiyu.ai.iam.implementation.vo.UserContextVO",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 用户 Context 操作向调用方返回的传输数据。",
-      "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.vo.UserContextVO|<type>|template-type|封装 用户 Context 操作向调用方返回的传输数据。"
-    },
-    {
-      "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/vo/UserInfoVO.java",
-      "line": 9,
-      "source_set": "production",
-      "module": "shiyu-iam-implementation",
-      "owner": "com.shiyu.ai.iam.implementation.vo.UserInfoVO",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 用户 Info 操作向调用方返回的传输数据。",
-      "key": "production|shiyu-iam-implementation|com.shiyu.ai.iam.implementation.vo.UserInfoVO|<type>|template-type|封装 用户 Info 操作向调用方返回的传输数据。"
     },
     {
       "path": "modules/domains/iam/shiyu-iam-implementation/src/main/java/com/shiyu/ai/iam/implementation/vo/UserTenantAssignmentVO.java",
@@ -36781,30 +36541,6 @@
       "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param documentId：参数注释使用泛化模板，未说明参数的业务含义",
       "summary": "删除或移除 文档 Ingestion 相关业务操作，并维护必要的状态和协作关系。 @param tenantId 当前操作涉及的租户标识。 @param documentId 用于定位document的标识。",
       "key": "production|shiyu-knowledge-implementation|com.shiyu.ai.knowledge.implementation.application.service.rag.DocumentIngestionService|public void delete(TenantId tenantId, Long documentId)|template-method+template-param|删除或移除 文档 Ingestion 相关业务操作，并维护必要的状态和协作关系。 @param tenantId 当前操作涉及的租户标识。 @param documentId 用于定位document的标识。"
-    },
-    {
-      "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/application/task/RebuildStatus.java",
-      "line": 9,
-      "source_set": "production",
-      "module": "shiyu-knowledge-implementation",
-      "owner": "com.shiyu.ai.knowledge.implementation.application.task.RebuildStatus",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "表示 Rebuild 相关流程中的状态、关系或执行数据。",
-      "key": "production|shiyu-knowledge-implementation|com.shiyu.ai.knowledge.implementation.application.task.RebuildStatus|<type>|template-type|表示 Rebuild 相关流程中的状态、关系或执行数据。"
-    },
-    {
-      "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/application/task/RebuildStatus.java",
-      "line": 53,
-      "source_set": "production",
-      "module": "shiyu-knowledge-implementation",
-      "owner": "com.shiyu.ai.knowledge.implementation.application.task.RebuildStatus",
-      "member": "public RebuildStatus(String taskId, String status)",
-      "category": "template-method+template-param",
-      "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param taskId：参数注释使用泛化模板，未说明参数的业务含义；@param status：参数注释使用泛化模板，未说明参数的业务含义",
-      "summary": "执行 Rebuild 相关业务操作，并维护必要的状态和协作关系。 @param taskId 用于定位task的标识。 @param status 用于完成本次业务处理的 status 参数。",
-      "key": "production|shiyu-knowledge-implementation|com.shiyu.ai.knowledge.implementation.application.task.RebuildStatus|public RebuildStatus(String taskId, String status)|template-method+template-param|执行 Rebuild 相关业务操作，并维护必要的状态和协作关系。 @param taskId 用于定位task的标识。 @param status 用于完成本次业务处理的 status 参数。"
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/domain/GraphEdge.java",
@@ -41137,54 +40873,6 @@
       "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@param members：参数注释使用泛化模板，未说明参数的业务含义；@return：返回值注释使用泛化模板，未说明真实返回结果",
       "summary": "执行 知识 空间 相关业务数据，并返回处理结果。 @param members 用于完成本次业务处理的 members 参数。 @return 返回 知识 空间 相关操作生成的结果数据。",
       "key": "production|shiyu-knowledge-implementation|com.shiyu.ai.knowledge.implementation.web.controller.KnowledgeSpaceController|public Result<Void> replaceMembers( Long id, List<KnowledgeSpaceService.MemberRequest> members, String version)|template-method+template-param+template-return|执行 知识 空间 相关业务数据，并返回处理结果。 @param members 用于完成本次业务处理的 members 参数。 @return 返回 知识 空间 相关操作生成的结果数据。"
-    },
-    {
-      "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/request/DocumentPageRequest.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-knowledge-implementation",
-      "owner": "com.shiyu.ai.knowledge.implementation.web.request.DocumentPageRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 文档 Page 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-knowledge-implementation|com.shiyu.ai.knowledge.implementation.web.request.DocumentPageRequest|<type>|template-type|封装 文档 Page 操作所需的请求条件和输入数据。"
-    },
-    {
-      "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/request/KnowledgePageRequest.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-knowledge-implementation",
-      "owner": "com.shiyu.ai.knowledge.implementation.web.request.KnowledgePageRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 知识 Page 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-knowledge-implementation|com.shiyu.ai.knowledge.implementation.web.request.KnowledgePageRequest|<type>|template-type|封装 知识 Page 操作所需的请求条件和输入数据。"
-    },
-    {
-      "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/request/KnowledgeRelationRequest.java",
-      "line": 12,
-      "source_set": "production",
-      "module": "shiyu-knowledge-implementation",
-      "owner": "com.shiyu.ai.knowledge.implementation.web.request.KnowledgeRelationRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 知识 关系 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-knowledge-implementation|com.shiyu.ai.knowledge.implementation.web.request.KnowledgeRelationRequest|<type>|template-type|封装 知识 关系 操作所需的请求条件和输入数据。"
-    },
-    {
-      "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/request/KnowledgeSearchRequest.java",
-      "line": 10,
-      "source_set": "production",
-      "module": "shiyu-knowledge-implementation",
-      "owner": "com.shiyu.ai.knowledge.implementation.web.request.KnowledgeSearchRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 知识 Search 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-knowledge-implementation|com.shiyu.ai.knowledge.implementation.web.request.KnowledgeSearchRequest|<type>|template-type|封装 知识 Search 操作所需的请求条件和输入数据。"
     },
     {
       "path": "modules/domains/knowledge/shiyu-knowledge-implementation/src/main/java/com/shiyu/ai/knowledge/implementation/web/response/KnowledgeAuditResponse.java",
@@ -46957,30 +46645,6 @@
       "message": "方法描述：方法注释使用泛化操作模板，未说明实际行为、条件或副作用；@return：返回值注释使用泛化模板，未说明真实返回结果",
       "summary": "查询 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。 @return 返回 Mcp 工具 Descriptor 相关操作生成的结果数据。",
       "key": "production|shiyu-tooling-implementation|com.shiyu.ai.tooling.implementation.tool.mcp.McpToolDescriptor|public long getRegisteredAt()|template-method+template-return|查询 Mcp 工具 Descriptor 相关业务数据，并返回处理结果。 @return 返回 Mcp 工具 Descriptor 相关操作生成的结果数据。"
-    },
-    {
-      "path": "modules/domains/tooling/shiyu-tooling-implementation/src/main/java/com/shiyu/ai/tooling/implementation/tool/mcp/McpToolExecuteRequest.java",
-      "line": 11,
-      "source_set": "production",
-      "module": "shiyu-tooling-implementation",
-      "owner": "com.shiyu.ai.tooling.implementation.tool.mcp.McpToolExecuteRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Mcp 工具 Execute 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-tooling-implementation|com.shiyu.ai.tooling.implementation.tool.mcp.McpToolExecuteRequest|<type>|template-type|封装 Mcp 工具 Execute 操作所需的请求条件和输入数据。"
-    },
-    {
-      "path": "modules/domains/tooling/shiyu-tooling-implementation/src/main/java/com/shiyu/ai/tooling/implementation/tool/mcp/McpToolQueryRequest.java",
-      "line": 8,
-      "source_set": "production",
-      "module": "shiyu-tooling-implementation",
-      "owner": "com.shiyu.ai.tooling.implementation.tool.mcp.McpToolQueryRequest",
-      "member": "<type>",
-      "category": "template-type",
-      "message": "类型注释使用泛化职责模板，未说明该类型的实际功能",
-      "summary": "封装 Mcp 工具 Query 操作所需的请求条件和输入数据。",
-      "key": "production|shiyu-tooling-implementation|com.shiyu.ai.tooling.implementation.tool.mcp.McpToolQueryRequest|<type>|template-type|封装 Mcp 工具 Query 操作所需的请求条件和输入数据。"
     },
     {
       "path": "modules/domains/tooling/shiyu-tooling-implementation/src/main/java/com/shiyu/ai/tooling/implementation/tool/mcp/McpToolRegistry.java",

@@ -26,7 +26,6 @@ class MixedPackageRolesTest(unittest.TestCase):
         expected = {
             "ModelRouter": "infrastructure.gateway.service",
             "ModelRoutePolicy": "infrastructure.gateway.model",
-            "ModelCostSnapshot": "infrastructure.gateway.model",
             "ModelProviderCapabilities": "infrastructure.gateway.model",
             "ProviderHealth": "infrastructure.gateway.model",
             "MediaProvider": "infrastructure.media.port",
